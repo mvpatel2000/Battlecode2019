@@ -6,6 +6,7 @@ public class MyRobot extends BCAbstractRobot {
 
     public Action turn() {
         turn++;
+        ArrayList<Integer> k = new ArrayList<>();
         if (me.unit == SPECS.CASTLE) {
             if (step++ % 10 == 0) {
                 return buildUnit(SPECS.CRUSADER, 1, 1);
