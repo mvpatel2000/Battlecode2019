@@ -1,11 +1,11 @@
 import {SPECS} from 'battlecode';
 
 export function Church() {
-    this.turn = church_turn;
+    this.turn = churchTurn;
     this.step = 0;
 }
 
-function church_turn() {
+function churchTurn() {
     this.step++;
     if (this.step % 10 === 0) {
         return this.buildUnit(SPECS.CRUSADER, 1, 1);
