@@ -2,13 +2,12 @@ import {SPECS} from 'battlecode';
 
 export function Church() {
     this.turn = churchTurn;
-    this.step = 0;
 }
 
 function churchTurn() {
-    this.step++;
-    if (this.step % 10 === 0) {
-        return this.buildUnit(SPECS.CRUSADER, 1, 1);
+    let choice = this.randomMove();
+    if (this.fuel >= 50 && this.karbonite >= 10 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
+        return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
     } else {
         return;
     }

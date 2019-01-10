@@ -10,14 +10,20 @@ function castleTurn() {
     let choice = this.randomMove();
 
     if (Math.random() < 0.5)
-        if (this.fuel >= 50 && this.karbonite >= 20 && !this.occupied(this.me.x + 1, this.me.y + 1)) {
+        if (this.fuel >= 50 && this.karbonite >= 10 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
+            return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
+        } else {
+            return;
+        }
+    else if (Math.random() < 0.5)
+        if (this.fuel >= 50 && this.karbonite >= 20 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
             return this.buildUnit(SPECS.CRUSADER, choice[0], choice[1]);
         } else {
             return;
         }
     else
-        if (this.fuel >= 50 && this.karbonite >= 10 && !this.occupied(this.me.x + 1, this.me.y + 1)) {
-            return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
+        if (this.fuel >= 50 && this.karbonite >= 25 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
+            return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
         } else {
             return;
         }
