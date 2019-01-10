@@ -7,6 +7,9 @@ export const Algorithms = (function() {
         return Math.sqrt(dx * dx + dy * dy);
     }
 
+    /**
+     * Element-wise list equality.
+     */
     function arrEq(a, b) {
         return a.length == b.length && a.map((v, i) => b[i] == v).reduce((x, y) => x && y);
     }
@@ -31,7 +34,7 @@ export const Algorithms = (function() {
     }
 
     /**
-     * given a squared radius
+     * Given a squared radius
      * returns a list of all possible moves [dx,dy]
      */
     function moves(r2) {
@@ -48,7 +51,7 @@ export const Algorithms = (function() {
     }
 
     /**
-     * given a squared radius, current x position, current y position
+     * Given a squared radius, current x position, current y position
      * returns a list of all possible locations that
      * can be reached in a single move [x,y]
      */
@@ -76,6 +79,9 @@ export const Algorithms = (function() {
             }
         },
 
+        /**
+         * Get list of resources ordered by nearness.
+         */
         findResources: function() {
             let map1 = this.fuel_map;
             let map2 = this.karbonite_map;
@@ -91,6 +97,9 @@ export const Algorithms = (function() {
             return pos.sort((a, b) => a[0] - b[0]).map(x => x[1]);
         },
 
+        /**
+         * Return random, valid, one-tile move.
+         */
         randomMove: function() {
             const choices = [[0,-1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1]];
             let choice = choices[Math.floor(Math.random() * choices.length)]
@@ -128,9 +137,10 @@ export const Algorithms = (function() {
                 return [];
             }
             let openSet = [start];
-            let closedSet = [];
+            let closedHash = {};
             let cameFrom = {};
             let h = x => dist(dest, x);
+            let hash = p => p[0] * 67 * 73 + p[1];
             let graph = [];
             for (let i = 0; i < empty.length; i++)
                 for (let j = 0; j < empty[0].length; j++) {
@@ -138,6 +148,10 @@ export const Algorithms = (function() {
                         graph.push([j, i]);
                 }
             graph.push(start);
+            let lookup = {};
+            for (let x of graph) {
+                lookup[hash(x)] = true;
+            }
             let g = {};
             for (let i of graph) {
                 g[i] = Infinity;
@@ -166,12 +180,12 @@ export const Algorithms = (function() {
                     return path;
                 }
                 openSet.splice(openSet.indexOf(current), 1);
-                closedSet.push(current);
+                closedHash[hash(current)] = true;
                 for (let neighbor of absoluteMoves(getSpeed.call(this), current[0], current[1])) {
-                    if (!(containsCoordinate(neighbor, graph)) || containsCoordinate(neighbor, closedSet))
+                    if (!(lookup[hash(neighbor)]) || closedHash[hash(neighbor)])
                         continue;
                     let tg = g[current] + dist(current, neighbor);
-                    if (!(neighbor in openSet))
+                    if (!containsCoordinate(neighbor, openSet))
                         openSet.push(neighbor);
                     else if (tg >= g[neighbor])
                         continue;

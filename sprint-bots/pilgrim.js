@@ -41,6 +41,9 @@ function pilgrimTurn() {
     }
 }
 
+/**
+ * Called in place of pilgrimTurn() when dropping off resources.
+ */
 function pilgrimDropping() {
     let [x, y] = this.dropoffs.reduce((a, b) =>
         this.dist([this.me.x, this.me.y], a) < this.dist([this.me.x, this.me.y], b) ? a : b);
