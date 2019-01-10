@@ -5,5 +5,5 @@ export function Prophet() {
 }
 
 function prophetTurn() {
-    return this.randomMove();
+    return this.move(...this.randomMove());
 }

@@ -5,5 +5,5 @@ export function Crusader() {
 }
 
 function crusaderTurn() {
-    return this.randomMove();
+    return this.move(...this.randomMove());
 }

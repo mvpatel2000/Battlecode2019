@@ -7,15 +7,7 @@ export function Castle() {
 
 function castleTurn() {
     this.step++;
-    const choices = [[0,-1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1]];
-    let choice = choices[Math.floor(Math.random() * choices.length)]
-    for (;;) {
-        let locx = this.me.x + choice[0];
-        let locy = this.me.y + choice[1];
-        if (!this.occupied(locx, locy))
-            break;
-        choice = choices[Math.floor(Math.random() * choices.length)]
-    }
+    let choice = this.randomMove();
 
     if (Math.random() < 0.5)
         if (this.fuel >= 50 && this.karbonite >= 20 && !this.occupied(this.me.x + 1, this.me.y + 1)) {
