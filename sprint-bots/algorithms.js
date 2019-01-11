@@ -61,7 +61,7 @@ export const Algorithms = (function() {
         let max = Math.sqrt(r2);
         for (let x = -max; x <= max; x++) {
             for (let y = -max; y <= max; y++) {
-                if (x * x + y * y <= r2) {
+                if (x * x + y * y <= r2 && x * x + y * y == r2) { //TODO: CHANGE THIS MAX
                     steps.push([x + curx, y + cury]);
                 }
             }
