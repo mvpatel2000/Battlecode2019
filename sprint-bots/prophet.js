@@ -15,10 +15,6 @@ function prophetTurn() {
                                    && this.dist([i.x, i.y], [this.me.x, this.me.y]) >= 4)
             return this.attack(i.x - this.me.x, i.y - this.me.y);
     }
-    while (!this.occupied(...this.target) || !this.map[this.target[1]][this.target[0]]) {
-        this.target = [Math.floor(Math.random() * this.map[0].length),
-                        Math.floor(Math.random() * this.map.length)]
-    }
     let route = this.path(this.target);
     if (this.fuel > 5) {
         if (route.length) {
