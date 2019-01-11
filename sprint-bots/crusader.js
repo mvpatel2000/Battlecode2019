@@ -28,10 +28,10 @@ function crusaderTurn() {
     }
 
     // movement code
-    let route = this.path(this.target);
+    let route = this.longpath(this.target);
     if (this.fuel > 10) {
         if (route.length > 0) { //A* towards target
-            this.log("Move: "+route[0]);
+            //this.log("Move: "+route[0]);
             return this.move(...route[0]);
         } else { //random move
             this.log("No route detected");
