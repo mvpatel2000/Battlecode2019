@@ -1,23 +1,28 @@
 import {SPECS} from 'battlecode';
 
 export function Pilgrim() {
+    // add castles + churches to list of known drop-off points
     this.turn = pilgrimTurn;
     this.queue = this.findResources();
     this.dropoffs = [];
+    this.findDropoffs = function () {
+        outer: for (let i of this.getVisibleRobots()) {
+            if (i.unit <= 1 && i.team == this.me.team) {
+                for (let j of this.dropoffs) {
+                    if (j[0] == i.x && j[1] == i.y)
+                        continue outer;
+                    if (!this.occupied(j[0], j[1])) {
+                        this.dropoffs = this.dropoffs.filter(d => d[0] != j[0] || d[1] != j[1]);
+                    }
+                }
+                this.dropoffs.push([i.x, i.y]);
+            }
+        }
+    }
 }
 
 function pilgrimTurn() {
-    // add castles + churches to list of known drop-off points
-    outer: for (let i of this.getVisibleRobots()) {
-        if (i.unit <= 1 && i.team == this.me.team) {
-            for (let j of this.dropoffs) {
-                if (j[0] == i.x && j[1] == i.y)
-                    continue outer;
-            }
-            this.dropoffs.push([i.x, i.y]);
-        }
-    }
-
+    this.findDropoffs();
     let [x, y] = [this.me.x, this.me.y];
 
     // mine if not at capacity
@@ -34,11 +39,11 @@ function pilgrimTurn() {
             else
                 return;
         }
-    } else if (this.fuel_map[y][x] || this.karbonite_map[y][x]) {
+    } else if (this.fuel_map[y][x] || this.karbonite_map[y][x]) { // if done mining, return
         this.turn = pilgrimDropping;
         return this.turn();
     }
-
+    // get new location if full
     if (this.getVisibleRobotMap()[this.queue[0][1]][this.queue[0][0]] > 0) {
          this.queue.push(this.queue.shift());
     }
@@ -53,11 +58,16 @@ function pilgrimTurn() {
  * Called in place of pilgrimTurn() when dropping off resources.
  */
 function pilgrimDropping() {
+    this.findDropoffs();
+    if (this.dropoffs.length == 0) {
+        return this.move(...this.randomMove());
+    }
+    // return to normal turn function
     let restore = () => {
         if (this.karbonite < 10 && !this.karbonite_map[this.queue[0][1]][this.queue[0][0]]) {
-            this.queue.push(this.queue.shift());
+            this.queue.push(this.queue.shift()); // cycle if mining fuel when needing karbonite
         } else if (this.fuel < 100 && !this.fuel_map[this.queue[0][1]][this.queue[0][0]]) {
-            this.queue.push(this.queue.shift());
+            this.queue.push(this.queue.shift()); // the opposite
         }
         this.turn = pilgrimTurn;
     }
@@ -71,14 +81,19 @@ function pilgrimDropping() {
     } else {
         if (x == this.me.x - z && y == this.me.y - w) {
             restore();
-            return this.give(-z, -w, this.me.karbonite, this.me.fuel);
+            if (this.occupied(x, y))
+                return this.give(-z, -w, this.me.karbonite, this.me.fuel);
+            else
+                return;
         } else {
             for (let i of this.getVisibleRobots()) {
                 if (i.unit <= 1 && i.team == this.me.team
                         && Math.abs(i.x - this.me.x) <= 1
                         && Math.abs(i.y - this.me.y) <= 1) {
                     restore();
-                    return this.give(i.x - this.me.x, i.y - this.me.y, this.me.karbonite, this.me.fuel);
+                    if (this.occupied(i.x, i.y))
+                        return this.give(i.x - this.me.x, i.y - this.me.y, this.me.karbonite, this.me.fuel);
+                    else return;
                 }
             }
         }

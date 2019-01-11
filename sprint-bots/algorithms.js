@@ -135,7 +135,7 @@ export const Algorithms = (function() {
         vectorField: function(endpts) {
             let map = this.map;
             queue = []
-
+            // TODO: implement
         },
 
         /**
