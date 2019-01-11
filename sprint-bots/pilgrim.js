@@ -39,11 +39,11 @@ function pilgrimTurn() {
             else
                 return;
         }
-    } else if (this.fuel_map[y][x] || this.karbonite_map[y][x]) {
+    } else if (this.fuel_map[y][x] || this.karbonite_map[y][x]) { // if done mining, return
         this.turn = pilgrimDropping;
         return this.turn();
     }
-
+    // get new location if full
     if (this.getVisibleRobotMap()[this.queue[0][1]][this.queue[0][0]] > 0) {
          this.queue.push(this.queue.shift());
     }
@@ -59,11 +59,15 @@ function pilgrimTurn() {
  */
 function pilgrimDropping() {
     this.findDropoffs();
+    if (this.dropoffs.length == 0) {
+        return this.move(...this.randomMove());
+    }
+    // return to normal turn function
     let restore = () => {
         if (this.karbonite < 10 && !this.karbonite_map[this.queue[0][1]][this.queue[0][0]]) {
-            this.queue.push(this.queue.shift());
+            this.queue.push(this.queue.shift()); // cycle if mining fuel when needing karbonite
         } else if (this.fuel < 100 && !this.fuel_map[this.queue[0][1]][this.queue[0][0]]) {
-            this.queue.push(this.queue.shift());
+            this.queue.push(this.queue.shift()); // the opposite
         }
         this.turn = pilgrimTurn;
     }
