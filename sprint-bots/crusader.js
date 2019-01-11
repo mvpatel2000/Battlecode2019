@@ -25,11 +25,13 @@ function crusaderTurn() {
              this.target = r();
          }
     }
+
+    // movement code
     let route = this.path(this.target);
     if (this.fuel > 10) {
-        if (route.length) {
+        if (route.length > 0) { //A* towards target
             return this.move(...route[0]);
-        } else {
+        } else { //random move
             return this.move(...this.randomMove());
         }
     }
