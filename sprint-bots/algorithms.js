@@ -1,4 +1,5 @@
 import {SPECS} from 'battlecode';
+import {PriorityQueue} from './priorityqueue'
 
 export const Algorithms = (function() {
     function dist(a, b) {
@@ -145,46 +146,50 @@ export const Algorithms = (function() {
             let start = [this.me.x, this.me.y];
             let map = this.map;
             let occupied = this.getVisibleRobotMap();
-            let empty = map.map((c, i) => c.map((v, j) => v && occupied[i][j] <= 0));
+            let empty = map.map((c, i) => c.map((v, j) => v && occupied[i][j] <= 0)); //all empty nodes
             if (!empty[dest[1]][dest[0]]) {
                 return [];
             }
-            let openSet = [start];
             let closedHash = {};
-            let cameFrom = {};
-            let h = x => dist(dest, x);
+            let openHash = {};
+            let cameFrom = {}; //used to reconstruct map
+            let h = x => dist(dest, x) / getSpeed.call(this); //~steps away from destination
             let hash = p => p[0] * 67 * 73 + p[1];
-            let graph = [];
+            let graph = []; //used to intialize other variables from empty
             for (let i = 0; i < empty.length; i++)
                 for (let j = 0; j < empty[0].length; j++) {
                     if (empty[i][j])
                         graph.push([j, i]);
                 }
             graph.push(start);
-            let lookup = {};
+            let lookup = {}; //contains all nodes, used to verify a node exists
             for (let x of graph) {
                 lookup[hash(x)] = true;
             }
-            let g = {};
+            let g = {}; //distance from origin in terms of steps taken
             for (let i of graph) {
                 g[i] = Infinity;
             }
             g[start] = 0;
-            let f = {};
+            let f = {}; //g + heuristic (dist to destination)
             for (let i of graph) {
                 f[i] = Infinity;
             }
             f[start] = h(start);
-            while (openSet.length) {
-                let current = openSet.reduce((x, y) => f[x] < f[y] ? x : y);
-                if (arrEq(current, dest)) {
+
+            const queue = new PriorityQueue((a, b) => f[a] < f[b]);
+            queue.push(start);
+
+            while (queue.size()) {
+                let current = queue.pop(); //pop from priority queue instead of magic symbols
+                if (arrEq(current, dest)) { //found destination
                     let totalPath = [current];
-                    while (current in cameFrom) {
+                    while (current in cameFrom) { //reconstruct path
                         current = cameFrom[current];
                         totalPath.push(current);
                     }
                     let path = [];
-                    for (let i = 1; i < totalPath.length; i++) {
+                    for (let i = 1; i < totalPath.length; i++) { //reformat path
                         let [a, b] = totalPath[i];
                         let [c, d] = totalPath[i - 1];
                         path.push([c - a, d - b]);
@@ -192,17 +197,18 @@ export const Algorithms = (function() {
                     path.reverse();
                     return path;
                 }
-                openSet.splice(openSet.indexOf(current), 1);
-                closedHash[hash(current)] = true;
-                for (let neighbor of absoluteMoves(getSpeed.call(this), current[0], current[1])) {
-                    if (!(lookup[hash(neighbor)]) || closedHash[hash(neighbor)])
+                closedHash[hash(current)] = true; //already visited
+                for (let neighbor of absoluteMoves(getSpeed.call(this), current[0], current[1])) { //loops over all moves
+                    if (!(lookup[hash(neighbor)]) || closedHash[hash(neighbor)]) //filters invalid moves
                         continue;
-                    let tg = g[current] + dist(current, neighbor);
-                    if (!containsCoordinate(neighbor, openSet))
-                        openSet.push(neighbor);
-                    else if (tg >= g[neighbor])
+                    let tg = g[current] + 1; //increase step by 1
+                    if (!openHash[hash(neighbor)]) { //rewrite this! hash so u dont revisit nodes
+                        queue.push(neighbor); //push
+                        openHash[hash(neighbor)] = true;
+                    }
+                    else if (tg >= g[neighbor]) //worse path to same square then what already exists
                         continue;
-                    cameFrom[neighbor] = current;
+                    cameFrom[neighbor] = current; //sets current path for backtrace
                     g[neighbor] = tg;
                     f[neighbor] = g[neighbor] + h(neighbor);
                 }

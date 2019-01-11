@@ -10,6 +10,7 @@ export function Crusader() {
  */
 function crusaderTurn() {
     // attack code
+    this.log(this.me.time);
     for (let i of this.getVisibleRobots()) {
         if (this.fuel > 20 && i.team != this.me.team && this.dist([i.x, i.y], [this.me.x, this.me.y]) <= 4)
             return this.attack(i.x - this.me.x, i.y - this.me.y);
