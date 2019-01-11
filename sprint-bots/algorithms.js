@@ -134,7 +134,7 @@ export const Algorithms = (function() {
         vectorField: function(endpts) {
             let map = this.map;
             queue = []
-
+            // TODO: implement
         },
 
         /**
@@ -152,16 +152,16 @@ export const Algorithms = (function() {
             let openSet = [start];
             let closedHash = {};
             let cameFrom = {};
-            let h = x => dist(dest, x);
-            let hash = p => p[0] * 67 * 73 + p[1];
+            let hash = p => p[0] * 67 * 73 + p[1]; // used to efficiently use 2-tuples as keys
             let graph = [];
             for (let i = 0; i < empty.length; i++)
                 for (let j = 0; j < empty[0].length; j++) {
                     if (empty[i][j])
                         graph.push([j, i]);
                 }
+            let h = x => dist(dest, x);
             graph.push(start);
-            let lookup = {};
+            let lookup = {}; // fast access version of graph
             for (let x of graph) {
                 lookup[hash(x)] = true;
             }
@@ -177,6 +177,7 @@ export const Algorithms = (function() {
             f[start] = h(start);
             while (openSet.length) {
                 let current = openSet.reduce((x, y) => f[x] < f[y] ? x : y);
+                // rebuild path and return deltas
                 if (arrEq(current, dest)) {
                     let totalPath = [current];
                     while (current in cameFrom) {
@@ -194,6 +195,8 @@ export const Algorithms = (function() {
                 }
                 openSet.splice(openSet.indexOf(current), 1);
                 closedHash[hash(current)] = true;
+
+                // traverse neighbors
                 for (let neighbor of absoluteMoves(getSpeed.call(this), current[0], current[1])) {
                     if (!(lookup[hash(neighbor)]) || closedHash[hash(neighbor)])
                         continue;
