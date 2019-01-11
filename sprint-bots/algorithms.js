@@ -71,6 +71,19 @@ export const Algorithms = (function() {
     return {
         dist: dist,
 
+        /**
+         * Returns the reflected position of this across the map.
+         */
+        reflection: function() {
+            let vertical = this.fuel_map.every(
+                                r => r.map((v, i) => r[r.length - i - 1] == v).reduce((a, b) => a && b));
+            if (vertical) {
+                return [this.fuel_map[0].length - this.me.x - 1, this.me.y];
+            } else {
+                return [this.me.x, this.fuel_map.length - this.me.y - 1];
+            }
+        },
+
         occupied: function(x, y) {
             try {
                 return !this.map[y][x] || this.getVisibleRobotMap()[y][x] != 0;

@@ -29,7 +29,10 @@ function pilgrimTurn() {
             let move = this.randomMove()
             return this.buildUnit(SPECS.CHURCH, move[0], move[1]);
         } else {
-            return this.mine();
+            if (this.fuel > 5)
+                return this.mine();
+            else
+                return;
         }
     } else if (this.fuel_map[y][x] || this.karbonite_map[y][x]) {
         this.turn = pilgrimDropping;
@@ -50,6 +53,14 @@ function pilgrimTurn() {
  * Called in place of pilgrimTurn() when dropping off resources.
  */
 function pilgrimDropping() {
+    let restore = () => {
+        if (this.karbonite < 10 && !this.karbonite_map[this.queue[0][1]][this.queue[0][0]]) {
+            this.queue.push(this.queue.shift());
+        } else if (this.fuel < 100 && !this.fuel_map[this.queue[0][1]][this.queue[0][0]]) {
+            this.queue.push(this.queue.shift());
+        }
+        this.turn = pilgrimTurn;
+    }
     let [x, y] = this.dropoffs.reduce((a, b) =>
         this.dist([this.me.x, this.me.y], a) < this.dist([this.me.x, this.me.y], b) ? a : b);
     let [z, w] = this.randomMove();
@@ -59,11 +70,17 @@ function pilgrimDropping() {
         return this.move(dx, dy);
     } else {
         if (x == this.me.x - z && y == this.me.y - w) {
-            if (this.karbonite == 0 && !this.karbonite_map[this.queue[0][1]][this.queue[0][0]]) {
-                this.queue.push(this.queue.shift());
-            }
-            this.turn = pilgrimTurn;
+            restore();
             return this.give(-z, -w, this.me.karbonite, this.me.fuel);
+        } else {
+            for (let i of this.getVisibleRobots()) {
+                if (i.unit <= 1 && i.team == this.me.team
+                        && Math.abs(i.x - this.me.x) <= 1
+                        && Math.abs(i.y - this.me.y) <= 1) {
+                    restore();
+                    return this.give(i.x - this.me.x, i.y - this.me.y, this.me.karbonite, this.me.fuel);
+                }
+            }
         }
     }
 }
