@@ -2,3 +2,4 @@ replay.bc19
 .DS_Store
 .idea
 .*.swp
+node_modules
