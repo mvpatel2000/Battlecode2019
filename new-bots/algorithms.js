@@ -18,7 +18,7 @@ export const Algorithms = (function() {
     function distSquared(a, b) {
         let dx = a[0] - b[0];
         let dy = a[1] - b[1];
-        return dx * dx + dy * dy;
+        return (dx * dx + dy * dy);
     }
 
     function getSpeed() {
@@ -71,6 +71,8 @@ export const Algorithms = (function() {
 
     return {
         dist: dist,
+        distSquared: distSquared,
+        getSpeed: getSpeed,
 
         /**
          * Returns the reflected position of this across the map.
@@ -116,6 +118,32 @@ export const Algorithms = (function() {
          */
         randomMove: function() {
             const choices = [[0,-1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1]];
+            let choice = choices[Math.floor(Math.random() * choices.length)]
+            for (;;) {
+                let locx = this.me.x + choice[0];
+                let locy = this.me.y + choice[1];
+                if (!this.occupied(locx, locy))
+                    break;
+                choice = choices[Math.floor(Math.random() * choices.length)];
+            }
+            return choice;
+        },
+        /**
+         * Return a random, valid, move within a given radius^2.
+         */
+        randomMoveRadiusSquared: function(r2) {
+            if (r2 < 1) {
+                return [0, 0];
+            }
+            let choices = [];
+            let max = Math.sqrt(r2);
+            for (let x = -max; x <= max; x++) {
+                for (let y = -max; y <= max; y++) {
+                    if (x * x + y * y <= r2) {
+                        choices.push([x, y]);
+                    }
+                }
+            }
             let choice = choices[Math.floor(Math.random() * choices.length)]
             for (;;) {
                 let locx = this.me.x + choice[0];
