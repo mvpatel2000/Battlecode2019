@@ -19,7 +19,7 @@ function castleTurn() {
     } */
 
     // base spawn rate
-    if (Math.random() < 0.2 || this.starting) {
+    if (this.starting || (Math.random() < 0.2)) {
         if (this.fuel >= 50 && this.karbonite >= 10 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
             this.starting = false;
             return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
