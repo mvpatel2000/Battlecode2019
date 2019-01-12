@@ -146,7 +146,6 @@ export const Algorithms = (function() {
             let start = [this.me.x, this.me.y];
             let map = this.map;
             let occupied = this.getVisibleRobotMap();
-            // let empty = map.map((c, i) => c.map((v, j) => v && occupied[i][j] <= 0)); //all empty nodes
             if (!map[dest[1]][dest[0]] || occupied[dest[1]][dest[0]] > 0) {
                 return [];
             }
@@ -165,7 +164,6 @@ export const Algorithms = (function() {
             let i = 256;
             while (!queue.isEmpty()) {
                 let current = queue.pop(); //pop from priority queue instead of magic symbols
-                // this.log(`${current} => ${dest}`);
                 done.push(current)
                 if (i-- < 0 || arrEq(current, dest)) { //found destination
                     current = done.reduce((a, b) => h(a) < h(b) ? a : b)
@@ -194,7 +192,6 @@ export const Algorithms = (function() {
                             || g[neighbor] != undefined) //filters invalid moves or already taken moves
                         continue;
                     let tg = g[current] + 1; //increase step by 1
-                    // this.log('adding')
                     queue.push(neighbor); //push
                     openHash[hash(neighbor)] = true;
                     cameFrom[neighbor] = current; //sets current path for backtrace
