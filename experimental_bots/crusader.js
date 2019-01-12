@@ -10,6 +10,7 @@ export function Crusader() {
  */
 function crusaderTurn() {
     // attack code
+    this.log(this.me.time);
     for (let i of this.getVisibleRobots()) {
         if (this.fuel > 20) {
             if (i.team != this.me.team && this.dist([i.x, i.y], [this.me.x, this.me.y]) <= 4) {
@@ -27,11 +28,13 @@ function crusaderTurn() {
     }
 
     // movement code
-    let route = this.path(this.target);
+    let route = this.longpath(this.target);
     if (this.fuel > 10) {
         if (route.length > 0) { //A* towards target
+            //this.log("Move: "+route[0]);
             return this.move(...route[0]);
         } else { //random move
+            this.log("No route detected");
             return this.move(...this.randomMove());
         }
     }
