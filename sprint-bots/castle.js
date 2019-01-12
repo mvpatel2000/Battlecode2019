@@ -16,7 +16,9 @@ function castleTurn() {
             return;
         }
     else if (Math.random() < 4.0 / 3.0) //1.0 / 3.0
-        if (this.fuel >= 50 && this.karbonite >= 20 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
+        if(this.step>2)
+            return;
+        else if (this.fuel >= 50 && this.karbonite >= 20 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
             return this.buildUnit(SPECS.CRUSADER, choice[0], choice[1]);
         } else {
             return;

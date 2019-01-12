@@ -19,15 +19,10 @@ export const Algorithms = (function() {
      * Checks if within 1 tile of destination
      */
     function withinOne(point, dest) {
-        let max = 1;
-        for (let x = -max; x <= max; x++) {
-            for (let y = -max; y <= max; y++) {
-                let pt = [point[0] + x, point[1] + y];
-                if (arrEq(pt, dest)) {
-                    return true;
-                }
-            }
-        }
+        let dx = point[0] - dest[0];
+        let dy = point[1] - dest[1];
+        if(dx*dx + dy*dy <= 1)
+            return true;
         return false;
     }
 
@@ -175,6 +170,65 @@ export const Algorithms = (function() {
 
         /**
          * Takes in destination [x, y].
+         * Returns next move.
+         */
+        bfs: function(dest) {
+            let start = [this.me.x, this.me.y];
+            let map = this.map;
+            let occupied = this.getVisibleRobotMap();
+
+            let queue = []
+            let visited = {}
+            let hash = p => p[0] * 100 + p[1];
+            let dehash = p => [Math.floor(p/100), p%100];
+            let direction = {}
+            queue.push(start);
+
+            let i=0;
+            while(queue.length>0) {
+                //this.log(i);
+                i++;
+                //if(i==100)
+                    //return [0,0];
+                let current = queue.pop();
+                let moves = longAbsoluteMoves(getSpeed.call(this), current[0], current[1]);
+                for(let move of moves) {
+                    if(withinOne(move, dest)) { //if this is destination, rebuild path
+                        //this.log("Start: "+start+" Move: "+move+" Dest: "+dest+" Turn: "+i);
+                        let path = []
+                        path.push(move)
+                        let loop = current; 
+                        //return [0,0];
+                        while (!arrEq(loop, start)) {
+                            path.push(loop);
+                            loop = dehash(direction[hash(loop)]);
+                            console.log(loop);
+                        }
+                        path.push(start);
+                        //return [0,0];
+                        path.reverse();
+                        this.log(path); //this.log(path[0]+" "+path[1]+" "+path[2]+" "+path[3]+" "+path[4]+" "+path[5]);
+                        this.log([ (path[1])[0] - (path[0])[0], (path[1])[1] - (path[0])[1] ]);
+                        return [ (path[1])[0] - (path[0])[0], (path[1])[1] - (path[0])[1] ];
+                    }
+                    else if(move[1] >=0 && move[0] >= 0 && move[1]<map.length && move[0]<map[0].length && 
+                                map[move[1]][move[0]] && occupied[move[1]][move[0]]<=0 && visited[hash(move)]==undefined) { //not occupied   
+                        //this.log("Added");
+                        queue.push(move);
+                        visited[hash(move)] = true;
+                        if(arrEq(current, start)) //add dir if initial move
+                            direction[hash(move)] = hash(start);
+                        else 
+                            direction[hash(move)] = hash(current);
+                    }
+                }
+            }
+            this.log("BFS failed");
+            return [0,0];
+        },
+
+        /**
+         * Takes in destination [x, y].
          * Return a list of [dx, dy] instructions to get from current location to destination.
          * Used for long distances with sparse steps
          */
@@ -215,9 +269,7 @@ export const Algorithms = (function() {
             const queue = new PriorityQueue((a, b) => f[a] < f[b]);
             queue.push(start);
 
-            let i = 0;
-            while (i<200 && queue.size()) { //i++ < 60 &&
-                i++;
+            while (queue.size()) { //i++ < 60 &&
                 let current = queue.pop(); //pop from priority queue instead of magic symbols
                 if (withinOne(current, dest)) { //found destination
                     let totalPath = [current];
@@ -232,7 +284,6 @@ export const Algorithms = (function() {
                         path.push([c - a, d - b]);
                     }
                     path.reverse();
-                    this.log("Steps: "+i+" Dest: ("+dest[0]+","+dest[1]+")");
                     return path;
                 }
                 for (let neighbor of longAbsoluteMoves(getSpeed.call(this), current[0], current[1])) { //loops over all moves
@@ -247,22 +298,6 @@ export const Algorithms = (function() {
                     g[neighbor] = tg;
                     f[neighbor] = g[neighbor] + h(neighbor);
                 }
-            }
-            if(i>=190) {
-                let current = queue.pop();
-                let totalPath = [current];
-                while (current in cameFrom) { //reconstruct path
-                    current = cameFrom[current];
-                    totalPath.push(current);
-                }   
-                let path = [];
-                for (let i = 1; i < totalPath.length; i++) { //reformat path
-                    let [a, b] = totalPath[i];
-                    let [c, d] = totalPath[i - 1];
-                    path.push([c - a, d - b]);
-                }
-                path.reverse();
-                return path;
             }
             return [];
         },
