@@ -11,7 +11,6 @@ export function Prophet() {
 function prophetTurn() {
 
     // attack code
-    this.log(this.me.time);
     for (let i of this.getVisibleRobots()) {
         if (this.fuel > 25) {
             if (i.team != this.me.team && this.dist([i.x, i.y], [this.me.x, this.me.y]) <= 8
@@ -35,7 +34,6 @@ function prophetTurn() {
         if (route.length > 0) { //A* towards target
             return this.move(...route[0]);
         } else { //random move
-            this.log("No route detected")
             return this.move(...this.randomMove());
         }
     }
