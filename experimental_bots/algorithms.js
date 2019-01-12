@@ -1,4 +1,5 @@
 import {SPECS} from 'battlecode';
+import {PriorityQueue} from './priorityqueue'
 
 export const Algorithms = (function() {
     function dist(a, b) {
@@ -145,47 +146,36 @@ export const Algorithms = (function() {
             let start = [this.me.x, this.me.y];
             let map = this.map;
             let occupied = this.getVisibleRobotMap();
-            let empty = map.map((c, i) => c.map((v, j) => v && occupied[i][j] <= 0));
-            if (!empty[dest[1]][dest[0]]) {
+            // let empty = map.map((c, i) => c.map((v, j) => v && occupied[i][j] <= 0)); //all empty nodes
+            if (!map[dest[1]][dest[0]] || occupied[dest[1]][dest[0]] > 0) {
                 return [];
             }
-            let openSet = [start];
-            let closedHash = {};
-            let cameFrom = {};
-            let hash = p => p[0] * 67 * 73 + p[1]; // used to efficiently use 2-tuples as keys
-            let graph = [];
-            for (let i = 0; i < empty.length; i++)
-                for (let j = 0; j < empty[0].length; j++) {
-                    if (empty[i][j])
-                        graph.push([j, i]);
-                }
-            let h = x => dist(dest, x);
-            graph.push(start);
-            let lookup = {}; // fast access version of graph
-            for (let x of graph) {
-                lookup[hash(x)] = true;
-            }
-            let g = {};
-            for (let i of graph) {
-                g[i] = Infinity;
-            }
+            let openHash = {};
+            let done = [];
+            let cameFrom = {}; //used to reconstruct map
+            let h = x => dist(dest, x) / getSpeed.call(this); //~steps away from destination
+            let hash = p => p[0] * 67 * 73 + p[1];
+            let g = {}; //distance from origin in terms of steps taken
             g[start] = 0;
-            let f = {};
-            for (let i of graph) {
-                f[i] = Infinity;
-            }
+            let f = {}; //g + heuristic (dist to destination)
             f[start] = h(start);
-            while (openSet.length) {
-                let current = openSet.reduce((x, y) => f[x] < f[y] ? x : y);
-                // rebuild path and return deltas
-                if (arrEq(current, dest)) {
+
+            const queue = new PriorityQueue((a, b) => f[a] < f[b]);
+            queue.push(start);
+            let i = 256;
+            while (!queue.isEmpty()) {
+                let current = queue.pop(); //pop from priority queue instead of magic symbols
+                // this.log(`${current} => ${dest}`);
+                done.push(current)
+                if (i-- < 0 || arrEq(current, dest)) { //found destination
+                    current = done.reduce((a, b) => h(a) < h(b) ? a : b)
                     let totalPath = [current];
-                    while (current in cameFrom) {
+                    while (current in cameFrom) { //reconstruct path
                         current = cameFrom[current];
                         totalPath.push(current);
                     }
                     let path = [];
-                    for (let i = 1; i < totalPath.length; i++) {
+                    for (let i = 1; i < totalPath.length; i++) { //reformat path
                         let [a, b] = totalPath[i];
                         let [c, d] = totalPath[i - 1];
                         path.push([c - a, d - b]);
@@ -193,19 +183,21 @@ export const Algorithms = (function() {
                     path.reverse();
                     return path;
                 }
-                openSet.splice(openSet.indexOf(current), 1);
-                closedHash[hash(current)] = true;
-
-                // traverse neighbors
-                for (let neighbor of absoluteMoves(getSpeed.call(this), current[0], current[1])) {
-                    if (!(lookup[hash(neighbor)]) || closedHash[hash(neighbor)])
+                for (let neighbor of absoluteMoves(getSpeed.call(this), current[0], current[1])) { //loops over all moves
+                    if (neighbor[1] >= map.length
+                            || neighbor[0] >= map[0].length
+                            || neighbor[1] < 0
+                            || neighbor[0] < 0
+                            || !map[neighbor[1]][neighbor[0]]
+                            || occupied[neighbor[1]][neighbor[0]] > 0
+                            || openHash[hash(neighbor)]
+                            || g[neighbor] != undefined) //filters invalid moves or already taken moves
                         continue;
-                    let tg = g[current] + dist(current, neighbor);
-                    if (!containsCoordinate(neighbor, openSet))
-                        openSet.push(neighbor);
-                    else if (tg >= g[neighbor])
-                        continue;
-                    cameFrom[neighbor] = current;
+                    let tg = g[current] + 1; //increase step by 1
+                    // this.log('adding')
+                    queue.push(neighbor); //push
+                    openHash[hash(neighbor)] = true;
+                    cameFrom[neighbor] = current; //sets current path for backtrace
                     g[neighbor] = tg;
                     f[neighbor] = g[neighbor] + h(neighbor);
                 }

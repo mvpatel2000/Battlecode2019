@@ -74,6 +74,16 @@ function pilgrimDropping() {
     let [x, y] = this.dropoffs.reduce((a, b) =>
         this.dist([this.me.x, this.me.y], a) < this.dist([this.me.x, this.me.y], b) ? a : b);
     let [z, w] = this.randomMove();
+    for (let i of this.getVisibleRobots()) {
+        if (i.unit <= 1 && i.team == this.me.team
+                && Math.abs(i.x - this.me.x) <= 1
+                && Math.abs(i.y - this.me.y) <= 1) {
+            restore();
+            if (this.occupied(i.x, i.y))
+                return this.give(i.x - this.me.x, i.y - this.me.y, this.me.karbonite, this.me.fuel);
+            else return;
+        }
+    }
     let route = this.path([x + z, y + w]);
     if (route.length && this.fuel > 5) {
         let [dx, dy] = route[0];
@@ -85,17 +95,6 @@ function pilgrimDropping() {
                 return this.give(-z, -w, this.me.karbonite, this.me.fuel);
             else
                 return;
-        } else {
-            for (let i of this.getVisibleRobots()) {
-                if (i.unit <= 1 && i.team == this.me.team
-                        && Math.abs(i.x - this.me.x) <= 1
-                        && Math.abs(i.y - this.me.y) <= 1) {
-                    restore();
-                    if (this.occupied(i.x, i.y))
-                        return this.give(i.x - this.me.x, i.y - this.me.y, this.me.karbonite, this.me.fuel);
-                    else return;
-                }
-            }
         }
     }
 }
