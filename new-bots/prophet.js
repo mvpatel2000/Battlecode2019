@@ -19,6 +19,8 @@ function prophetTurn() {
             }
         } else return;
     }
+
+    // get new target if target is empty
     if (this.me.x == this.target[0] && this.me.y == this.target[1]) {
          let r = () => [Math.floor(Math.random() * this.map[0].length),
                          Math.floor(Math.random() * this.map.length)];
