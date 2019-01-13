@@ -9,7 +9,7 @@ export function Castle() {
 function castleTurn() {
     this.step++;
     let choice = this.randomMove();
-    const adj = this.turn > 10 ? 50 : 0;
+    const adj = this.me.turn > 10 ? 50 : 0;
     // mage spawn
     /* if (this.fuel >= 50 && this.karbonite >= 30 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
         return this.buildUnit(SPECS.PREACHER, choice[0], choice[1]);
