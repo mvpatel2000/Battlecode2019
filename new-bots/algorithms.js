@@ -99,7 +99,7 @@ export const Algorithms = (function() {
          * Returns a robot to attack if possible.
          */
         getRobotToAttack: function() {
-            const rad = SPECS.UNITS[i.unit].ATTACK_RADIUS;
+            const rad = SPECS.UNITS[this.me.unit].ATTACK_RADIUS;
             const priority = {
                 0: 1,
                 1: 2,
