@@ -22,7 +22,7 @@ function prophetTurn() {
         }
     } else {
         //move away from or orthogonal to an enemy
-        for (let i of this.getVisibleRobots() {
+        for (let i of this.getVisibleRobots()) {
             let dSquaredtoEnemy = this.distSquared([i.x, i.y], [this.me.x, this.me.y])
             if(i.team != this.me.team) {
                 let hpdamage = this.canItKillMe(i, dSquaredtoEnemy);
