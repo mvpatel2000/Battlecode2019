@@ -128,12 +128,12 @@ export const Algorithms = (function() {
             let minhpdamage = Infinity;
             let maxhpdamage = 0;
             let optimalmove = null;
-            let possiblemoves = this.validAbsoluteMoves();
+            let possiblemoves = validAbsoluteMoves();
             for (let move of possiblemoves) {
                 for (let i of visibleRobots) {
-                    let dSquaredtoEnemy = this.distSquared([i.x, i.y], [this.me.x, this.me.y])
+                    let dSquaredtoEnemy = distSquared([i.x, i.y], [this.me.x, this.me.y])
                     if (i.team != this.me.team) {
-                        hpdamage += this.expectedDamage(i, dSquaredtoEnemy);
+                        hpdamage += expectedDamage(i, dSquaredtoEnemy);
                     }
                 }
                 if (hpdamage < minhpdamage) {
