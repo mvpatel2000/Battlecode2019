@@ -105,6 +105,20 @@ export const Algorithms = (function() {
         },
 
         /**
+         * Given a robot, tells you if it can kill you.
+         * Returns the amount of HP damage.
+         */
+         canItKillMe: function(i, dSquared) {
+             attack_rad2 = SPECS.UNITS[i.unit].ATTACK_RADIUS;
+             if(attack_rad2==NULL) {
+                return;
+            } else {
+                if(attack_rad2[0] <= dSquared && dSquared <= attack_rad2[1]) {
+                    return SPECS.UNITS[i.unit].ATTACK_DAMAGE;
+                }
+            }
+         },
+        /**
          * Get list of resources ordered by nearness.
          */
         findResources: function() {

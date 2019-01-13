@@ -12,20 +12,18 @@ export function Prophet() {
 function prophetTurn() {
 
     // attack code
-    for (let i of this.getVisibleRobots()) {
         if (this.fuel > SPECS.UNITS[this.me.unit].ATTACK_FUEL_COST) {
-            let dSquaredtoEnemy = this.distSquared([i.x, i.y], [this.me.x, this.me.y])
-            if (i.team != this.me.team && dSquaredtoEnemy <= 64
-                    && dSquaredtoEnemy >= 16) {
-                return this.attack(i.x - this.me.x, i.y - this.me.y);
-            } else if (i.team != this.me.team && dSquaredtoEnemy < 16) {
-                //move away from enemy (or orthogonal to), you will die if you go closer
+            for (let i of this.getVisibleRobots()) {
+                let dSquaredtoEnemy = this.distSquared([i.x, i.y], [this.me.x, this.me.y])
+                if (i.team != this.me.team && dSquaredtoEnemy <= 64
+                        && dSquaredtoEnemy >= 16) {
+                    return this.attack(i.x - this.me.x, i.y - this.me.y);
+                }
             }
         } else {
             //move away from or orthogonal to an enemy
             return;
         }
-    }
 
     // get new target if target is empty
     if (this.me.x == this.target[0] && this.me.y == this.target[1]) {
