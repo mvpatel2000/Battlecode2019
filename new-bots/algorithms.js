@@ -93,7 +93,7 @@ export const Algorithms = (function() {
                     return this.move(...this.randomMove());
                 }
             }
-        }
+        },
 
         /**
          * Returns a robot to attack if possible.
@@ -108,12 +108,14 @@ export const Algorithms = (function() {
                 4: 5,
                 5: 4,
             };
-            return this.getVisibleRobots()
-                       .filter(i => (d => i.team != this.me.team
-                                    && d >= rad[0]
-                                    && d <= rad[1])(this.distSquared([i.x, i.y], [this.me.x, this.me.y])))
-                       .reduce((a, b) => priority[a.unit] > priority[b.unit] ? a : b);
-        }
+            let robots = this.getVisibleRobots()
+                             .filter(i =>
+                                    (d => i.team != this.me.team
+                                            && d >= rad[0]
+                                            && d <= rad[1])(this.distSquared([i.x, i.y], [this.me.x, this.me.y])));
+            if (robots.length)
+                return robots.reduce((a, b) => priority[a.unit] > priority[b.unit] ? a : b);
+        },
 
         /**
          * Returns the reflected position of this across the map.
