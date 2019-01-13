@@ -78,7 +78,7 @@ export const Algorithms = (function() {
          * Gives list of valid move locations.
          */
         validAbsoluteMoves: function() {
-            return getAbsoluteMoves(this.getSpeed, this.me.x, this.me.y).filter(m => !this.occupied(m));
+            return absoluteMoves(this.getSpeed, this.me.x, this.me.y).filter(m => !this.occupied(m));
         },
 
         /**
@@ -124,29 +124,31 @@ export const Algorithms = (function() {
          * max hp damage by enemy robots is 0.
          */
         getOptimalEscapeLocation: function() {
-            let visibleRobots = this.getVisibleRobots();
+            let visibleRobots = this.getVisibleRobots().filter(i => i.unit > 2 && i.team != this.me.team);
             let hpdamage = 0;
             let minhpdamage = Infinity;
             let maxhpdamage = 0;
-            let optimalmove = null;
-            let possiblemoves = validAbsoluteMoves();
+            let optimalmove = [];
+            let possiblemoves = this.validAbsoluteMoves();
             for (let move of possiblemoves) {
                 for (let i of visibleRobots) {
-                    let dSquaredtoEnemy = distSquared([i.x, i.y], [this.me.x, this.me.y])
+                    let dSquaredtoEnemy = distSquared([i.x, i.y], [move[0], move[1]])
                     if (i.team != this.me.team) {
-                        hpdamage += expectedDamage(i, dSquaredtoEnemy);
+                        hpdamage += this.expectedDamage(i, dSquaredtoEnemy);
                     }
                 }
                 if (hpdamage < minhpdamage) {
-                    optimalmove = move;
+                    optimalmove = [move];
                     minhpdamage = hpdamage;
+                } else if (hpdamage == minhpdamage) {
+                    optimalmove.push(move);
                 }
                 if (hpdamage > maxhpdamage) {
                     maxhpdamage = hpdamage;
                 }
             }
             if (maxhpdamage == 0) {
-                return null;
+                return [];
             }
             return optimalmove;
         },
@@ -185,6 +187,8 @@ export const Algorithms = (function() {
             } else {
                 if (attack_rad2[0] <= dSquared && dSquared <= attack_rad2[1]) {
                     return SPECS.UNITS[i.unit].ATTACK_DAMAGE;
+                } else {
+                    return 0;
                 }
             }
         },

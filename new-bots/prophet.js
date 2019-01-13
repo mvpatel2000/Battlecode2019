@@ -15,14 +15,17 @@ function prophetTurn() {
     if (this.fuel > SPECS.UNITS[this.me.unit].ATTACK_FUEL_COST) {
         let attackbot = this.getRobotToAttack();
         if (attackbot) {
-            return attackbot;
+            return this.attack(attackbot.x - this.me.x, attackbot.y - this.me.y);
         }
     } else {
-        //run away
-        //move to location that minimizes the sum of the hp damage.
-        optimalmove = this.getOptimalEscapeLocation()
-        if (optimalmove != null && (this.fuel / this.fuelpermove) >= 1) {
-            return this.go(optimalmove);
+        // run away
+        // move to location that minimizes the sum of the hp damage.
+        let optimalmove = this.getOptimalEscapeLocation()
+        this.log(`escaping ${this.me.turn}`);
+        if (optimalmove.length && this.fuel >= this.fuelpermove) {
+            let [dx, dy] = this.go(this.target);
+            let old = [this.me.x + dx, this.me.y + dy];
+            return this.go(optimalmove.reduce((a, b) => this.dist(a, old) < this.dist(b, old) ? a : b));
         }
     }
 
