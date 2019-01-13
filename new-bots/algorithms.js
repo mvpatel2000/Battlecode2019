@@ -75,11 +75,20 @@ export const Algorithms = (function() {
         getSpeed: getSpeed,
 
         /**
+         * Gives list of valid move locations.
+         */
+        validAbsoluteMoves: function() {
+            return getAbsoluteMoves(this.getSpeed, this.me.x, this.me.y).filter(m => !this.occupied(m));
+        }
+
+        /**
          * Returns the reflected position of this across the map.
          */
         reflection: function() {
             let vertical = this.fuel_map.every(
-                                r => r.map((v, i) => r[r.length - i - 1] == v).reduce((a, b) => a && b));
+                                r => r.slice(0, r.length / 2)
+                                .map((v, i) => r[r.length - i - 1] == v)
+                                .reduce((a, b) => a && b));
             if (vertical) {
                 return [this.fuel_map[0].length - this.me.x - 1, this.me.y];
             } else {
