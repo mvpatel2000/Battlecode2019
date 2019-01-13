@@ -197,7 +197,12 @@ export const Algorithms = (function() {
             let start = [this.me.x, this.me.y];
             let map = this.map;
             let occupied = this.getVisibleRobotMap();
-            if (!map[dest[1]][dest[0]] || occupied[dest[1]][dest[0]] > 0) {
+            if (dest[1] >= map.length
+                || dest[0] >= map[0].length
+                || dest[1] < 0
+                || dest[0] < 0
+                || !map[dest[1]][dest[0]]
+                || occupied[dest[1]][dest[0]] > 0) {
                 return [];
             }
             let openHash = {};

@@ -32,7 +32,7 @@ function pilgrimTurn() {
                 && this.me.karbonite < SPECS.UNITS[this.me.unit].KARBONITE_CAPACITY)) {
         // values should be modified as necessary - churches seem to hurt more than help in
         // general.
-        if (this.karbonite >= 50 && this.fuel >= 200 & this.turn > 20) {
+        if (this.karbonite >= 50 && this.fuel >= 200 & this.me.turn > 20) {
             let move = this.randomMove()
             return this.buildUnit(SPECS.CHURCH, move[0], move[1]);
         } else {
