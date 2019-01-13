@@ -82,10 +82,23 @@ export const Algorithms = (function() {
         },
 
         /**
-         *
+         * Returns a robot to attack if possible
          */
-        getRobotToAttack() {
-
+        getRobotToAttack: function() {
+            const rad = SPECS.UNITS[i.unit].ATTACK_RADIUS;
+            const priority = {
+                0: 1,
+                1: 2,
+                2: 0,
+                3: 3,
+                4: 5,
+                5: 4,
+            };
+            return this.getVisibleRobots()
+                       .filter(i => (d => i.team != this.me.team
+                                    && d >= rad[0]
+                                    && d <= rad[1])(this.distSquared([i.x, i.y], [this.me.x, this.me.y])))
+                       .reduce((a, b) => priority[a.unit] > priority[b.unit] ? a : b);
         }
 
         /**
@@ -116,11 +129,11 @@ export const Algorithms = (function() {
          * Returns the amount of HP damage.
          */
         expectedDamage: function(i, dSquared) {
-            attack_rad2 = SPECS.UNITS[i.unit].ATTACK_RADIUS;
+            let attack_rad2 = SPECS.UNITS[i.unit].ATTACK_RADIUS;
             if (attack_rad2 == NULL) {
                 return 0;
             } else {
-                if(attack_rad2[0] <= dSquared && dSquared <= attack_rad2[1]) {
+                if (attack_rad2[0] <= dSquared && dSquared <= attack_rad2[1]) {
                     return SPECS.UNITS[i.unit].ATTACK_DAMAGE;
                 }
             }
