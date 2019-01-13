@@ -12,19 +12,10 @@ export function Crusader() {
 function crusaderTurn() {
 
     // combat mode
-    let nearbyUnits = this.getVisibleRobots();
-    //find weakest enemy unit in attack range to target
-    //find nearest enemy unit.
-        //if we didnt attack this turn, move towards it UNLESS it moves you into its attacking range. (just call A*)
-        //Exception: if there is a long-range boi, rush it.
-    for (let i of nearbyUnits) {
-        if (this.fuel > SPECS.UNITS[this.me.unit].ATTACK_FUEL_COST) {
-            if (i.team != this.me.team && this.dist([i.x, i.y], [this.me.x, this.me.y]) <= 4) {
-                return this.attack(i.x - this.me.x, i.y - this.me.y);
-            }
-        } else {
-            //move away from enemies that can attack me (or orthogonally)
-            return;
+    if (this.fuel > SPECS.UNITS[this.me.unit].ATTACK_FUEL_COST) {
+        let attackbot = this.getRobotToAttack();
+        if (attackbot) {
+            return this.attack(attackbot.x - this.me.x, attackbot.y - this.me.y);
         }
     }
 
@@ -38,15 +29,5 @@ function crusaderTurn() {
          }
     }
 
-    let route = this.path(this.target); //path finding
-    if (this.fuel > (this.fuelpermove * this.getSpeed())) {
-        if (route.length > 0) { //A* towards target
-            return this.move(...route[0]);
-        } else { //random move
-            if (this.fuel / this.fuelpermove < 1) {
-                return;
-            }
-            return this.move(...this.randomMove());
-        }
-    }
+    return this.go(this.target);
 }

@@ -17,16 +17,6 @@ function prophetTurn() {
         if (attackbot) {
             return this.attack(attackbot.x - this.me.x, attackbot.y - this.me.y);
         }
-    } else {
-        // run away
-        // move to location that minimizes the sum of the hp damage.
-        let optimalmove = this.getOptimalEscapeLocation()
-        this.log(`escaping ${this.me.turn}`);
-        if (optimalmove.length && this.fuel >= this.fuelpermove) {
-            let [dx, dy] = this.go(this.target);
-            let old = [this.me.x + dx, this.me.y + dy];
-            return this.go(optimalmove.reduce((a, b) => this.dist(a, old) < this.dist(b, old) ? a : b));
-        }
     }
 
     // get new target if target is empty
@@ -40,15 +30,5 @@ function prophetTurn() {
     }
 
     // movement code
-    let route = this.path(this.target);
-    if (this.fuel > (this.fuelpermove * this.getSpeed())) {
-        if (route.length > 0) { //A* towards target
-            return this.move(...route[0]);
-        } else { //random move
-            if (this.fuel / this.fuelpermove < 1) {
-                return;
-            }
-            return this.move(...this.randomMove());
-        }
-    }
+    return this.go(this.target);
 }

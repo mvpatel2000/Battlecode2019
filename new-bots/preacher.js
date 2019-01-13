@@ -11,16 +11,13 @@ export function Preacher() {
  */
 function preacherTurn() {
     // attack code
-    for (let i of this.getVisibleRobots()) {
-        if (this.fuel > SPECS.UNITS[this.me.unit].ATTACK_FUEL_COST) {
-            if (i.team != this.me.team && this.dist([i.x, i.y], [this.me.x, this.me.y]) <= 4) {
-                return this.attack(i.x - this.me.x, i.y - this.me.y);
-            }
-        } else  {
-            //move away from enemies that can attack me (or orthogonally)
-            return;
+    if (this.fuel > SPECS.UNITS[this.me.unit].ATTACK_FUEL_COST) {
+        let attackbot = this.getRobotToAttack();
+        if (attackbot) {
+            return this.attack(attackbot.x - this.me.x, attackbot.y - this.me.y);
         }
     }
+
     if (this.me.x == this.target[0] && this.me.y == this.target[1]) {
          let r = () => [Math.floor(Math.random() * this.map[0].length),
                          Math.floor(Math.random() * this.map.length)];
@@ -31,15 +28,5 @@ function preacherTurn() {
     }
 
     // movement code
-    let route = this.path(this.target);
-    if (this.fuel > (this.fuelpermove * this.getSpeed())) {
-        if (route.length > 0) { //A* towards target
-            return this.move(...route[0]);
-        } else { //random move
-            if (this.fuel / this.fuelpermove < 1) {
-                return;
-            }
-            return this.move(...this.randomMove());
-        }
-    }
+    return this.go(this.target);
 }

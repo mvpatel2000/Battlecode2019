@@ -49,11 +49,7 @@ function pilgrimTurn() {
     if (this.getVisibleRobotMap()[this.queue[0][1]][this.queue[0][0]] > 0) {
          this.queue.push(this.queue.shift());
     }
-    let route = this.path(this.queue[0]);
-    if (route.length && this.fuel > 5) {
-        let [dx, dy] = route[0];
-        return this.move(dx, dy);
-    }
+    return this.go(this.queue[0]);
 }
 
 /**
