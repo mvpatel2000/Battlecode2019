@@ -79,7 +79,7 @@ export const Algorithms = (function() {
          */
         validAbsoluteMoves: function() {
             return getAbsoluteMoves(this.getSpeed, this.me.x, this.me.y).filter(m => !this.occupied(m));
-        }
+        },
 
         /**
          * Returns the reflected position of this across the map.
