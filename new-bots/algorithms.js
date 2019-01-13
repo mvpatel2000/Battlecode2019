@@ -109,10 +109,9 @@ export const Algorithms = (function() {
                 5: 4,
             };
             let robots = this.getVisibleRobots()
-                             .filter(i =>
-                                    (d => i.team != this.me.team
-                                            && d >= rad[0]
-                                            && d <= rad[1])(this.distSquared([i.x, i.y], [this.me.x, this.me.y])));
+                             .filter(i => i.team != this.me.team
+                                            && this.distSquared([i.x, i.y], [this.me.x, this.me.y]) >= rad[0]
+                                            && this.distSquared([i.x, i.y], [this.me.x, this.me.y]) <= rad[1]);
             if (robots.length)
                 return robots.reduce((a, b) => priority[a.unit] > priority[b.unit] ? a : b);
         },
