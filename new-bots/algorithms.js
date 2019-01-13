@@ -117,6 +117,40 @@ export const Algorithms = (function() {
                 return robots.reduce((a, b) => priority[a.unit] > priority[b.unit] ? a : b);
         },
 
+        /*
+         * Returns the optimal absolute location you should move to
+         * by minimizing hp damage from enemy robots around you.
+         * Return value: null if NO enemies are present or the
+         * max hp damage by enemy robots is 0.
+         */
+        getOptimalEscapeLocation: function() {
+            let visibleRobots = this.getVisibleRobots();
+            let hpdamage = 0;
+            let minhpdamage = Infinity;
+            let maxhpdamage = 0;
+            let optimalmove = null;
+            let possiblemoves = this.validAbsoluteMoves();
+            for (let move of possiblemoves) {
+                for (let i of visibleRobots) {
+                    let dSquaredtoEnemy = this.distSquared([i.x, i.y], [this.me.x, this.me.y])
+                    if (i.team != this.me.team) {
+                        hpdamage += this.expectedDamage(i, dSquaredtoEnemy);
+                    }
+                }
+                if (hpdamage < minhpdamage) {
+                    optimalmove = move;
+                    minhpdamage = hpdamage;
+                }
+                if (hpdamage > maxhpdamage) {
+                    maxhpdamage = hpdamage;
+                }
+            }
+            if (maxhpdamage == 0) {
+                return null;
+            }
+            return optimalmove;
+        },
+
         /**
          * Returns the reflected position of this across the map.
          */

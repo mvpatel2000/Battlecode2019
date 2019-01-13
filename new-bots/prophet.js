@@ -13,22 +13,17 @@ function prophetTurn() {
 
     // attack code
     if (this.fuel > SPECS.UNITS[this.me.unit].ATTACK_FUEL_COST) {
-        for (let i of this.getVisibleRobots()) {
-            let dSquaredtoEnemy = this.distSquared([i.x, i.y], [this.me.x, this.me.y])
-            if (i.team != this.me.team && dSquaredtoEnemy <= 64
-                    && dSquaredtoEnemy >= 16) {
-                return this.attack(i.x - this.me.x, i.y - this.me.y);
-            }
+        let attackbot = this.getRobotToAttack();
+        if (attackbot) {
+            return attackbot;
         }
     } else {
-        //move away from or orthogonal to an enemy
-        for (let i of this.getVisibleRobots()) {
-            let dSquaredtoEnemy = this.distSquared([i.x, i.y], [this.me.x, this.me.y])
-            if(i.team != this.me.team) {
-                let hpdamage = this.canItKillMe(i, dSquaredtoEnemy);
-            }
+        //run away
+        //move to location that minimizes the sum of the hp damage.
+        optimalmove = this.getOptimalEscapeLocation()
+        if (optimalmove != null && (this.fuel / this.fuelpermove) >= 1) {
+            return this.go(optimalmove);
         }
-        return;
     }
 
     // get new target if target is empty
