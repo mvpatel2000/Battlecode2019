@@ -32,7 +32,7 @@ function crusaderTurn() {
         let old = [this.me.x + dx, this.me.y + dy];
         let finmove = optimalmove.reduce((a, b) => this.dist(a, old) < this.dist(b, old) ? a : b);
         //if best possible move is to stay still, return nothing.
-        if(finmove[0] == this.me.x && finmove[1] == this.me.y) {
+        if (finmove[0] == this.me.x && finmove[1] == this.me.y) {
             return;
         } else {
             return this.go(finmove);
@@ -49,15 +49,5 @@ function crusaderTurn() {
          }
     }
 
-    let route = this.path(this.target); //path finding
-    if (this.fuel > (this.fuelpermove * this.getSpeed())) {
-        if (route.length > 0) { //A* towards target
-            return this.move(...route[0]);
-        } else { //random move
-            if (this.fuel / this.fuelpermove < 1) {
-                return;
-            }
-            return this.move(...this.randomMove());
-        }
-    }
+    return this.go(this.target);
 }
