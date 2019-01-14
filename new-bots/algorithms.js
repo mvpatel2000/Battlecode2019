@@ -299,8 +299,8 @@ export const Algorithms = (function() {
                 return [];
             }
             let openHash = {};
-            let done = [];
-            let cameFrom = {}; //used to reconstruct map
+            let done = new PriorityQueue((a, b) => h(a) < h(b));
+            let prev = {}; //used to reconstruct map
             let h = x => dist(dest, x) / getSpeed.call(this); //~steps away from destination
             let hash = p => p[0] * 67 * 73 + p[1];
             let g = {}; //distance from origin in terms of steps taken
@@ -310,15 +310,15 @@ export const Algorithms = (function() {
 
             const queue = new PriorityQueue((a, b) => f[a] < f[b]);
             queue.push(start);
-            let i = 128;
+            let i = 192;
             while (!queue.isEmpty()) {
                 let current = queue.pop(); //pop from priority queue instead of magic symbols
                 done.push(current)
                 if (i-- < 0 || arrEq(current, dest)) { //found destination
-                    current = done.reduce((a, b) => h(a) < h(b) ? a : b)
+                    current = done.pop();
                     let totalPath = [current];
-                    while (current in cameFrom) { //reconstruct path
-                        current = cameFrom[current];
+                    while (current in prev) { //reconstruct path
+                        current = prev[current];
                         totalPath.push(current);
                     }
                     let path = [];
@@ -340,11 +340,10 @@ export const Algorithms = (function() {
                             || openHash[hash(neighbor)]
                             || g[neighbor] != undefined) //filters invalid moves or already taken moves
                         continue;
-                    let tg = g[current] + 1; //increase step by 1
                     queue.push(neighbor); //push
                     openHash[hash(neighbor)] = true;
-                    cameFrom[neighbor] = current; //sets current path for backtrace
-                    g[neighbor] = tg;
+                    prev[neighbor] = current; //sets current path for backtrace
+                    g[neighbor] = g[current] + 1;
                     f[neighbor] = g[neighbor] + h(neighbor);
                 }
             }
