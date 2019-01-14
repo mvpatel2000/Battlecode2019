@@ -78,7 +78,7 @@ export const Algorithms = (function() {
          * Gives list of valid move locations.
          */
         validAbsoluteMoves: function() {
-            return absoluteMoves(this.getSpeed, this.me.x, this.me.y).filter(m => !this.occupied(m));
+            return absoluteMoves(this.getSpeed(), this.me.x, this.me.y).filter(m => !this.occupied(...m));
         },
 
         /**
@@ -117,8 +117,8 @@ export const Algorithms = (function() {
                 return robots.reduce((a, b) => {
                     const threat = this.threat(b) - this.threat(a);
                     const type = priority[b.unit] - priority[a.unit];
-                    const id = a.id - b.id
-                    return threat ? (threat > 0 ? b : a) : (type ? (type > 0 ? b : a) : (id > 0 ? b : a));
+                    const id = a.id - b.id;
+                    return (threat ? threat : (type ? type : id)) > 0 ? b : a;
                 });
         },
 
@@ -238,6 +238,7 @@ export const Algorithms = (function() {
             }
             return choice;
         },
+
         /**
          * Return a random, valid, move within a given radius^2.
          */
