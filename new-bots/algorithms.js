@@ -116,9 +116,9 @@ export const Algorithms = (function() {
             if (robots.length)
                 return robots.reduce((a, b) => {
                     const threat = this.threat(b) - this.threat(a);
-                    const pr = priority[b] - priority[a];
+                    const type = priority[b.unit] - priority[a.unit];
                     const id = a.id - b.id
-                    return threat ? (threat > 0 ? b : a) : (pr ? (pr > 0 ? b : a) : (id > 0 ? b : a));
+                    return threat ? (threat > 0 ? b : a) : (type ? (type > 0 ? b : a) : (id > 0 ? b : a));
                 });
         },
 
@@ -304,7 +304,7 @@ export const Algorithms = (function() {
 
             const queue = new PriorityQueue((a, b) => f[a] < f[b]);
             queue.push(start);
-            let i = 256;
+            let i = 128;
             while (!queue.isEmpty()) {
                 let current = queue.pop(); //pop from priority queue instead of magic symbols
                 done.push(current)
