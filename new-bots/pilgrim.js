@@ -71,7 +71,7 @@ function pilgrimDropping() {
     }
     let [x, y] = this.dropoffs.reduce((a, b) =>
         this.dist([this.me.x, this.me.y], a) < this.dist([this.me.x, this.me.y], b) ? a : b);
-    let [z, w] = this.randomMove();
+    let [z, w] = this.randomMove.call({occupied: (x, y) => !this.map[y][x], me: {x: x, y: y}});
     for (let i of this.getVisibleRobots()) {
         if (i.unit <= 1 && i.team == this.me.team
                 && Math.abs(i.x - this.me.x) <= 1
