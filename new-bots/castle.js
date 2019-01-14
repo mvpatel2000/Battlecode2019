@@ -4,12 +4,13 @@ export function Castle() {
     this.turn = castleTurn;
     this.step = 0;
     this.starting = true;
+    this.preacher = true;
 }
 
 function castleTurn() {
     this.step++;
     let choice = this.randomMove();
-    const adj = this.me.turn > 10 ? 50 : 0;
+    const adj = this.me.turn > 10 ? 100 : 0;
     // mage spawn
     /* if (this.fuel >= 50 && this.karbonite >= 30 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
         return this.buildUnit(SPECS.PREACHER, choice[0], choice[1]);
@@ -26,9 +27,10 @@ function castleTurn() {
         } else {
             return;
         }
-    } else if (Math.random() < 1.0 / 3.0) {
-        if (this.fuel >= 50 + adj && this.karbonite >= 20 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
-            return this.buildUnit(SPECS.CRUSADER, choice[0], choice[1]);
+    } else if (this.preacher || Math.random() < 1.0 / 3.0) {
+        if (this.fuel >= 50 + adj && this.karbonite >= 30 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
+            this.preacher = false;
+            return this.buildUnit(SPECS.PREACHER, choice[0], choice[1]);
         } else {
             return;
         }
@@ -39,8 +41,8 @@ function castleTurn() {
             return;
         }
     } else {
-        if (this.fuel >= 50 + adj && this.karbonite >= 30 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
-            return this.buildUnit(SPECS.PREACHER, choice[0], choice[1]);
+        if (this.fuel >= 50 + adj && this.karbonite >= 20 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
+            return this.buildUnit(SPECS.CRUSADER, choice[0], choice[1]);
         } else {
             return;
         }
