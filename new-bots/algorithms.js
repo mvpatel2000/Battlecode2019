@@ -100,12 +100,12 @@ export const Algorithms = (function() {
          */
         getRobotToAttack: function() {
             const rad = SPECS.UNITS[this.me.unit].ATTACK_RADIUS;
-            const priority = {
+            const priority = { // unit target priority tiebreakers
                 0: 1,
-                1: 2,
-                2: 0,
+                1: 0,
+                2: 2,
                 3: 3,
-                4: 5,
+                4: 3,
                 5: 4,
             };
             let robots = this.getVisibleRobots()
@@ -114,7 +114,12 @@ export const Algorithms = (function() {
                                             && d >= rad[0]
                                             && d <= rad[1])(this.distSquared([i.x, i.y], [this.me.x, this.me.y])));
             if (robots.length)
-                return robots.reduce((a, b) => priority[a.unit] > priority[b.unit] ? a : b);
+                return robots.reduce((a, b) => {
+                    const threat = this.threat(b) - this.threat(a);
+                    const pr = priority[b] - priority[a];
+                    const id = a.id - b.id
+                    return threat ? (threat > 0 ? b : a) : (pr ? (pr > 0 ? b : a) : (id > 0 ? b : a));
+                });
         },
 
         /*
@@ -177,12 +182,19 @@ export const Algorithms = (function() {
         },
 
         /**
+         * Run expectedDamage with current location.
+         */
+        threat: function(r) {
+            return this.expectedDamage(r, this.distSquared([this.me.x, this.me.y], [r.x, r.y]));
+        },
+
+        /**
          * Given a robot, tells you if it can kill you.
          * Returns the amount of HP damage.
          */
         expectedDamage: function(i, dSquared) {
             let attack_rad2 = SPECS.UNITS[i.unit].ATTACK_RADIUS;
-            if (attack_rad2 == NULL) {
+            if (!attack_rad2) {
                 return 0;
             } else {
                 if (attack_rad2[0] <= dSquared && dSquared <= attack_rad2[1]) {
