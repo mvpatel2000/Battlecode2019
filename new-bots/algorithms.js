@@ -125,19 +125,23 @@ export const Algorithms = (function() {
          */
         getOptimalEscapeLocation: function() {
             let visibleRobots = this.getVisibleRobots().filter(i => i.unit > 2 && i.team != this.me.team);
-            let hpdamage = 0;
+            if(visibleRobots.length == 0) {
+                return [];
+            }
             let minhpdamage = Infinity;
             let maxhpdamage = 0;
             let optimalmove = [];
             let possiblemoves = this.validAbsoluteMoves();
+            //add "staying still" to possible moves list
+            possiblemoves.push([this.me.x,this.me.y]);
             //this.log(possiblemoves.length)
             for (let move of possiblemoves) {
+                let hpdamage = 0;
                 for (let i of visibleRobots) {
                     let dSquaredtoEnemy = distSquared([i.x, i.y], [move[0], move[1]])
-                    if (i.team != this.me.team) {
-                        hpdamage += this.expectedDamage(i, dSquaredtoEnemy);
-                    }
+                    hpdamage += this.expectedDamage(i, dSquaredtoEnemy);
                 }
+                //this.log(`movr=${move} hpp=${hpdamage}`);
                 if (hpdamage < minhpdamage) {
                     optimalmove = [move];
                     minhpdamage = hpdamage;

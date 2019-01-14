@@ -12,24 +12,32 @@ export function Prophet() {
 function prophetTurn() {
 
     // attack code
-    //if (this.fuel > SPECS.UNITS[this.me.unit].ATTACK_FUEL_COST) {
-    //    let attackbot = this.getRobotToAttack();
-    //    if (attackbot) {
-    //        return this.attack(attackbot.x - this.me.x, attackbot.y - this.me.y);
-    //    }
-    //} else {
-        // run away
-        // move to location that minimizes the sum of the hp damage.
-        let optimalmove = this.getOptimalEscapeLocation();
-        this.log(`escaping ${this.me.turn}`);
-        //this.log(optimalmove.length);
-        if (optimalmove.length && this.fuel >= this.fuelpermove) {
-            let route = this.path(this.target);
-            let [dx, dy] = route.length ? route[0] : [0, 0];
-            let old = [this.me.x + dx, this.me.y + dy];
-            return this.go(optimalmove.reduce((a, b) => this.dist(a, old) < this.dist(b, old) ? a : b));
+    // if there are robots that I can attack,
+    // and I have enough fuel to attack,
+    // attack them.
+    let attackbot = this.getRobotToAttack();
+    if (attackbot) {
+        if (this.fuel > SPECS.UNITS[this.me.unit].ATTACK_FUEL_COST) {
+            return this.attack(attackbot.x - this.me.x, attackbot.y - this.me.y);
         }
-    //}
+    }
+    // If there are robots that can attack me,
+    // move to location that minimizes the sum of the hp damage.
+    // Tiebreaker: location closest (euclidean distance) from the original path move to target
+    // Fall through if no robots can attack me, or not enough fuel to move.
+    let optimalmove = this.getOptimalEscapeLocation();
+    if (optimalmove.length && this.fuel >= this.fuelpermove) {
+        let route = this.path(this.target);
+        let [dx, dy] = route.length ? route[0] : [0, 0];
+        let old = [this.me.x + dx, this.me.y + dy];
+        let finmove = optimalmove.reduce((a, b) => this.dist(a, old) < this.dist(b, old) ? a : b);
+        //if best possible move is to stay still, return nothing.
+        if(finmove[0] == this.me.x && finmove[1] == this.me.y) {
+            return;
+        } else {
+            return this.go(finmove);
+        }
+    }
 
     // get new target if target is empty
     if (this.me.x == this.target[0] && this.me.y == this.target[1]) {
@@ -41,7 +49,7 @@ function prophetTurn() {
          }
     }
 
-    // movement code
+    // default movement code
     let route = this.path(this.target);
     if (this.fuel > (this.fuelpermove * this.getSpeed())) {
         if (route.length > 0) { //A* towards target

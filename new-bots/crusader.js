@@ -11,20 +11,31 @@ export function Crusader() {
  */
 function crusaderTurn() {
 
-    // combat mode
-    let nearbyUnits = this.getVisibleRobots();
-    //find weakest enemy unit in attack range to target
-    //find nearest enemy unit.
-        //if we didnt attack this turn, move towards it UNLESS it moves you into its attacking range. (just call A*)
-        //Exception: if there is a long-range boi, rush it.
-    for (let i of nearbyUnits) {
+    // attack code
+    // if there are robots that I can attack,
+    // and I have enough fuel to attack,
+    // attack them.
+    let attackbot = this.getRobotToAttack();
+    if (attackbot) {
         if (this.fuel > SPECS.UNITS[this.me.unit].ATTACK_FUEL_COST) {
-            if (i.team != this.me.team && this.dist([i.x, i.y], [this.me.x, this.me.y]) <= 4) {
-                return this.attack(i.x - this.me.x, i.y - this.me.y);
-            }
-        } else {
-            //move away from enemies that can attack me (or orthogonally)
+            return this.attack(attackbot.x - this.me.x, attackbot.y - this.me.y);
+        }
+    }
+    // If there are robots that can attack me,
+    // move to location that minimizes the sum of the hp damage.
+    // Tiebreaker: location closest (euclidean distance) from the original path move to target
+    // Fall through if no robots can attack me, or not enough fuel to move.
+    let optimalmove = this.getOptimalEscapeLocation();
+    if (optimalmove.length && this.fuel >= this.fuelpermove) {
+        let route = this.path(this.target);
+        let [dx, dy] = route.length ? route[0] : [0, 0];
+        let old = [this.me.x + dx, this.me.y + dy];
+        let finmove = optimalmove.reduce((a, b) => this.dist(a, old) < this.dist(b, old) ? a : b);
+        //if best possible move is to stay still, return nothing.
+        if(finmove[0] == this.me.x && finmove[1] == this.me.y) {
             return;
+        } else {
+            return this.go(finmove);
         }
     }
 
