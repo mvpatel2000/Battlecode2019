@@ -78,7 +78,7 @@ export const Algorithms = (function() {
          * Gives list of valid move locations.
          */
         validAbsoluteMoves: function() {
-            return absoluteMoves(this.getSpeed, this.me.x, this.me.y).filter(m => !this.occupied(m));
+            return absoluteMoves(this.getSpeed(), this.me.x, this.me.y).filter(m => !this.occupied(...m));
         },
 
         /**
@@ -130,6 +130,7 @@ export const Algorithms = (function() {
             let maxhpdamage = 0;
             let optimalmove = [];
             let possiblemoves = this.validAbsoluteMoves();
+            //this.log(possiblemoves.length)
             for (let move of possiblemoves) {
                 for (let i of visibleRobots) {
                     let dSquaredtoEnemy = distSquared([i.x, i.y], [move[0], move[1]])
@@ -182,7 +183,7 @@ export const Algorithms = (function() {
          */
         expectedDamage: function(i, dSquared) {
             let attack_rad2 = SPECS.UNITS[i.unit].ATTACK_RADIUS;
-            if (attack_rad2 == NULL) {
+            if (attack_rad2 == null) {
                 return 0;
             } else {
                 if (attack_rad2[0] <= dSquared && dSquared <= attack_rad2[1]) {

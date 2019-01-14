@@ -12,22 +12,24 @@ export function Prophet() {
 function prophetTurn() {
 
     // attack code
-    if (this.fuel > SPECS.UNITS[this.me.unit].ATTACK_FUEL_COST) {
-        let attackbot = this.getRobotToAttack();
-        if (attackbot) {
-            return this.attack(attackbot.x - this.me.x, attackbot.y - this.me.y);
-        }
-    } else {
+    //if (this.fuel > SPECS.UNITS[this.me.unit].ATTACK_FUEL_COST) {
+    //    let attackbot = this.getRobotToAttack();
+    //    if (attackbot) {
+    //        return this.attack(attackbot.x - this.me.x, attackbot.y - this.me.y);
+    //    }
+    //} else {
         // run away
         // move to location that minimizes the sum of the hp damage.
-        let optimalmove = this.getOptimalEscapeLocation()
+        let optimalmove = this.getOptimalEscapeLocation();
         this.log(`escaping ${this.me.turn}`);
+        //this.log(optimalmove.length);
         if (optimalmove.length && this.fuel >= this.fuelpermove) {
-            let [dx, dy] = this.go(this.target);
+            let route = this.path(this.target);
+            let [dx, dy] = route.length ? route[0] : [0, 0];
             let old = [this.me.x + dx, this.me.y + dy];
             return this.go(optimalmove.reduce((a, b) => this.dist(a, old) < this.dist(b, old) ? a : b));
         }
-    }
+    //}
 
     // get new target if target is empty
     if (this.me.x == this.target[0] && this.me.y == this.target[1]) {
