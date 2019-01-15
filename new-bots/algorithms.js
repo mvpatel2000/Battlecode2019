@@ -190,6 +190,7 @@ export const Algorithms = (function() {
          * Returns x,y nearby that is empty
          */
         nearestEmptyLocation: function(x, y) {
+            let sz = this.fuel_map.length;
             let map = this.map;
             if(map[y][x])
                 return [x, y];
