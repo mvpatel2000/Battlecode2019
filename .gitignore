@@ -3,3 +3,4 @@ replay.bc19
 .idea
 .*.swp
 node_modules
+package-lock.json
