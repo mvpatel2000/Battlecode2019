@@ -96,6 +96,77 @@ export const Algorithms = (function() {
         },
 
         /**
+         * Helper function for aoeAnalysis method.
+         * Given a 2d array from getVsitibleRobotMap(), the length of the y and x-axis
+         * and a given [j][i] index that might be in the 2d array, caculated
+         * the damage done by an attack at the given index.
+         * Returns 0 for a location outside of the visibleRobotMap array or for a location without robots.
+         * Returns 1 for a location with enemy robots. Returns -1 for location with teammate.
+         */
+        getDamageMap: function(rbotmap, len, len0, j, i) {
+            if(j>=len || j<0 || i>=len0 || i<0) {
+                return 0;
+            } else {
+                let id = rbotmap[j][i];
+                if(id>0) {
+                    if(this.getRobot(id).team == this.me.team) {
+                        return -1;
+                    } else {
+                        return 1;
+                    }
+                } else {
+                    return 0;
+                }
+            }
+        },
+
+        /**
+         * AOE Analysis for preacher attack.
+         * A preacher, and preacher only, should call this function.
+         * This returns the absolute location of the square which
+         * the preacher should target with the AOE attack to the
+         * maximum signed hpdamage, that is, max(hp damage to enemies - hp damage to team).
+         * Returns null if all possible attack locations result in 0 or negative damage.
+         */
+         aoeAnalysis: function() {
+             let rbotmap = this.getVisibleRobotMap();
+             let aoelocation = null;
+             let maxhpdamage = 0;
+             let rbotmaplen = rbotmap.length;
+             let rbotmaplen0 = rbotmap[0].length;
+             let rad2 = 16;
+             let rad = 4;
+
+             let miny = Math.max(0, this.me.y-rad);
+             let maxy = Math.min(rbotmaplen-1, this.me.y+rad);
+             let minx = Math.max(0, this.me.x-rad);
+             let maxx = Math.min(rbotmaplen0-1, this.me.x+rad);
+
+             for (let j=miny; j<=maxy; j++) {
+                 for (let i=minx; i<=maxx; i++) {
+                     let rely = this.me.y-j;
+                     let relx = this.me.x-i;
+                     if ((rely*rely + relx*relx) <= rad2) {
+                         if(this.map[j][i] == false || (i == this.me.x && j == this.me.y) || rbotmap[j][i]==-1) {
+                             continue;
+                         }
+                         let hpdamage = 0;
+                         for (let k=j-1; k<=j+1; k++) {
+                             for (let l=i-1; l<=i+1; l++) {
+                                 hpdamage += this.getDamageMap(rbotmap, rbotmaplen, rbotmaplen0, k, l);
+                             }
+                         }
+                         if (hpdamage > maxhpdamage) {
+                             maxhpdamage = hpdamage;
+                             aoelocation = [i,j];
+                         }
+                    }
+                 }
+             }
+             return aoelocation;
+         },
+
+        /**
          * Returns a robot to attack if possible.
          */
         getRobotToAttack: function() {
