@@ -248,12 +248,10 @@ export const Algorithms = (function() {
          */
         expectedDamageProphet: function(i, dSquared) {
             let attack_rad2 = SPECS.UNITS[i.unit].ATTACK_RADIUS;
-            if(i.unit == 5)
-                attack_rad2++;
             if (!attack_rad2) {
                 return 0;
             } else {
-                if (attack_rad2[0] <= dSquared && dSquared <= attack_rad2[1]) {
+                if (attack_rad2[0] <= dSquared && (dSquared <= attack_rad2[1] || i.unit==5 && dSquared <= attack_rad2[1]+2) ) {
                     return SPECS.UNITS[i.unit].ATTACK_DAMAGE;
                 } else {
                     return 0;

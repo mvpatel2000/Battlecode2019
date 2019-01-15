@@ -19,7 +19,6 @@ function prophetTurn() {
     // and I have enough fuel to attack,
     // attack them.
     let attackbot = this.getRobotToAttack();
-    this.log(this.me.turn+" ("+this.me.x+" "+this.me.y+") "+attackbot + " "+shouldRun.call(this));
     if (attackbot && !shouldRun.call(this)) {
         if (this.fuel > SPECS.UNITS[this.me.unit].ATTACK_FUEL_COST) {
             return this.attack(attackbot.x - this.me.x, attackbot.y - this.me.y);
@@ -31,7 +30,6 @@ function prophetTurn() {
     // Tiebreaker: location closest (euclidean distance) from the original path move to target
     // Fall through if no robots can attack me, or not enough fuel to move.
     let optimalmove = this.getOptimalEscapeLocationProphet();
-    this.log(optimalmove)
     if (optimalmove.length && this.fuel >= this.fuelpermove) {
         let route = this.path(this.target);
         let [dx, dy] = route.length ? route[0] : [0, 0];
