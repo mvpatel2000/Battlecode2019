@@ -2,8 +2,22 @@ import {SPECS} from 'battlecode';
 
 export function Preacher() {
     this.turn = preacherTurn;
-    this.target = this.reflection();
     this.fuelpermove = SPECS.UNITS[this.me.unit].FUEL_PER_MOVE;
+
+    this.target = [0,0];
+    this.otherCastleLocations = -1;
+
+    let castles = this.getVisibleRobots().filter(i => i.team == this.me.team && i.unit == 0);
+    for(let i=0; i<castles.length; i++) {
+        let castle = castles[i];
+        let signal = castle.signal;
+        if(signal != undefined && signal!=-1) {
+            this.otherCastleLocations = signal;
+            this.target = this.reflectPoint(castle.x, castle.y);
+            break;
+        }
+    }
+    this.targetCtr = 0;
 }
 
 /**
@@ -38,13 +52,26 @@ function preacherTurn() {
         }
     }
 
-    if (this.me.x == this.target[0] && this.me.y == this.target[1]) {
-         let r = () => [Math.floor(Math.random() * this.map[0].length),
-                         Math.floor(Math.random() * this.map.length)];
-         this.target = r();
-         while (!this.map[this.target[1]][this.target[0]]) {
-             this.target = r();
-         }
+    // non-combat mode
+    while (this.me.x == this.target[0] && this.me.y == this.target[1]) { //reset target if meet it
+        if(this.targetCtr == 0) {
+            this.targetCtr+=1;
+            this.target = this.decodeLocation(this.otherCastleLocations % (2**8));
+            this.log("Update: "+this.target+" "+this.targetCtr);
+        }
+        else if(this.targetCtr == 1) {
+            this.targetCtr+=1;
+            this.target = this.decodeLocation( Math.floor(this.otherCastleLocations / (2**8)) );
+            this.log("Update: "+this.target+" "+this.targetCtr);
+        }
+        else {
+            let r = () => [Math.floor(Math.random() * this.map[0].length),
+                            Math.floor(Math.random() * this.map.length)];
+            this.target = r();
+            while (!this.map[this.target[1]][this.target[0]]) {
+                this.target = r();
+            }
+        }
     }
 
     // movement code
