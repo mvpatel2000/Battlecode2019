@@ -67,8 +67,8 @@ function preacherTurn() {
             this.log("Update: "+this.target+" "+this.targetCtr);
         }
         else {
-            let r = () => [Math.floor(Math.random() * this.map[0].length),
-                            Math.floor(Math.random() * this.map.length)];
+            let r = () => [this.rand(this.map[0].length),
+                            this.rand(this.map.length)];
             this.target = r();
             while (!this.map[this.target[1]][this.target[0]]) {
                 this.target = r();

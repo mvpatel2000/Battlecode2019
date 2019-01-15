@@ -1,6 +1,6 @@
 import {SPECS} from 'battlecode';
 
-export function Crusader() { 
+export function Crusader() {
     this.turn = crusaderTurn;
     this.fuelpermove = SPECS.UNITS[this.me.unit].FUEL_PER_MOVE;
 
@@ -8,7 +8,7 @@ export function Crusader() {
     this.otherCastleLocations = -1;
 
     let castles = this.getVisibleRobots().filter(i => i.team == this.me.team && i.unit == 0);
-    for(let i=0; i<castles.length; i++) {
+    for (let i = 0; i < castles.length; i++) {
         let castle = castles[i];
         let signal = castle.signal;
         if(signal != undefined && signal!=-1) {
@@ -68,8 +68,8 @@ function crusaderTurn() {
             this.log("Update: "+this.target+" "+this.targetCtr);
         }
         else {
-            let r = () => [Math.floor(Math.random() * this.map[0].length),
-                            Math.floor(Math.random() * this.map.length)];
+            let r = () => [this.rand(this.map[0].length),
+                            this.rand(this.map.length)];
             this.target = r();
             while (!this.map[this.target[1]][this.target[0]]) {
                 this.target = r();
