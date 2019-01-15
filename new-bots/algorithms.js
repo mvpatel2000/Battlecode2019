@@ -170,27 +170,25 @@ export const Algorithms = (function() {
                 let castle = castles[i];
                 let signal = castle.signal;
                 if(signal != undefined && signal!=-1) {
-                    let otherCastleLocations = signal;
-                    this.enemyCastleLocations.push(this.reflectPoint(castle.x, castle.y));
-                    this.enemyCastleLocations.push(this.decodeLocation(this.otherCastleLocations % (2**8)));
-                    this.enemyCastleLocations.push(this.decodeLocation( Math.floor(this.otherCastleLocations / (2**8)) ));
+                    enemyCastleLocations.push(this.reflectPoint(castle.x, castle.y));
+                    enemyCastleLocations.push(this.decodeLocation(signal % (2**8)));
+                    enemyCastleLocations.push(this.decodeLocation( Math.floor(signal / (2**8)) ));
                     let myloc = [this.me.x, this.me.y];
-                    if( this.distSquared(myloc, this.enemyCastleLocations[1]) < this.distSquared(myloc, this.enemyCastleLocations[0]) ) {
-                        let a = this.enemyCastleLocations[0];
-                        this.enemyCastleLocations[0] = this.enemyCastleLocations[1];
-                        this.enemyCastleLocations[1] = a;
+                    if( this.distSquared(myloc, enemyCastleLocations[1]) < distSquared(myloc, enemyCastleLocations[0]) ) {
+                        let a = enemyCastleLocations[0];
+                        enemyCastleLocations[0] = enemyCastleLocations[1];
+                        enemyCastleLocations[1] = a;
                     }
-                    if( this.distSquared(myloc, this.enemyCastleLocations[2]) < this.distSquared(myloc, this.enemyCastleLocations[0]) ) {
-                        let a = this.enemyCastleLocations[0];
-                        this.enemyCastleLocations[0] = this.enemyCastleLocations[2];
-                        this.enemyCastleLocations[2] = a;
+                    if( this.distSquared(myloc, enemyCastleLocations[2]) < distSquared(myloc, enemyCastleLocations[0]) ) {
+                        let a = enemyCastleLocations[0];
+                        enemyCastleLocations[0] = enemyCastleLocations[2];
+                        enemyCastleLocations[2] = a;
                     }
-                    if( this.distSquared(this.enemyCastleLocations[0], this.enemyCastleLocations[2]) < this.distSquared(this.enemyCastleLocations[0], this.enemyCastleLocations[1]) ) {
-                        let a = this.enemyCastleLocations[2];
-                        this.enemyCastleLocations[2] = this.enemyCastleLocations[1];
-                        this.enemyCastleLocations[1] = a;
+                    if( this.distSquared(enemyCastleLocations[0], enemyCastleLocations[2]) < distSquared(enemyCastleLocations[0], enemyCastleLocations[1]) ) {
+                        let a = enemyCastleLocations[2];
+                        enemyCastleLocations[2] = enemyCastleLocations[1];
+                        enemyCastleLocations[1] = a;
                     }
-                    this.target = this.enemyCastleLocations[0];
                     return enemyCastleLocations;
                 }
             }

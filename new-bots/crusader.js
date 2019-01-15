@@ -6,7 +6,7 @@ export function Crusader() {
 
     this.enemyCastleLocations = this.prepareTargets();
     this.targetCtr = 0;
-    this.target = enemyCastleLocations[targetCtr]; 
+    this.target = this.enemyCastleLocations[this.targetCtr]; 
 }
 
 /**
@@ -47,7 +47,7 @@ function crusaderTurn() {
         if(this.targetCtr < this.enemyCastleLocations.length) {
             this.log("Prepping update: "+this.enemyCastleLocations+" "+this.targetCtr);
             this.targetCtr+=1;
-            this.target = this.enemyCastleLocations[targetCtr];
+            this.target = this.enemyCastleLocations[this.targetCtr];
             this.log("Update: "+this.target+" "+this.targetCtr);
         }
         else {
