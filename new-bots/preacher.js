@@ -6,7 +6,7 @@ export function Preacher() {
 
     this.enemyCastleLocations = this.prepareTargets();
     this.targetCtr = 0;
-    this.target = this.enemyCastleLocations[this.targetCtr]; 
+    this.target = this.enemyCastleLocations[this.targetCtr];
 }
 
 /**
@@ -41,9 +41,10 @@ function preacherTurn() {
         }
     }
 
+
     // non-combat mode
     while (this.me.x == this.target[0] && this.me.y == this.target[1]) { //reset target if meet it
-        if(this.targetCtr < this.enemyCastleLocations.length) {
+        if (this.targetCtr < this.enemyCastleLocations.length) {
             this.log("Prepping update: "+this.enemyCastleLocations+" "+this.targetCtr);
             this.targetCtr+=1;
             this.target = this.enemyCastleLocations[this.targetCtr];
@@ -58,6 +59,7 @@ function preacherTurn() {
             }
         }
     }
+
 
     // movement code
     return this.go(this.target);
