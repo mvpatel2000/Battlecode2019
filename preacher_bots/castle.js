@@ -32,7 +32,7 @@ function castleTurn() {
     // one unit spawn
     if (this.fuel >= 80 && this.karbonite >= 30 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
         this.signal(this.otherCastleLocations, 2);
-        return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
+        return this.buildUnit(SPECS.PREACHER, choice[0], choice[1]);
     }
     else if (this.fuel >= 80 && this.karbonite >= 10 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
         return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);

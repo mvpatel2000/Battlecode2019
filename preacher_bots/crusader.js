@@ -1,18 +1,18 @@
 import {SPECS} from 'battlecode';
 
-export function Prophet() {
-    this.turn = prophetTurn;
+export function Crusader() {
+    this.turn = crusaderTurn;
     this.fuelpermove = SPECS.UNITS[this.me.unit].FUEL_PER_MOVE;
 
     this.enemyCastleLocations = this.prepareTargets();
     this.targetCtr = 0;
-    this.target = this.enemyCastleLocations[this.targetCtr]; 
+    this.target = this.enemyCastleLocations[this.targetCtr];
 }
 
 /**
  * March across map reflection.
  */
-function prophetTurn() {
+function crusaderTurn() {
 
     // attack code
     // if there are robots that I can attack,
@@ -24,7 +24,6 @@ function prophetTurn() {
             return this.attack(attackbot.x - this.me.x, attackbot.y - this.me.y);
         }
     }
-    
     // If there are robots that can attack me,
     // move to location that minimizes the sum of the hp damage.
     // Tiebreaker: location closest (euclidean distance) from the original path move to target
@@ -61,6 +60,5 @@ function prophetTurn() {
         }
     }
 
-    // movement code
     return this.go(this.target);
 }

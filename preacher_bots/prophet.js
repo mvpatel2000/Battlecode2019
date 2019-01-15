@@ -24,7 +24,6 @@ function prophetTurn() {
             return this.attack(attackbot.x - this.me.x, attackbot.y - this.me.y);
         }
     }
-    
     // If there are robots that can attack me,
     // move to location that minimizes the sum of the hp damage.
     // Tiebreaker: location closest (euclidean distance) from the original path move to target

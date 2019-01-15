@@ -1,7 +1,7 @@
 import {SPECS} from 'battlecode';
 
-export function Prophet() {
-    this.turn = prophetTurn;
+export function Preacher() {
+    this.turn = preacherTurn;
     this.fuelpermove = SPECS.UNITS[this.me.unit].FUEL_PER_MOVE;
 
     this.enemyCastleLocations = this.prepareTargets();
@@ -12,19 +12,18 @@ export function Prophet() {
 /**
  * March across map reflection.
  */
-function prophetTurn() {
-
+function preacherTurn() {
     // attack code
     // if there are robots that I can attack,
     // and I have enough fuel to attack,
     // attack them.
-    let attackbot = this.getRobotToAttack();
+    //aoeAnalysis returns a location [x,y]
+    let attackbot = this.aoeAnalysis();
     if (attackbot) {
         if (this.fuel > SPECS.UNITS[this.me.unit].ATTACK_FUEL_COST) {
-            return this.attack(attackbot.x - this.me.x, attackbot.y - this.me.y);
+            return this.attack(attackbot[0] - this.me.x, attackbot[1] - this.me.y);
         }
     }
-    
     // If there are robots that can attack me,
     // move to location that minimizes the sum of the hp damage.
     // Tiebreaker: location closest (euclidean distance) from the original path move to target
