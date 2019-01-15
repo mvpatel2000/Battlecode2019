@@ -163,6 +163,47 @@ export const Algorithms = (function() {
             return optimalmove;
         },
 
+        prepareTargets: function() {
+            let enemyCastleLocations = []
+            let castles = this.getVisibleRobots().filter(i => i.team == this.me.team && i.unit == 0);
+            for(let i=0; i<castles.length; i++) {
+                let castle = castles[i];
+                let signal = castle.signal;
+                if(signal != undefined && signal!=-1) {
+                    let otherCastleLocations = signal;
+                    this.enemyCastleLocations.push(this.reflectPoint(castle.x, castle.y));
+                    this.enemyCastleLocations.push(this.decodeLocation(this.otherCastleLocations % (2**8)));
+                    this.enemyCastleLocations.push(this.decodeLocation( Math.floor(this.otherCastleLocations / (2**8)) ));
+                    let myloc = [this.me.x, this.me.y];
+                    if( this.distSquared(myloc, this.enemyCastleLocations[1]) < this.distSquared(myloc, this.enemyCastleLocations[0]) ) {
+                        let a = this.enemyCastleLocations[0];
+                        this.enemyCastleLocations[0] = this.enemyCastleLocations[1];
+                        this.enemyCastleLocations[1] = a;
+                    }
+                    if( this.distSquared(myloc, this.enemyCastleLocations[2]) < this.distSquared(myloc, this.enemyCastleLocations[0]) ) {
+                        let a = this.enemyCastleLocations[0];
+                        this.enemyCastleLocations[0] = this.enemyCastleLocations[2];
+                        this.enemyCastleLocations[2] = a;
+                    }
+                    if( this.distSquared(this.enemyCastleLocations[0], this.enemyCastleLocations[2]) < this.distSquared(this.enemyCastleLocations[0], this.enemyCastleLocations[1]) ) {
+                        let a = this.enemyCastleLocations[2];
+                        this.enemyCastleLocations[2] = this.enemyCastleLocations[1];
+                        this.enemyCastleLocations[1] = a;
+                    }
+                    this.target = this.enemyCastleLocations[0];
+                    return enemyCastleLocations;
+                }
+            }
+            let r = () => [Math.floor(Math.random() * this.map[0].length),
+                            Math.floor(Math.random() * this.map.length)];
+            let target = r();
+            while (!this.map[target[1]][target[0]]) {
+                target = r();
+            }
+            enemyCastleLocations.push(target)
+            return enemyCastleLocations;
+        },
+
         /**
          * Returns the zone # from x,y
          * current implementation: 8-bit integer, so we can

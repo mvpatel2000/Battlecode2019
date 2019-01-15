@@ -30,13 +30,13 @@ function castleTurn() {
     const adj = this.me.turn > 10 ? 100 : 0;
 
     // one unit spawn
-    /*if (this.fuel >= 50 && this.karbonite >= 30 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
+    if (this.fuel >= 50 && this.karbonite >= 30 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
         this.signal(this.otherCastleLocations, 2);
         return this.buildUnit(SPECS.CRUSADER, choice[0], choice[1]);
     }
     else if (this.fuel >= 50 && this.karbonite >= 10 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
         return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
-    } */
+    } 
 
     // base spawn rate
     if (this.starting || (Math.random() < 0.2)) {
