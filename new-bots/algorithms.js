@@ -171,6 +171,45 @@ export const Algorithms = (function() {
             return optimalmove;
         },
 
+        prepareTargets: function() {
+            let enemyCastleLocations = []
+            let castles = this.getVisibleRobots().filter(i => i.team == this.me.team && i.unit == 0);
+            for(let i=0; i<castles.length; i++) {
+                let castle = castles[i];
+                let signal = castle.signal;
+                if(signal != undefined && signal!=-1) {
+                    enemyCastleLocations.push(this.reflectPoint(castle.x, castle.y));
+                    enemyCastleLocations.push(this.decodeLocation(signal % (2**8)));
+                    enemyCastleLocations.push(this.decodeLocation( Math.floor(signal / (2**8)) ));
+                    let myloc = [this.me.x, this.me.y];
+                    if( this.distSquared(myloc, enemyCastleLocations[1]) < distSquared(myloc, enemyCastleLocations[0]) ) {
+                        let a = enemyCastleLocations[0];
+                        enemyCastleLocations[0] = enemyCastleLocations[1];
+                        enemyCastleLocations[1] = a;
+                    }
+                    if( this.distSquared(myloc, enemyCastleLocations[2]) < distSquared(myloc, enemyCastleLocations[0]) ) {
+                        let a = enemyCastleLocations[0];
+                        enemyCastleLocations[0] = enemyCastleLocations[2];
+                        enemyCastleLocations[2] = a;
+                    }
+                    if( this.distSquared(enemyCastleLocations[0], enemyCastleLocations[2]) < distSquared(enemyCastleLocations[0], enemyCastleLocations[1]) ) {
+                        let a = enemyCastleLocations[2];
+                        enemyCastleLocations[2] = enemyCastleLocations[1];
+                        enemyCastleLocations[1] = a;
+                    }
+                    return enemyCastleLocations;
+                }
+            }
+            let r = () => [Math.floor(Math.random() * this.map[0].length),
+                            Math.floor(Math.random() * this.map.length)];
+            let target = r();
+            while (!this.map[target[1]][target[0]]) {
+                target = r();
+            }
+            enemyCastleLocations.push(target)
+            return enemyCastleLocations;
+        },
+
         /**
          * Returns the zone # from x,y
          * current implementation: 8-bit integer, so we can
@@ -198,12 +237,13 @@ export const Algorithms = (function() {
          * Returns x,y nearby that is empty
          */
         nearestEmptyLocation: function(x, y) {
+            let sz = this.fuel_map.length;
             let map = this.map;
             if(map[y][x])
                 return [x, y];
             for(let dx = -1; dx<2; dx++) {
                 for(let dy = -1; dy<2; dy++) {
-                    if(map[y+dy][x+dx])
+                    if(y+dy >= 0 && x+dx >= 0 && y+dy < sz && x+dx < sz && map[y+dy][x+dx])
                         return [x+dx, y+dy];
                 }
             }
