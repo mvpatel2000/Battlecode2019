@@ -14,7 +14,7 @@ export function Crusader() {
         }
     }
     this.targetCtr = 0;
-    this.target = nearestEnemyLocation(decodeLocation( enemyCastles, targetCtr ));
+    this.target = this.nearestEmptyLocation(this.scaledDecodeLocation( this.enemyCastles, this.targetCtr ));
 }
 
 /**
@@ -51,10 +51,12 @@ function crusaderTurn() {
     }
 
     // non-combat mode
+    this.log(this.target+" "+this.targetCtr);
     while (this.me.x == this.target[0] && this.me.y == this.target[1]) { //reset target if meet it
-        if(targetCtr < 2) {
-            targetCtr+=1;
-            this.target = nearestEnemyLocation(decodeLocation( enemyCastles, targetCtr ));
+        if(this.targetCtr < 2) {
+            this.targetCtr+=1;
+            this.target = this.nearestEmptyLocation(this.scaledDecodeLocation( this.enemyCastles, this.targetCtr ));
+            this.log("Update: "+this.target+" "+this.targetCtr);
         }
         else {
             let r = () => [Math.floor(Math.random() * this.map[0].length),

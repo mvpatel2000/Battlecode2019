@@ -156,9 +156,9 @@ export const Algorithms = (function() {
         /**
          * Returns the enemy locations.
          */
-        getEnemyCastles(): function() {
+        getEnemyCastles: function() {
             let castles = this.getVisibleRobots().filter(i => i.team == this.me.team && i.unit == 0);
-            while(castles.length < 3) {
+            while (castles.length < 3) { 
                 castles.push(castles[castles.length-1]);
             }
 
@@ -169,13 +169,13 @@ export const Algorithms = (function() {
             if (vertical) {
                 let encodedEnemy = 0;
                 for(let i = 0; i < castles.length; i++) {
-                    encodedEnemy += i*(2**5)*encodeLocation(this.fuel_map[0].length - this.me.x - 1, this.me.y)
+                    encodedEnemy += i*(2**5)*this.encodeLocation(this.fuel_map[0].length - this.me.x - 1, this.me.y)
                 }
                 return encodedEnemy;
             } else {
                 let encodedEnemy = 0;
                 for(let i = 0; i < castles.length; i++) {
-                    encodedEnemy += i*(2**5)*encodeLocation(this.me.x, this.fuel_map.length - this.me.y - 1)
+                    encodedEnemy += i*(2**5)*this.encodeLocation(this.me.x, this.fuel_map.length - this.me.y - 1)
                 }
                 return encodedEnemy;
             }
@@ -184,7 +184,7 @@ export const Algorithms = (function() {
         /**
          * Returns the zone # from x,y
          */
-        encodeLocation(): function(x, y) {
+        encodeLocation: function(x, y) {
             let sz = this.fuel_map.length;
             if( x < 7 / 32 * sz && y < 7 / 32 * sz) //d1
                 return 0;
@@ -252,11 +252,20 @@ export const Algorithms = (function() {
                 return 31;
         },
 
+        scaledDecodeLocation: function(enemyCastles, targetCtr) {
+            let loc = this.decodeLocation(enemyCastles, targetCtr);
+            let size = this.map.length;
+            loc[0] = Math.floor(loc[0]/32*size);
+            loc[1] = Math.floor(loc[1]/32*size);
+            return loc;
+        },
+
         /**
          * Returns x,y from the zone #
          */
-        decodeLocation(): function(enemyCastles, targetCtr) {
+        decodeLocation: function(enemyCastles, targetCtr) {
             let zone = Math.floor(enemyCastles / Math.max(((2**32)*targetCtr),1) ) % ((2**32)*(targetCtr+1));
+            console.log("Decode Location: "+zone+" "+targetCtr);
             let sz = this.fuel_map.length;
             if( zone == 0 ) //d1
                 return [3, 3];
@@ -324,7 +333,7 @@ export const Algorithms = (function() {
                 return [29, 29];
         },
 
-        nearestEmptyLocation(): function(loc) {
+        nearestEmptyLocation: function(loc) {
             let x = loc[0]
             let y = loc[1];
             let map = this.map;
