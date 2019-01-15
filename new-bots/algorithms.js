@@ -5,8 +5,8 @@ export const Algorithms = (function() {
     let seed = 1;
 
     function rand(len) {
-        seed = ((seed + 3) * 7 + 37) % 8117
-        return seed % len
+        seed = ((seed + 3) * 7 + 37) % 8117;
+        return seed % len;
     }
 
     function dist(a, b) {
