@@ -30,17 +30,17 @@ function castleTurn() {
     const adj = this.me.turn > 10 ? 100 : 0;
 
     // one unit spawn
-    if (this.fuel >= 80 && this.karbonite >= 30 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
+    if (this.fuel >= 50 && this.karbonite >= 30 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
         this.signal(this.otherCastleLocations, 2);
         return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
     }
-    else if (this.fuel >= 80 && this.karbonite >= 10 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
+    else if (this.fuel >= 50 && this.karbonite >= 10 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
         return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
     } 
 
     // base spawn rate
     if (this.starting || this.step % 6 == 0) {
-        if (this.fuel >= 80 + adj && this.karbonite >= 10 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
+        if (this.fuel >= 50 + adj && this.karbonite >= 10 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
             this.starting = false;
             this.signal(this.otherCastleLocations, 1);
             return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
@@ -48,7 +48,7 @@ function castleTurn() {
             return;
         }
     } else if (this.preacher || (this.step - 1) % 3 == 0) {
-        if (this.fuel >= 80 + adj && this.karbonite >= 30 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
+        if (this.fuel >= 50 + adj && this.karbonite >= 30 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
             this.preacher = false;
             this.signal(this.otherCastleLocations, 2);
             return this.buildUnit(SPECS.PREACHER, choice[0], choice[1]);
@@ -56,14 +56,14 @@ function castleTurn() {
             return;
         }
     } else if ((this.step - 2) % 3 == 0) {
-        if (this.fuel >= 80 + adj && this.karbonite >= 30 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
+        if (this.fuel >= 50 + adj && this.karbonite >= 30 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
             this.signal(this.otherCastleLocations, 1);
             return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
         } else {
             return;
         }
     } else {
-        if (this.fuel >= 80 + adj && this.karbonite >= 30 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
+        if (this.fuel >= 50 + adj && this.karbonite >= 30 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
             this.signal(this.otherCastleLocations, 2);
             return this.buildUnit(SPECS.CRUSADER, choice[0], choice[1]);
         } else {

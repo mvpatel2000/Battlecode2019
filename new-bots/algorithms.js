@@ -242,6 +242,66 @@ export const Algorithms = (function() {
             return optimalmove;
         },
 
+        /**
+         * Given a robot, tells you if it can kill you.
+         * Returns the amount of HP damage.
+         */
+        expectedDamageProphet: function(i, dSquared) {
+            let attack_rad2 = SPECS.UNITS[i.unit].ATTACK_RADIUS;
+            if(i.unit == 5)
+                attack_rad2++;
+            if (!attack_rad2) {
+                return 0;
+            } else {
+                if (attack_rad2[0] <= dSquared && dSquared <= attack_rad2[1]) {
+                    return SPECS.UNITS[i.unit].ATTACK_DAMAGE;
+                } else {
+                    return 0;
+                }
+            }
+        },
+
+        /*
+         * Returns the optimal absolute location you should move to
+         * by minimizing hp damage from enemy robots around you.
+         * Return value: null if NO enemies are present or the
+         * max hp damage by enemy robots is 0.
+         */
+        getOptimalEscapeLocationProphet: function() {
+            let visibleRobots = this.getVisibleRobots().filter(i => i.unit > 2 && i.team != this.me.team);
+            if (visibleRobots.length == 0) {
+                return [];
+            }
+            let minhpdamage = Infinity;
+            let maxhpdamage = 0;
+            let optimalmove = [];
+            let possiblemoves = this.validAbsoluteMoves();
+            //add "staying still" to possible moves list
+            possiblemoves.push([this.me.x,this.me.y]);
+            //this.log(possiblemoves.length)
+            for (let move of possiblemoves) {
+                let hpdamage = 0;
+                for (let i of visibleRobots) {
+                    let dSquaredtoEnemy = distSquared([i.x, i.y], [move[0], move[1]])
+                    hpdamage += this.expectedDamageProphet(i, dSquaredtoEnemy);
+                }
+                //this.log(`movr=${move} hpp=${hpdamage}`);
+                if (hpdamage < minhpdamage) {
+                    optimalmove = [move];
+                    minhpdamage = hpdamage;
+                } else if (hpdamage == minhpdamage) {
+                    optimalmove.push(move);
+                }
+                if (hpdamage > maxhpdamage) {
+                    maxhpdamage = hpdamage;
+                }
+            }
+            if (maxhpdamage == 0) {
+                return [];
+            }
+            return optimalmove;
+        },
+
         prepareTargets: function() {
             let enemyCastleLocations = []
             let castles = this.getVisibleRobots().filter(i => i.team == this.me.team && i.unit == 0);

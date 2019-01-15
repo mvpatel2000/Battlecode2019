@@ -19,17 +19,19 @@ function prophetTurn() {
     // and I have enough fuel to attack,
     // attack them.
     let attackbot = this.getRobotToAttack();
-    if (attackbot) {
+    this.log(this.me.turn+" ("+this.me.x+" "+this.me.y+") "+attackbot + " "+shouldRun.call(this));
+    if (attackbot && !shouldRun.call(this)) {
         if (this.fuel > SPECS.UNITS[this.me.unit].ATTACK_FUEL_COST) {
             return this.attack(attackbot.x - this.me.x, attackbot.y - this.me.y);
         }
     }
-    
+
     // If there are robots that can attack me,
     // move to location that minimizes the sum of the hp damage.
     // Tiebreaker: location closest (euclidean distance) from the original path move to target
     // Fall through if no robots can attack me, or not enough fuel to move.
-    let optimalmove = this.getOptimalEscapeLocation();
+    let optimalmove = this.getOptimalEscapeLocationProphet();
+    this.log(optimalmove)
     if (optimalmove.length && this.fuel >= this.fuelpermove) {
         let route = this.path(this.target);
         let [dx, dy] = route.length ? route[0] : [0, 0];
@@ -63,4 +65,15 @@ function prophetTurn() {
 
     // movement code
     return this.go(this.target);
+}
+
+/**
+ * tells if should run from nearby preachers
+ */
+function shouldRun() {
+    return this.getVisibleRobots()
+            .filter(i => i.team != this.me.team && i.unit == SPECS.PREACHER)
+            .map(i => this.distSquared([this.me.x, this.me.y], [i.x, i.y]))
+            .map(i => i < 18)
+            .reduce((a, b) => a || b, false);
 }
