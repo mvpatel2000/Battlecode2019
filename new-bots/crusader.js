@@ -4,19 +4,20 @@ export function Crusader() {
     this.turn = crusaderTurn;
     this.fuelpermove = SPECS.UNITS[this.me.unit].FUEL_PER_MOVE;
 
-    this.enemyCastles = -1;
+    this.target = [0,0];
+    this.otherCastleLocations = -1;
+
     let castles = this.getVisibleRobots().filter(i => i.team == this.me.team && i.unit == 0);
-    for(let i=0; i<castles.length; i++) {
-        let castle = castles[i];
+    for(let castle in castles) {
         let signal = castle.signal;
         this.log("SIGNAL: "+signal);
         if(signal != undefined && signal!=-1) {
-            this.enemyCastles = signal;
+            this.otherCastleLocations = signal;
+            this.target = this.reflectPoint(castle.x, castle.y);
             break;
         }
     }
     this.targetCtr = 0;
-    this.target = this.nearestEmptyLocation(this.scaledDecodeLocation( this.enemyCastles, this.targetCtr ));
 }
 
 /**
@@ -55,9 +56,14 @@ function crusaderTurn() {
     // non-combat mode
     this.log(this.target+" "+this.targetCtr);
     while (this.me.x == this.target[0] && this.me.y == this.target[1]) { //reset target if meet it
-        if(this.targetCtr < 2) {
+        if(this.targetCtr == 0) {
             this.targetCtr+=1;
-            this.target = this.nearestEmptyLocation(this.scaledDecodeLocation( this.enemyCastles, this.targetCtr ));
+            this.target = this.decodeLocation(otherCastleLocations % (2**32));
+            this.log("Update: "+this.target+" "+this.targetCtr);
+        }
+        else if(this.targetCtr == 1) {
+            this.targetCtr+=1;
+            this.target = this.decodeLocation( Math.floor(otherCastleLocations / (2**32)) );
             this.log("Update: "+this.target+" "+this.targetCtr);
         }
         else {

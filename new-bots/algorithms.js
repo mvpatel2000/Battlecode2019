@@ -157,25 +157,29 @@ export const Algorithms = (function() {
          * Returns the enemy locations.
          */
         getEnemyCastles: function() {
-            let castles = this.getVisibleRobots().filter(i => i.team == this.me.team && i.unit == 0);
+            let castles = this.getVisibleRobots(); //only castles should exist right now
             while (castles.length < 3) { 
                 castles.push(castles[castles.length-1]);
             }
+            this.log(castles)
 
             let vertical = this.fuel_map.every(
                                 r => r.slice(0, r.length / 2)
                                 .map((v, i) => r[r.length - i - 1] == v)
                                 .reduce((a, b) => a && b));
+            this.log("ORIENTATION: "+vertical+" "+castles.length);
             if (vertical) {
                 let encodedEnemy = 0;
                 for(let i = 0; i < castles.length; i++) {
                     encodedEnemy += Math.min(i,1)*(2**5)*this.encodeLocation(this.fuel_map[0].length - this.me.x - 1, this.me.y)
+                    this.log("LOC: "+this.encodeLocation(this.fuel_map[0].length - this.me.x - 1, this.me.y));
                 }
                 return encodedEnemy;
             } else {
                 let encodedEnemy = 0;
                 for(let i = 0; i < castles.length; i++) {
                     encodedEnemy += Math.min(i,1)*(2**5)*this.encodeLocation(this.me.x, this.fuel_map.length - this.me.y - 1)
+                    this.log("LOC: "+this.encodeLocation(this.fuel_map[0].length - this.me.x - 1, this.me.y));
                 }
                 return encodedEnemy;
             }
@@ -344,6 +348,21 @@ export const Algorithms = (function() {
                     if(map[y+dy][x+dx])
                         return [x+dx, y+dy];
                 }
+            }
+        },
+
+        /**
+         * Returns the reflected position of castles across the map.
+         */
+        reflectPoint: function(x, y) {
+            let vertical = this.fuel_map.every(
+                                r => r.slice(0, r.length / 2)
+                                .map((v, i) => r[r.length - i - 1] == v)
+                                .reduce((a, b) => a && b));
+            if (vertical) {
+                return [this.fuel_map[0].length - x - 1, y];
+            } else {
+                return [x, this.fuel_map.length - y - 1];
             }
         },
 
