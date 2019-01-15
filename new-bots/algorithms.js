@@ -154,10 +154,13 @@ export const Algorithms = (function() {
         },
 
         /**
-         * Returns the reflected position of this across the map.
+         * Returns the enemy locations.
          */
         getEnemyCastles(): function() {
             let castles = this.getVisibleRobots().filter(i => i.team == this.me.team && i.unit == 0);
+            while(castles.length < 3) {
+                castles.push(castles[castles.length-1]);
+            }
 
             let vertical = this.fuel_map.every(
                                 r => r.slice(0, r.length / 2)
@@ -247,80 +250,93 @@ export const Algorithms = (function() {
                 return 30;
             else                                        //d9
                 return 31;
-        }
+        },
 
         /**
          * Returns x,y from the zone #
          */
-        decodeLocation(): function(enemyCastles, targetCount) {
-            let zone = Math.floor(enemyCastles / ((2**32)*targetCtr) ) % ((2**32)*(targetCtr+1));
+        decodeLocation(): function(enemyCastles, targetCtr) {
+            let zone = Math.floor(enemyCastles / Math.max(((2**32)*targetCtr),1) ) % ((2**32)*(targetCtr+1));
             let sz = this.fuel_map.length;
             if( zone == 0 ) //d1
                 return [3, 3];
-            else if( x < 13 / 32 * sz && y < 6 / 32 * sz) //d2
-                return 1;
-            else if( x < 6 / 32 * sz && y < 13 / 32 * sz) 
-                return 2;
-            else if( x < 11 / 32 * sz && y < 11 / 32 * sz) 
-                return 3;
-            else if( x < 19 / 32 * sz && y < 6 / 32 * sz) //d3
-                return 4;
-            else if( x < 16 / 32 * sz && y < 11 / 32 * sz) 
-                return 5;
-            else if( x < 11 / 32 * sz && y < 16 / 32 * sz) 
-                return 6;
-            else if( x < 6 / 32 * sz && y < 19 / 32 * sz) 
-                return 7;
-            else if( x < 25 / 32 * sz && y < 6 / 32 * sz) //d4
-                return 8;
-            else if( x < 21 / 32 * sz && y < 11 / 32 * sz) 
-                return 9;
-            else if( x < 16 / 32 * sz && y < 16 / 32 * sz) 
-                return 10;
-            else if( x < 11 / 32 * sz && y < 21 / 32 * sz) 
-                return 11;
-            else if( x < 6 / 32 * sz && y < 25 / 32 * sz) 
-                return 12;
-            else if( x < 33 / 32 * sz && y < 7 / 32 * sz) //d5
-                return 13;
-            else if( x < 26 / 32 * sz && y < 11 / 32 * sz) 
-                return 14;
-            else if( x < 21 / 32 * sz && y < 16 / 32 * sz) 
-                return 15;
-            else if( x < 16 / 32 * sz && y < 21 / 32 * sz) 
-                return 16;
-            else if( x < 11 / 32 * sz && y < 26 / 32 * sz) 
-                return 17;
-            else if( x < 7 / 32 * sz && y < 33 / 32 * sz) 
-                return 18;
-            else if( x < 33 / 32 * sz && y < 13 / 32 * sz) //d6
-                return 19;
-            else if( x < 26 / 32 * sz && y < 16 / 32 * sz) 
-                return 20;
-            else if( x < 21 / 32 * sz && y < 21 / 32 * sz) 
-                return 21;
-            else if( x < 16 / 32 * sz && y < 26 / 32 * sz) 
-                return 22;
-            else if( x < 13 / 32 * sz && y < 33 / 32 * sz) 
-                return 23;
-            else if( x < 33 / 32 * sz && y < 19 / 32 * sz) //d7
-                return 24;
-            else if( x < 26 / 32 * sz && y < 21 / 32 * sz) 
-                return 25;
-            else if( x < 21 / 32 * sz && y < 26 / 32 * sz) 
-                return 26;
-            else if( x < 19 / 32 * sz && y < 33 / 32 * sz) 
-                return 27;
-            else if( x < 33 / 32 * sz && y < 25 / 32 * sz) //d8
-                return 28;
-            else if( x < 26 / 32 * sz && y < 26 / 32 * sz) 
-                return 29;
-            else if( x < 25 / 32 * sz && y < 33 / 32 * sz) 
-                return 30;
-            else                                        //d9
-                return 31;
-        }
+            else if( zone == 1 ) //d2
+                return [9, 3];
+            else if( zone == 2 ) 
+                return [8, 8];
+            else if( zone == 3 ) 
+                return [3, 9];
+            else if( zone == 4 ) //d3
+                return [15, 3];
+            else if( zone == 5 ) 
+                return [13, 8];
+            else if( zone == 6 ) 
+                return [8, 13];
+            else if( zone == 7 ) 
+                return [3, 15];
+            else if( zone == 8 ) //d4
+                return [21, 3];
+            else if( zone == 9 ) 
+                return [18, 8];
+            else if( zone == 10 ) 
+                return [13, 13];
+            else if( zone == 11 ) 
+                return [8, 18];
+            else if( zone == 12 ) 
+                return [3, 21];
+            else if( zone == 13 ) //d5
+                return [28, 3];
+            else if( zone == 14 ) 
+                return [23, 8];
+            else if( zone == 15 ) 
+                return [18, 13];
+            else if( zone == 16 ) 
+                return [13, 18];
+            else if( zone == 17 ) 
+                return [8, 23];
+            else if( zone == 18 ) 
+                return [3, 28];
+            else if( zone == 19 ) //d6
+                return [28, 9];
+            else if( zone == 20 ) 
+                return [23, 13];
+            else if( zone == 21 ) 
+                return [18, 18];
+            else if( zone == 22 ) 
+                return [13, 23];
+            else if( zone == 23 ) 
+                return [9, 28];
+            else if( zone == 24 ) //d7
+                return [28, 15];
+            else if( zone == 25 ) 
+                return [23, 18];
+            else if( zone == 26 ) 
+                return [18, 23];
+            else if( zone == 27 ) 
+                return [15, 28];
+            else if( zone == 28 ) //d8
+                return [28, 21];
+            else if( zone == 29 ) 
+                return [23, 23];
+            else if( zone == 30 ) 
+                return [21, 28];
+            else                  //d9
+                return [29, 29];
+        },
 
+        nearestEmptyLocation(): function(loc) {
+            let x = loc[0]
+            let y = loc[1];
+            let map = this.map;
+            if(map[y][x])
+                return loc;
+            for(let dx = -2; dx<3; dx++) {
+                for(let dy = -2; dy<3; dy++) {
+                    if(map[y+dy][x+dx])
+                        return [x+dx, y+dy];
+                }
+            }
+        },
 
         /**
          * Returns the reflected position of castles across the map.
@@ -420,17 +436,6 @@ export const Algorithms = (function() {
                 choice = choices[Math.floor(Math.random() * choices.length)];
             }
             return choice;
-        },
-
-        /**
-        *   Takes in list of destinations [x,y]
-        *   Returns an arraylist of [dx,dy] instructions at every location on map
-        *   which correspond to the optimal move at every location (a.k.a a vector field)
-        */
-        vectorField: function(endpts) {
-            let map = this.map;
-            queue = []
-            // TODO: implement
         },
 
         /**

@@ -14,7 +14,7 @@ export function Crusader() {
         }
     }
     this.targetCtr = 0;
-    this.target = decodeLocation( enemyCastles, targetCtr );
+    this.target = nearestEnemyLocation(decodeLocation( enemyCastles, targetCtr ));
 }
 
 /**
@@ -51,13 +51,19 @@ function crusaderTurn() {
     }
 
     // non-combat mode
-    if (this.me.x == this.target[0] && this.me.y == this.target[1]) { //reset target if meet it
-         let r = () => [Math.floor(Math.random() * this.map[0].length),
-                         Math.floor(Math.random() * this.map.length)];
-         this.target = r();
-         while (!this.map[this.target[1]][this.target[0]]) {
-             this.target = r();
-         }
+    while (this.me.x == this.target[0] && this.me.y == this.target[1]) { //reset target if meet it
+        if(targetCtr < 2) {
+            targetCtr+=1;
+            this.target = nearestEnemyLocation(decodeLocation( enemyCastles, targetCtr ));
+        }
+        else {
+            let r = () => [Math.floor(Math.random() * this.map[0].length),
+                            Math.floor(Math.random() * this.map.length)];
+            this.target = r();
+            while (!this.map[this.target[1]][this.target[0]]) {
+                this.target = r();
+            }
+        }
     }
 
     return this.go(this.target);
