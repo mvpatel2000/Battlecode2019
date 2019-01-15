@@ -154,38 +154,6 @@ export const Algorithms = (function() {
         },
 
         /**
-         * Returns the enemy locations.
-         */
-        getEnemyCastles: function() {
-            let castles = this.getVisibleRobots(); //only castles should exist right now
-            while (castles.length < 3) { 
-                castles.push(castles[castles.length-1]);
-            }
-            this.log(castles)
-
-            let vertical = this.fuel_map.every(
-                                r => r.slice(0, r.length / 2)
-                                .map((v, i) => r[r.length - i - 1] == v)
-                                .reduce((a, b) => a && b));
-            this.log("ORIENTATION: "+vertical+" "+castles.length);
-            if (vertical) {
-                let encodedEnemy = 0;
-                for(let i = 0; i < castles.length; i++) {
-                    encodedEnemy += Math.min(i,1)*(2**5)*this.encodeLocation(this.fuel_map[0].length - this.me.x - 1, this.me.y)
-                    this.log("LOC: "+this.encodeLocation(this.fuel_map[0].length - this.me.x - 1, this.me.y));
-                }
-                return encodedEnemy;
-            } else {
-                let encodedEnemy = 0;
-                for(let i = 0; i < castles.length; i++) {
-                    encodedEnemy += Math.min(i,1)*(2**5)*this.encodeLocation(this.me.x, this.fuel_map.length - this.me.y - 1)
-                    this.log("LOC: "+this.encodeLocation(this.fuel_map[0].length - this.me.x - 1, this.me.y));
-                }
-                return encodedEnemy;
-            }
-        },
-
-        /**
          * Returns the zone # from x,y
          * current implementation: 8-bit integer, so we can
          * encode 2 zones in 1 comm (the two castles that
@@ -198,14 +166,6 @@ export const Algorithms = (function() {
             return 16*Math.floor(x*16/sz) + Math.floor(y*16/sz);
         },
 
-        scaledDecodeLocation: function(enemyCastles, targetCtr) {
-            let loc = this.decodeLocation(enemyCastles, targetCtr);
-            let size = this.map.length;
-            loc[0] = Math.floor(loc[0]/32*size);
-            loc[1] = Math.floor(loc[1]/32*size);
-            return loc;
-        },
-
         /**
          * Returns x,y from the zone #
          */
@@ -213,17 +173,18 @@ export const Algorithms = (function() {
             let sz = this.fuel_map.length;
             let x = Math.floor(0.5+(Math.floor(zone/16)+0.5)*sz/16);
             let y = Math.floor(0.5+((zone%16)+0.5)*sz/16);
-            return [x, y];
+            return this.nearestEmptyLocation(x, y);
         },
 
-        nearestEmptyLocation: function(loc) {
-            let x = loc[0]
-            let y = loc[1];
+        /**
+         * Returns x,y nearby that is empty
+         */
+        nearestEmptyLocation: function(x, y) {
             let map = this.map;
             if(map[y][x])
-                return loc;
-            for(let dx = -2; dx<3; dx++) {
-                for(let dy = -2; dy<3; dy++) {
+                return [x, y];
+            for(let dx = -1; dx<2; dx++) {
+                for(let dy = -1; dy<2; dy++) {
                     if(map[y+dy][x+dx])
                         return [x+dx, y+dy];
                 }

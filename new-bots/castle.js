@@ -12,14 +12,16 @@ export function Castle() {
 
 function castleTurn() {
     this.step++;
-    if(this.step == 1) //wait for all castles to broadcast
+    if(this.step == 1) { //wait for all castles to broadcast
         this.castleTalk(this.myEncodedLocation);
         return;
+    }
     else if(this.step == 2) { //get castle locations
-        let castles = this.getVisibleRobots().filter(i => i.castle_talk!=0).map(i => i.castle_talk);
+        let castles = this.getVisibleRobots().filter(i => i.castle_talk!=0 && i.id != this.me.id).map(i => i.castle_talk);
         while(castles.length < 2)
-            castles.push(this.encodeLocation(self.reflectPoint(this.me.x, this.me.y)));
-        this.otherCastleLocations = castles[0] + (2**32)*castles[1];
+            castles.push(this.encodeLocation(this.reflectPoint(this.me.x, this.me.y)));
+        this.otherCastleLocations = castles[0] + (2**8)*castles[1];
+        this.castleTalk(this.myEncodedLocation);
     }
 
     let choice = this.randomMove();

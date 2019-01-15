@@ -8,7 +8,9 @@ export function Crusader() {
     this.otherCastleLocations = -1;
 
     let castles = this.getVisibleRobots().filter(i => i.team == this.me.team && i.unit == 0);
-    for(let castle in castles) {
+    for(let i=0; i<castles.length; i++) {
+        let castle = castles[i];
+        this.log(castle);
         let signal = castle.signal;
         this.log("SIGNAL: "+signal);
         if(signal != undefined && signal!=-1) {
