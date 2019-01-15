@@ -3,7 +3,7 @@ import {SPECS} from 'battlecode';
 export function Prophet() {
     this.turn = prophetTurn;
     this.target = this.reflection();
-    this.fuelpermove = SPECS.UNITS[this.me.unit].FUEL_PER_MOVE
+    this.fuelpermove = SPECS.UNITS[this.me.unit].FUEL_PER_MOVE;
 }
 
 /**

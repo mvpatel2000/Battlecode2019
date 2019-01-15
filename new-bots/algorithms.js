@@ -78,7 +78,7 @@ export const Algorithms = (function() {
          * Gives list of valid move locations.
          */
         validAbsoluteMoves: function() {
-            return absoluteMoves(this.getSpeed(), this.me.x, this.me.y).filter(m => !this.occupied(...m));
+            return absoluteMoves(this.getSpeed, this.me.x, this.me.y).filter(m => !this.occupied(m));
         },
 
         /**
@@ -100,12 +100,12 @@ export const Algorithms = (function() {
          */
         getRobotToAttack: function() {
             const rad = SPECS.UNITS[this.me.unit].ATTACK_RADIUS;
-            const priority = { // unit target priority tiebreakers
+            const priority = {
                 0: 1,
-                1: 0,
-                2: 2,
+                1: 2,
+                2: 0,
                 3: 3,
-                4: 3,
+                4: 5,
                 5: 4,
             };
             let robots = this.getVisibleRobots()
@@ -114,12 +114,7 @@ export const Algorithms = (function() {
                                             && d >= rad[0]
                                             && d <= rad[1])(this.distSquared([i.x, i.y], [this.me.x, this.me.y])));
             if (robots.length)
-                return robots.reduce((a, b) => {
-                    const threat = this.threat(b) - this.threat(a);
-                    const type = priority[b.unit] - priority[a.unit];
-                    const id = a.id - b.id;
-                    return (threat ? threat : (type ? type : id)) > 0 ? b : a;
-                });
+                return robots.reduce((a, b) => priority[a.unit] > priority[b.unit] ? a : b);
         },
 
         /*
@@ -130,23 +125,18 @@ export const Algorithms = (function() {
          */
         getOptimalEscapeLocation: function() {
             let visibleRobots = this.getVisibleRobots().filter(i => i.unit > 2 && i.team != this.me.team);
-            if (visibleRobots.length == 0) {
-                return [];
-            }
+            let hpdamage = 0;
             let minhpdamage = Infinity;
             let maxhpdamage = 0;
             let optimalmove = [];
             let possiblemoves = this.validAbsoluteMoves();
-            //add "staying still" to possible moves list
-            possiblemoves.push([this.me.x,this.me.y]);
-            //this.log(possiblemoves.length)
             for (let move of possiblemoves) {
-                let hpdamage = 0;
                 for (let i of visibleRobots) {
                     let dSquaredtoEnemy = distSquared([i.x, i.y], [move[0], move[1]])
-                    hpdamage += this.expectedDamage(i, dSquaredtoEnemy);
+                    if (i.team != this.me.team) {
+                        hpdamage += this.expectedDamage(i, dSquaredtoEnemy);
+                    }
                 }
-                //this.log(`movr=${move} hpp=${hpdamage}`);
                 if (hpdamage < minhpdamage) {
                     optimalmove = [move];
                     minhpdamage = hpdamage;
@@ -165,6 +155,175 @@ export const Algorithms = (function() {
 
         /**
          * Returns the reflected position of this across the map.
+         */
+        getEnemyCastles(): function() {
+            let castles = this.getVisibleRobots().filter(i => i.team == this.me.team && i.unit == 0);
+
+            let vertical = this.fuel_map.every(
+                                r => r.slice(0, r.length / 2)
+                                .map((v, i) => r[r.length - i - 1] == v)
+                                .reduce((a, b) => a && b));
+            if (vertical) {
+                let encodedEnemy = 0;
+                for(let i = 0; i < castles.length; i++) {
+                    encodedEnemy += i*(2**5)*encodeLocation(this.fuel_map[0].length - this.me.x - 1, this.me.y)
+                }
+                return encodedEnemy;
+            } else {
+                let encodedEnemy = 0;
+                for(let i = 0; i < castles.length; i++) {
+                    encodedEnemy += i*(2**5)*encodeLocation(this.me.x, this.fuel_map.length - this.me.y - 1)
+                }
+                return encodedEnemy;
+            }
+        },
+
+        /**
+         * Returns the zone # from x,y
+         */
+        encodeLocation(): function(x, y) {
+            let sz = this.fuel_map.length;
+            if( x < 7 / 32 * sz && y < 7 / 32 * sz) //d1
+                return 0;
+            else if( x < 13 / 32 * sz && y < 6 / 32 * sz) //d2
+                return 1;
+            else if( x < 6 / 32 * sz && y < 13 / 32 * sz) 
+                return 2;
+            else if( x < 11 / 32 * sz && y < 11 / 32 * sz) 
+                return 3;
+            else if( x < 19 / 32 * sz && y < 6 / 32 * sz) //d3
+                return 4;
+            else if( x < 16 / 32 * sz && y < 11 / 32 * sz) 
+                return 5;
+            else if( x < 11 / 32 * sz && y < 16 / 32 * sz) 
+                return 6;
+            else if( x < 6 / 32 * sz && y < 19 / 32 * sz) 
+                return 7;
+            else if( x < 25 / 32 * sz && y < 6 / 32 * sz) //d4
+                return 8;
+            else if( x < 21 / 32 * sz && y < 11 / 32 * sz) 
+                return 9;
+            else if( x < 16 / 32 * sz && y < 16 / 32 * sz) 
+                return 10;
+            else if( x < 11 / 32 * sz && y < 21 / 32 * sz) 
+                return 11;
+            else if( x < 6 / 32 * sz && y < 25 / 32 * sz) 
+                return 12;
+            else if( x < 33 / 32 * sz && y < 7 / 32 * sz) //d5
+                return 13;
+            else if( x < 26 / 32 * sz && y < 11 / 32 * sz) 
+                return 14;
+            else if( x < 21 / 32 * sz && y < 16 / 32 * sz) 
+                return 15;
+            else if( x < 16 / 32 * sz && y < 21 / 32 * sz) 
+                return 16;
+            else if( x < 11 / 32 * sz && y < 26 / 32 * sz) 
+                return 17;
+            else if( x < 7 / 32 * sz && y < 33 / 32 * sz) 
+                return 18;
+            else if( x < 33 / 32 * sz && y < 13 / 32 * sz) //d6
+                return 19;
+            else if( x < 26 / 32 * sz && y < 16 / 32 * sz) 
+                return 20;
+            else if( x < 21 / 32 * sz && y < 21 / 32 * sz) 
+                return 21;
+            else if( x < 16 / 32 * sz && y < 26 / 32 * sz) 
+                return 22;
+            else if( x < 13 / 32 * sz && y < 33 / 32 * sz) 
+                return 23;
+            else if( x < 33 / 32 * sz && y < 19 / 32 * sz) //d7
+                return 24;
+            else if( x < 26 / 32 * sz && y < 21 / 32 * sz) 
+                return 25;
+            else if( x < 21 / 32 * sz && y < 26 / 32 * sz) 
+                return 26;
+            else if( x < 19 / 32 * sz && y < 33 / 32 * sz) 
+                return 27;
+            else if( x < 33 / 32 * sz && y < 25 / 32 * sz) //d8
+                return 28;
+            else if( x < 26 / 32 * sz && y < 26 / 32 * sz) 
+                return 29;
+            else if( x < 25 / 32 * sz && y < 33 / 32 * sz) 
+                return 30;
+            else                                        //d9
+                return 31;
+        }
+
+        /**
+         * Returns x,y from the zone #
+         */
+        decodeLocation(): function(enemyCastles, targetCount) {
+            let zone = Math.floor(enemyCastles / ((2**32)*targetCtr) ) % ((2**32)*(targetCtr+1));
+            let sz = this.fuel_map.length;
+            if( zone == 0 ) //d1
+                return [3, 3];
+            else if( x < 13 / 32 * sz && y < 6 / 32 * sz) //d2
+                return 1;
+            else if( x < 6 / 32 * sz && y < 13 / 32 * sz) 
+                return 2;
+            else if( x < 11 / 32 * sz && y < 11 / 32 * sz) 
+                return 3;
+            else if( x < 19 / 32 * sz && y < 6 / 32 * sz) //d3
+                return 4;
+            else if( x < 16 / 32 * sz && y < 11 / 32 * sz) 
+                return 5;
+            else if( x < 11 / 32 * sz && y < 16 / 32 * sz) 
+                return 6;
+            else if( x < 6 / 32 * sz && y < 19 / 32 * sz) 
+                return 7;
+            else if( x < 25 / 32 * sz && y < 6 / 32 * sz) //d4
+                return 8;
+            else if( x < 21 / 32 * sz && y < 11 / 32 * sz) 
+                return 9;
+            else if( x < 16 / 32 * sz && y < 16 / 32 * sz) 
+                return 10;
+            else if( x < 11 / 32 * sz && y < 21 / 32 * sz) 
+                return 11;
+            else if( x < 6 / 32 * sz && y < 25 / 32 * sz) 
+                return 12;
+            else if( x < 33 / 32 * sz && y < 7 / 32 * sz) //d5
+                return 13;
+            else if( x < 26 / 32 * sz && y < 11 / 32 * sz) 
+                return 14;
+            else if( x < 21 / 32 * sz && y < 16 / 32 * sz) 
+                return 15;
+            else if( x < 16 / 32 * sz && y < 21 / 32 * sz) 
+                return 16;
+            else if( x < 11 / 32 * sz && y < 26 / 32 * sz) 
+                return 17;
+            else if( x < 7 / 32 * sz && y < 33 / 32 * sz) 
+                return 18;
+            else if( x < 33 / 32 * sz && y < 13 / 32 * sz) //d6
+                return 19;
+            else if( x < 26 / 32 * sz && y < 16 / 32 * sz) 
+                return 20;
+            else if( x < 21 / 32 * sz && y < 21 / 32 * sz) 
+                return 21;
+            else if( x < 16 / 32 * sz && y < 26 / 32 * sz) 
+                return 22;
+            else if( x < 13 / 32 * sz && y < 33 / 32 * sz) 
+                return 23;
+            else if( x < 33 / 32 * sz && y < 19 / 32 * sz) //d7
+                return 24;
+            else if( x < 26 / 32 * sz && y < 21 / 32 * sz) 
+                return 25;
+            else if( x < 21 / 32 * sz && y < 26 / 32 * sz) 
+                return 26;
+            else if( x < 19 / 32 * sz && y < 33 / 32 * sz) 
+                return 27;
+            else if( x < 33 / 32 * sz && y < 25 / 32 * sz) //d8
+                return 28;
+            else if( x < 26 / 32 * sz && y < 26 / 32 * sz) 
+                return 29;
+            else if( x < 25 / 32 * sz && y < 33 / 32 * sz) 
+                return 30;
+            else                                        //d9
+                return 31;
+        }
+
+
+        /**
+         * Returns the reflected position of castles across the map.
          */
         reflection: function() {
             let vertical = this.fuel_map.every(
@@ -187,19 +346,12 @@ export const Algorithms = (function() {
         },
 
         /**
-         * Run expectedDamage with current location.
-         */
-        threat: function(r) {
-            return this.expectedDamage(r, this.distSquared([this.me.x, this.me.y], [r.x, r.y]));
-        },
-
-        /**
          * Given a robot, tells you if it can kill you.
          * Returns the amount of HP damage.
          */
         expectedDamage: function(i, dSquared) {
             let attack_rad2 = SPECS.UNITS[i.unit].ATTACK_RADIUS;
-            if (!attack_rad2) {
+            if (attack_rad2 == NULL) {
                 return 0;
             } else {
                 if (attack_rad2[0] <= dSquared && dSquared <= attack_rad2[1]) {
@@ -243,7 +395,6 @@ export const Algorithms = (function() {
             }
             return choice;
         },
-
         /**
          * Return a random, valid, move within a given radius^2.
          */
@@ -299,8 +450,8 @@ export const Algorithms = (function() {
                 return [];
             }
             let openHash = {};
-            let done = new PriorityQueue((a, b) => h(a) < h(b));
-            let prev = {}; //used to reconstruct map
+            let done = [];
+            let cameFrom = {}; //used to reconstruct map
             let h = x => dist(dest, x) / getSpeed.call(this); //~steps away from destination
             let hash = p => p[0] * 67 * 73 + p[1];
             let g = {}; //distance from origin in terms of steps taken
@@ -310,15 +461,15 @@ export const Algorithms = (function() {
 
             const queue = new PriorityQueue((a, b) => f[a] < f[b]);
             queue.push(start);
-            let i = 192;
+            let i = 256;
             while (!queue.isEmpty()) {
                 let current = queue.pop(); //pop from priority queue instead of magic symbols
                 done.push(current)
                 if (i-- < 0 || arrEq(current, dest)) { //found destination
-                    current = done.pop();
+                    current = done.reduce((a, b) => h(a) < h(b) ? a : b)
                     let totalPath = [current];
-                    while (current in prev) { //reconstruct path
-                        current = prev[current];
+                    while (current in cameFrom) { //reconstruct path
+                        current = cameFrom[current];
                         totalPath.push(current);
                     }
                     let path = [];
@@ -340,10 +491,11 @@ export const Algorithms = (function() {
                             || openHash[hash(neighbor)]
                             || g[neighbor] != undefined) //filters invalid moves or already taken moves
                         continue;
+                    let tg = g[current] + 1; //increase step by 1
                     queue.push(neighbor); //push
                     openHash[hash(neighbor)] = true;
-                    prev[neighbor] = current; //sets current path for backtrace
-                    g[neighbor] = g[current] + 1;
+                    cameFrom[neighbor] = current; //sets current path for backtrace
+                    g[neighbor] = tg;
                     f[neighbor] = g[neighbor] + h(neighbor);
                 }
             }

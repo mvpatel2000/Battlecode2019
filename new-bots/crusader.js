@@ -1,9 +1,20 @@
 import {SPECS} from 'battlecode';
 
-export function Crusader() {
+export function Crusader() { 
     this.turn = crusaderTurn;
-    this.target = this.reflection();
-    this.fuelpermove = SPECS.UNITS[this.me.unit].FUEL_PER_MOVE
+    this.fuelpermove = SPECS.UNITS[this.me.unit].FUEL_PER_MOVE;
+
+    this.enemyCastles = -1;
+    let castles = this.getVisibleRobots().filter(i => i.team == this.me.team && i.unit == 0);
+    for(let castle in castles) {
+        let signal = castle.signal;
+        if(signal != -1) {
+            this.enemyCastles = signal;
+            break;
+        }
+    }
+    this.targetCtr = 0;
+    this.target = decodeLocation( enemyCastles, targetCtr );
 }
 
 /**
