@@ -6,7 +6,8 @@ export function Castle() {
     this.starting = true;
     this.preacher = true;
 
-    this.myEncodedLocation = this.encodeLocation(this.me.x, this.me.y);
+    this.reflectedLocation = this.reflectPoint(this.me.x, this.me.y);
+    this.myEncodedLocation = this.encodeLocation(this.reflectedLocation[0], this.reflectedLocation[1]);
     this.otherCastleLocations = 0;
 }
 
@@ -18,8 +19,9 @@ function castleTurn() {
     }
     else if(this.step == 2) { //get castle locations
         let castles = this.getVisibleRobots().filter(i => i.castle_talk!=0 && i.id != this.me.id).map(i => i.castle_talk);
-        while(castles.length < 2)
-            castles.push(this.encodeLocation(this.reflectPoint(this.me.x, this.me.y)));
+        while(castles.length < 2) {
+            castles.push(this.myEncodedLocation);
+        }
         this.otherCastleLocations = castles[0] + (2**8)*castles[1];
         this.castleTalk(this.myEncodedLocation);
     }
@@ -29,7 +31,7 @@ function castleTurn() {
 
     // one unit spawn
     if (this.preacher == true && this.fuel >= 50 && this.karbonite >= 30 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
-        this.signal(this.otherCastleLocations, 1);
+        this.signal(this.otherCastleLocations, 2);
         this.preacher = false;
         return this.buildUnit(SPECS.CRUSADER, choice[0], choice[1]);
     }
@@ -38,7 +40,7 @@ function castleTurn() {
 
     // one unit spawn
     if (this.fuel >= 50 && this.karbonite >= 30 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
-        this.signal(this.otherCastleLocations, 1);
+        this.signal(this.otherCastleLocations, 2);
         return this.buildUnit(SPECS.CRUSADER, choice[0], choice[1]);
     }
     else if (this.fuel >= 50 && this.karbonite >= 10 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
@@ -57,7 +59,7 @@ function castleTurn() {
     } else if (this.preacher || Math.random() < 1.0 / 3.0) {
         if (this.fuel >= 50 + adj && this.karbonite >= 30 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
             this.preacher = false;  
-            this.signal(this.otherCastleLocations, 1);
+            this.signal(this.otherCastleLocations, 2);
             return this.buildUnit(SPECS.PREACHER, choice[0], choice[1]);
         } else {
             return;
@@ -71,7 +73,7 @@ function castleTurn() {
         }
     } else {
         if (this.fuel >= 50 + adj && this.karbonite >= 20 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
-            this.signal(this.otherCastleLocations, 1);
+            this.signal(this.otherCastleLocations, 2);
             return this.buildUnit(SPECS.CRUSADER, choice[0], choice[1]);
         } else {
             return;
