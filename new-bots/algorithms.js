@@ -231,12 +231,13 @@ export const Algorithms = (function() {
          * Returns x,y nearby that is empty
          */
         nearestEmptyLocation: function(x, y) {
+            let sz = this.fuel_map.length;
             let map = this.map;
             if(map[y][x])
                 return [x, y];
             for(let dx = -1; dx<2; dx++) {
                 for(let dy = -1; dy<2; dy++) {
-                    if(map[y+dy][x+dx])
+                    if(y+dy >= 0 && x+dx >= 0 && y+dy < sz && x+dx < sz && map[y+dy][x+dx])
                         return [x+dx, y+dy];
                 }
             }
