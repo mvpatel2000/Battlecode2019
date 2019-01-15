@@ -174,25 +174,25 @@ export const Algorithms = (function() {
         prepareTargets: function() {
             let enemyCastleLocations = []
             let castles = this.getVisibleRobots().filter(i => i.team == this.me.team && i.unit == 0);
-            for(let i=0; i<castles.length; i++) {
+            for (let i = 0; i < castles.length; i++) {
                 let castle = castles[i];
                 let signal = castle.signal;
-                if(signal != undefined && signal!=-1) {
+                if (signal != undefined && signal!=-1) {
                     enemyCastleLocations.push(this.reflectPoint(castle.x, castle.y));
-                    enemyCastleLocations.push(this.decodeLocation(signal % (2**8)));
-                    enemyCastleLocations.push(this.decodeLocation( Math.floor(signal / (2**8)) ));
+                    enemyCastleLocations.push(this.decodeLocation(signal % (2 ** 8)));
+                    enemyCastleLocations.push(this.decodeLocation(Math.floor(signal / (2 ** 8))));
                     let myloc = [this.me.x, this.me.y];
-                    if( this.distSquared(myloc, enemyCastleLocations[1]) < distSquared(myloc, enemyCastleLocations[0]) ) {
+                    if (this.distSquared(myloc, enemyCastleLocations[1]) < distSquared(myloc, enemyCastleLocations[0])) {
                         let a = enemyCastleLocations[0];
                         enemyCastleLocations[0] = enemyCastleLocations[1];
                         enemyCastleLocations[1] = a;
                     }
-                    if( this.distSquared(myloc, enemyCastleLocations[2]) < distSquared(myloc, enemyCastleLocations[0]) ) {
+                    if (this.distSquared(myloc, enemyCastleLocations[2]) < distSquared(myloc, enemyCastleLocations[0])) {
                         let a = enemyCastleLocations[0];
                         enemyCastleLocations[0] = enemyCastleLocations[2];
                         enemyCastleLocations[2] = a;
                     }
-                    if( this.distSquared(enemyCastleLocations[0], enemyCastleLocations[2]) < distSquared(enemyCastleLocations[0], enemyCastleLocations[1]) ) {
+                    if (this.distSquared(enemyCastleLocations[0], enemyCastleLocations[2]) < distSquared(enemyCastleLocations[0], enemyCastleLocations[1])) {
                         let a = enemyCastleLocations[2];
                         enemyCastleLocations[2] = enemyCastleLocations[1];
                         enemyCastleLocations[1] = a;
@@ -200,8 +200,8 @@ export const Algorithms = (function() {
                     return enemyCastleLocations;
                 }
             }
-            let r = () => [Math.floor(Math.random() * this.map[0].length),
-                            Math.floor(Math.random() * this.map.length)];
+            let r = () => [rand(this.map[0].length),
+                            rand(this.map.length)];
             let target = r();
             while (!this.map[target[1]][target[0]]) {
                 target = r();
@@ -220,7 +220,7 @@ export const Algorithms = (function() {
          */
         encodeLocation: function(x, y) {
             let sz = this.fuel_map.length;
-            return 16*Math.floor(x*16/sz) + Math.floor(y*16/sz);
+            return 16 * Math.floor(x * 16 / sz) + Math.floor(y * 16 / sz);
         },
 
         /**
@@ -228,8 +228,8 @@ export const Algorithms = (function() {
          */
         decodeLocation: function(zone) {
             let sz = this.fuel_map.length;
-            let x = Math.floor(0.5+(Math.floor(zone/16)+0.5)*sz/16);
-            let y = Math.floor(0.5+((zone%16)+0.5)*sz/16);
+            let x = Math.floor(0.5 + (Math.floor(zone / 16) + 0.5) * sz / 16);
+            let y = Math.floor(0.5 + ((zone%16) + 0.5) * sz / 16);
             return this.nearestEmptyLocation(x, y);
         },
 
@@ -239,12 +239,12 @@ export const Algorithms = (function() {
         nearestEmptyLocation: function(x, y) {
             let sz = this.fuel_map.length;
             let map = this.map;
-            if(map[y][x])
+            if (map[y][x])
                 return [x, y];
-            for(let dx = -1; dx<2; dx++) {
-                for(let dy = -1; dy<2; dy++) {
-                    if(y+dy >= 0 && x+dx >= 0 && y+dy < sz && x+dx < sz && map[y+dy][x+dx])
-                        return [x+dx, y+dy];
+            for (let dx = -1; dx<2; dx++) {
+                for (let dy = -1; dy<2; dy++) {
+                    if (y + dy >= 0 && x + dx >= 0 && y + dy < sz && x + dx < sz && map[y + dy][x + dx])
+                        return [x + dx, y + dy];
                 }
             }
         },
