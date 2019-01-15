@@ -62,7 +62,7 @@ function pilgrimDropping() {
     }
     // return to normal turn function
     let restore = () => {
-        if (this.karbonite < 10 && !this.karbonite_map[this.queue[0][1]][this.queue[0][0]]) {
+        if (this.karbonite < 25 && !this.karbonite_map[this.queue[0][1]][this.queue[0][0]]) {
             this.queue.push(this.queue.shift()); // cycle if mining fuel when needing karbonite
         } else if (this.fuel < 100 && !this.fuel_map[this.queue[0][1]][this.queue[0][0]]) {
             this.queue.push(this.queue.shift()); // the opposite

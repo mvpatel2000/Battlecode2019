@@ -5,8 +5,8 @@ export const Algorithms = (function() {
     let seed = 1;
 
     function rand(len) {
-        seed = ((seed + 3) * 7 + 37) % 8117
-        return seed % len
+        seed = ((seed + 3) * 7 + 37) % 8117;
+        return seed % len;
     }
 
     function dist(a, b) {
@@ -105,7 +105,7 @@ export const Algorithms = (function() {
 
         /**
          * Helper function for aoeAnalysis method.
-         * Given a 2d array from getVsitibleRobotMap(), the length of the y and x-axis
+         * Given a 2d array from getVisibleRobotMap(), the length of the y and x-axis
          * and a given [j][i] index that might be in the 2d array, caculated
          * the damage done by an attack at the given index.
          * Returns 0 for a location outside of the visibleRobotMap array or for a location without robots.
