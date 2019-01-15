@@ -334,7 +334,7 @@ export const Algorithms = (function() {
 
             const queue = new PriorityQueue((a, b) => f[a] < f[b]);
             queue.push(start);
-            let i = 256;
+            let i = 128;
             while (!queue.isEmpty()) {
                 let current = queue.pop(); //pop from priority queue instead of magic symbols
                 done.push(current)

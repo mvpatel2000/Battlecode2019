@@ -56,11 +56,13 @@ function crusaderTurn() {
     // non-combat mode
     while (this.me.x == this.target[0] && this.me.y == this.target[1]) { //reset target if meet it
         if(this.targetCtr == 0) {
+            this.log("Prepping update: "+this.otherCastleLocations);
             this.targetCtr+=1;
             this.target = this.decodeLocation(this.otherCastleLocations % (2**8));
             this.log("Update: "+this.target+" "+this.targetCtr);
         }
         else if(this.targetCtr == 1) {
+            this.log("Prepping update: "+this.otherCastleLocations);
             this.targetCtr+=1;
             this.target = this.decodeLocation( Math.floor(this.otherCastleLocations / (2**8)) );
             this.log("Update: "+this.target+" "+this.targetCtr);
