@@ -169,13 +169,13 @@ export const Algorithms = (function() {
             if (vertical) {
                 let encodedEnemy = 0;
                 for(let i = 0; i < castles.length; i++) {
-                    encodedEnemy += i*(2**5)*this.encodeLocation(this.fuel_map[0].length - this.me.x - 1, this.me.y)
+                    encodedEnemy += Math.min(i,1)*(2**5)*this.encodeLocation(this.fuel_map[0].length - this.me.x - 1, this.me.y)
                 }
                 return encodedEnemy;
             } else {
                 let encodedEnemy = 0;
                 for(let i = 0; i < castles.length; i++) {
-                    encodedEnemy += i*(2**5)*this.encodeLocation(this.me.x, this.fuel_map.length - this.me.y - 1)
+                    encodedEnemy += Math.min(i,1)*(2**5)*this.encodeLocation(this.me.x, this.fuel_map.length - this.me.y - 1)
                 }
                 return encodedEnemy;
             }
@@ -265,7 +265,7 @@ export const Algorithms = (function() {
          */
         decodeLocation: function(enemyCastles, targetCtr) {
             let zone = Math.floor(enemyCastles / Math.max(((2**32)*targetCtr),1) ) % ((2**32)*(targetCtr+1));
-            console.log("Decode Location: "+zone+" "+targetCtr);
+            this.log("Decode Location: "+" "+enemyCastles+" "+zone+" "+targetCtr+" "+Math.floor(enemyCastles / Math.max(((2**32)*targetCtr),1) )+" "+Math.max(((2**32)*targetCtr),1) );
             let sz = this.fuel_map.length;
             if( zone == 0 ) //d1
                 return [3, 3];

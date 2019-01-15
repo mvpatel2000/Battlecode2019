@@ -6,6 +6,10 @@ export function Castle() {
     this.starting = true;
     this.preacher = true;
     this.encodedEnemy = this.getEnemyCastles();
+    this.log("Encoded Enemy from Castle: "+ this.encodedEnemy+
+        " C1: "+this.nearestEmptyLocation(this.scaledDecodeLocation( this.enemyCastles, 0 ))
+        +" C2: "+this.nearestEmptyLocation(this.scaledDecodeLocation( this.enemyCastles, 1 ))
+        +" C3: "+this.nearestEmptyLocation(this.scaledDecodeLocation( this.enemyCastles, 2 )));
 }
 
 function castleTurn() {
