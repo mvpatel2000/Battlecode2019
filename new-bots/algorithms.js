@@ -78,7 +78,7 @@ export const Algorithms = (function() {
          * Gives list of valid move locations.
          */
         validAbsoluteMoves: function() {
-            return absoluteMoves(this.getSpeed, this.me.x, this.me.y).filter(m => !this.occupied(m));
+            return absoluteMoves(this.getSpeed(), this.me.x, this.me.y).filter(m => !this.occupied(...m));
         },
 
         /**
@@ -100,12 +100,12 @@ export const Algorithms = (function() {
          */
         getRobotToAttack: function() {
             const rad = SPECS.UNITS[this.me.unit].ATTACK_RADIUS;
-            const priority = {
+            const priority = { // unit target priority tiebreakers
                 0: 1,
-                1: 2,
-                2: 0,
+                1: 0,
+                2: 2,
                 3: 3,
-                4: 5,
+                4: 3,
                 5: 4,
             };
             let robots = this.getVisibleRobots()
@@ -114,7 +114,12 @@ export const Algorithms = (function() {
                                             && d >= rad[0]
                                             && d <= rad[1])(this.distSquared([i.x, i.y], [this.me.x, this.me.y])));
             if (robots.length)
-                return robots.reduce((a, b) => priority[a.unit] > priority[b.unit] ? a : b);
+                return robots.reduce((a, b) => {
+                    const threat = this.threat(b) - this.threat(a);
+                    const type = priority[b.unit] - priority[a.unit];
+                    const id = a.id - b.id;
+                    return (threat ? threat : (type ? type : id)) > 0 ? b : a;
+                });
         },
 
         /*
@@ -125,18 +130,23 @@ export const Algorithms = (function() {
          */
         getOptimalEscapeLocation: function() {
             let visibleRobots = this.getVisibleRobots().filter(i => i.unit > 2 && i.team != this.me.team);
-            let hpdamage = 0;
+            if (visibleRobots.length == 0) {
+                return [];
+            }
             let minhpdamage = Infinity;
             let maxhpdamage = 0;
             let optimalmove = [];
             let possiblemoves = this.validAbsoluteMoves();
+            //add "staying still" to possible moves list
+            possiblemoves.push([this.me.x,this.me.y]);
+            //this.log(possiblemoves.length)
             for (let move of possiblemoves) {
+                let hpdamage = 0;
                 for (let i of visibleRobots) {
                     let dSquaredtoEnemy = distSquared([i.x, i.y], [move[0], move[1]])
-                    if (i.team != this.me.team) {
-                        hpdamage += this.expectedDamage(i, dSquaredtoEnemy);
-                    }
+                    hpdamage += this.expectedDamage(i, dSquaredtoEnemy);
                 }
+                //this.log(`movr=${move} hpp=${hpdamage}`);
                 if (hpdamage < minhpdamage) {
                     optimalmove = [move];
                     minhpdamage = hpdamage;
@@ -230,12 +240,19 @@ export const Algorithms = (function() {
         },
 
         /**
+         * Run expectedDamage with current location.
+         */
+        threat: function(r) {
+            return this.expectedDamage(r, this.distSquared([this.me.x, this.me.y], [r.x, r.y]));
+        },
+
+        /**
          * Given a robot, tells you if it can kill you.
          * Returns the amount of HP damage.
          */
         expectedDamage: function(i, dSquared) {
             let attack_rad2 = SPECS.UNITS[i.unit].ATTACK_RADIUS;
-            if (attack_rad2 == NULL) {
+            if (!attack_rad2) {
                 return 0;
             } else {
                 if (attack_rad2[0] <= dSquared && dSquared <= attack_rad2[1]) {
@@ -279,6 +296,7 @@ export const Algorithms = (function() {
             }
             return choice;
         },
+
         /**
          * Return a random, valid, move within a given radius^2.
          */
@@ -323,9 +341,9 @@ export const Algorithms = (function() {
                 return [];
             }
             let openHash = {};
-            let done = [];
-            let cameFrom = {}; //used to reconstruct map
-            let h = x => dist(dest, x) / getSpeed.call(this); //~steps away from destination
+            let done = new PriorityQueue((a, b) => h(a) < h(b));
+            let prev = {}; //used to reconstruct map
+            let h = x => (Math.abs(dest[0] - x[0]) + Math.abs(dest[1] - x[1])) / getSpeed.call(this); //~steps away from destination
             let hash = p => p[0] * 67 * 73 + p[1];
             let g = {}; //distance from origin in terms of steps taken
             g[start] = 0;
@@ -339,10 +357,10 @@ export const Algorithms = (function() {
                 let current = queue.pop(); //pop from priority queue instead of magic symbols
                 done.push(current)
                 if (i-- < 0 || arrEq(current, dest)) { //found destination
-                    current = done.reduce((a, b) => h(a) < h(b) ? a : b)
+                    current = done.pop();
                     let totalPath = [current];
-                    while (current in cameFrom) { //reconstruct path
-                        current = cameFrom[current];
+                    while (current in prev) { //reconstruct path
+                        current = prev[current];
                         totalPath.push(current);
                     }
                     let path = [];
@@ -364,11 +382,10 @@ export const Algorithms = (function() {
                             || openHash[hash(neighbor)]
                             || g[neighbor] != undefined) //filters invalid moves or already taken moves
                         continue;
-                    let tg = g[current] + 1; //increase step by 1
                     queue.push(neighbor); //push
                     openHash[hash(neighbor)] = true;
-                    cameFrom[neighbor] = current; //sets current path for backtrace
-                    g[neighbor] = tg;
+                    prev[neighbor] = current; //sets current path for backtrace
+                    g[neighbor] = g[current] + 1;
                     f[neighbor] = g[neighbor] + h(neighbor);
                 }
             }
