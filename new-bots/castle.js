@@ -42,7 +42,7 @@ function castleTurn() {
     if (this.starting || this.step % 6 == 0) {
         if (this.fuel >= 50 + adj && this.karbonite >= 10 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
             this.starting = false;
-            this.signal(this.otherCastleLocations, 1);
+            this.signal(this.otherCastleLocations, 2);
             return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
         } else {
             return;
@@ -57,7 +57,7 @@ function castleTurn() {
         }
     } else if ((this.step - 2) % 3 == 0) {
         if (this.fuel >= 50 + adj && this.karbonite >= 30 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
-            this.signal(this.otherCastleLocations, 1);
+            this.signal(this.otherCastleLocations, 2);
             return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
         } else {
             return;

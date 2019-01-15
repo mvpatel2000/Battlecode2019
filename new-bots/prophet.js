@@ -7,12 +7,15 @@ export function Prophet() {
     this.enemyCastleLocations = this.prepareTargets();
     this.targetCtr = 0;
     this.target = this.enemyCastleLocations[this.targetCtr]; 
+
+    this.step = 0;
 }
 
 /**
  * March across map reflection.
  */
 function prophetTurn() {
+    this.step++;
 
     // attack code
     // if there are robots that I can attack,
@@ -21,6 +24,7 @@ function prophetTurn() {
     let attackbot = this.getRobotToAttack();
     if (attackbot && !shouldRun.call(this)) {
         if (this.fuel > SPECS.UNITS[this.me.unit].ATTACK_FUEL_COST) {
+            this.step = 0;
             return this.attack(attackbot.x - this.me.x, attackbot.y - this.me.y);
         }
     }
@@ -42,6 +46,11 @@ function prophetTurn() {
             return this.go(finmove);
         }
     }
+
+    if(this.step > 50)
+        this.step = 0;
+    else if(this.step > 3)
+        return;
 
     // non-combat mode
     while (this.me.x == this.target[0] && this.me.y == this.target[1]) { //reset target if meet it
