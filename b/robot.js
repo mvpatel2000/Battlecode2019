@@ -1211,3 +1211,7 @@ class MyRobot extends BCAbstractRobot {
 }
 
 var robot = new MyRobot();
+
+var robot = new MyRobot();
+
+var robot = new MyRobot();
