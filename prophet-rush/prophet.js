@@ -8,14 +8,12 @@ export function Prophet() {
     this.targetCtr = 0;
     this.target = this.enemyCastleLocations[this.targetCtr]; 
 
-    this.step = 0;
 }
 
 /**
  * March across map reflection.
  */
 function prophetTurn() {
-    this.step++;
 
     // attack code
     // if there are robots that I can attack,
@@ -45,11 +43,6 @@ function prophetTurn() {
             return this.go(finmove);
         }
     }
-
-    if(this.step > 50)
-        this.step = 0;
-    else if(this.step > 3 && this.me.turn < 600)
-        return;
 
     // non-combat mode
     while (this.me.x == this.target[0] && this.me.y == this.target[1]) { //reset target if meet it

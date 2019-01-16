@@ -7,32 +7,28 @@ export function Prophet() {
     this.enemyCastleLocations = this.prepareTargets();
     this.targetCtr = 0;
     this.target = this.enemyCastleLocations[this.targetCtr]; 
-
-    this.step = 0;
 }
 
 /**
  * March across map reflection.
  */
 function prophetTurn() {
-    this.step++;
 
     // attack code
     // if there are robots that I can attack,
     // and I have enough fuel to attack,
     // attack them.
     let attackbot = this.getRobotToAttack();
-    if (attackbot && !shouldRun.call(this)) {
+    if (attackbot) {
         if (this.fuel > SPECS.UNITS[this.me.unit].ATTACK_FUEL_COST) {
             return this.attack(attackbot.x - this.me.x, attackbot.y - this.me.y);
         }
     }
-
     // If there are robots that can attack me,
     // move to location that minimizes the sum of the hp damage.
     // Tiebreaker: location closest (euclidean distance) from the original path move to target
     // Fall through if no robots can attack me, or not enough fuel to move.
-    let optimalmove = this.getOptimalEscapeLocationProphet();
+    let optimalmove = this.getOptimalEscapeLocation();
     if (optimalmove.length && this.fuel >= this.fuelpermove) {
         let route = this.path(this.target);
         let [dx, dy] = route.length ? route[0] : [0, 0];
@@ -45,11 +41,6 @@ function prophetTurn() {
             return this.go(finmove);
         }
     }
-
-    if(this.step > 50)
-        this.step = 0;
-    else if(this.step > 3 && this.me.turn < 600)
-        return;
 
     // non-combat mode
     while (this.me.x == this.target[0] && this.me.y == this.target[1]) { //reset target if meet it
@@ -71,15 +62,4 @@ function prophetTurn() {
 
     // movement code
     return this.go(this.target);
-}
-
-/**
- * tells if should run from nearby preachers
- */
-function shouldRun() {
-    return this.getVisibleRobots()
-            .filter(i => i.team != this.me.team && i.unit == SPECS.PREACHER)
-            .map(i => this.distSquared([this.me.x, this.me.y], [i.x, i.y]))
-            .map(i => i < 18)
-            .reduce((a, b) => a || b, false);
 }

@@ -24,6 +24,7 @@ function prophetTurn() {
     let attackbot = this.getRobotToAttack();
     if (attackbot && !shouldRun.call(this)) {
         if (this.fuel > SPECS.UNITS[this.me.unit].ATTACK_FUEL_COST) {
+            this.step = 0;
             return this.attack(attackbot.x - this.me.x, attackbot.y - this.me.y);
         }
     }
@@ -48,7 +49,7 @@ function prophetTurn() {
 
     if(this.step > 50)
         this.step = 0;
-    else if(this.step > 3 && this.me.turn < 600)
+    else if(this.step > 3)
         return;
 
     // non-combat mode
