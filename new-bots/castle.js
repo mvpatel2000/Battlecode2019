@@ -3,17 +3,12 @@ import {SPECS} from 'battlecode';
 export function Castle() {
     this.turn = castleTurn;
     this.step = 0;
-    this.starting = true;
-    this.preacher = true;
 
     this.reflectedLocation = this.reflectPoint(this.me.x, this.me.y);
     this.myEncodedLocation = this.encodeLocation(this.reflectedLocation[0], this.reflectedLocation[1]);
     this.otherCastleLocations = 0;
 
     this.alphaCastle = true;
-
-    this.prophet = 0;
-    this.initial = true;
 }
 
 function castleTurn() {
@@ -43,10 +38,22 @@ function castleTurn() {
 
     let choice = this.randomMove();
 
-    let attackbot = this.getRobotToAttack(); //always attack
+    let attackbot = this.getRobotToAttack(); //attack if enemy is in range
     if (attackbot) {
         if (this.fuel > SPECS.UNITS[this.me.unit].ATTACK_FUEL_COST) {
             return this.attack(attackbot.x - this.me.x, attackbot.y - this.me.y);
         }
     }
+
+    //one unit spawn
+    if (this.fuel >= 50 && this.karbonite >= 10 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
+        return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
+    }
+
+//     if (this.prophet < 3 && this.fuel >= 50 && this.karbonite >= 30 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
+//         this.signal(this.otherCastleLocations, 2);
+//         this.prophet++;
+//         return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
+//     }
+
 }
