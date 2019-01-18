@@ -1,14 +1,13 @@
 #!/bin/bash
-mkdir a b
-cd a
+cd $1
 bc19compile -d .
 mv compiled_bot.js ../a/robot.js
 cd ..
-cd b
+cd $2
 bc19compile -d .
 mv compiled_bot.js ../b/robot.js
 cd ..
-for i in {1..1000}; do
-    x=$(bc19run -r a -b b)
-done
+seed=$RANDOM
+echo "SEED=$seed"
+bc19run -r a -b b -s $seed
 

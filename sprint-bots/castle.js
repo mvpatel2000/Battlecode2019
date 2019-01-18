@@ -44,18 +44,11 @@ function castleTurn() {
     let choice = this.randomMove();
     const adj = this.me.turn > 10 ? 100 : 0;
 
-    let attackbot = this.getRobotToAttack();
-    if (attackbot) {
-        if (this.fuel > SPECS.UNITS[this.me.unit].ATTACK_FUEL_COST) {
-            return this.attack(attackbot.x - this.me.x, attackbot.y - this.me.y);
-        }
-    }
-
     //one unit spawn
     if (this.initial && this.fuel >= 50 && this.karbonite >= 10 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
         this.initial = false;
         return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
-    }
+    } 
     if (this.prophet < 3 && this.fuel >= 50 && this.karbonite >= 30 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
         this.signal(this.otherCastleLocations, 2);
         this.prophet++;
@@ -65,16 +58,14 @@ function castleTurn() {
 
     // base spawn rate
     if (this.starting || this.step % 6 == 0) {
-        if ((this.rand(100) < 20 || this.me.turn < 60)
-                && this.fuel >= 50 + adj && this.karbonite >= 10
-                && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
+        if (this.rand(100) < 50 && (this.rand(100) < 20 || this.me.turn < 60) && this.fuel >= 50 + adj && this.karbonite >= 10 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
             this.starting = false;
             this.signal(this.otherCastleLocations, 2);
             return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
         } else {
             return;
         }
-    }
+    } 
   /*  else if (this.preacher || (this.step - 1) % 3 == 0) {
         if (this.fuel >= 50 + adj && this.karbonite >= 30 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
             this.preacher = false;
@@ -91,7 +82,7 @@ function castleTurn() {
         } else {
             return;
         }
-    //}
+    //} 
    /* else {
         if (this.fuel >= 50 + adj && this.karbonite >= 30 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
             this.signal(this.otherCastleLocations, 2);

@@ -8,7 +8,7 @@ export function Church() {
 function churchTurn() {
     this.step++;
     let choice = this.randomMove();
-    if (this.step % 6 && this.fuel >= 150 && this.karbonite >= 10
+    if (this.step % 3 && this.fuel >= 150 && this.karbonite >= 10
                 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
         return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
     } else {

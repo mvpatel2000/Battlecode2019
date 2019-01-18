@@ -441,9 +441,12 @@ function pilgrimTurn() {
                 && this.me.karbonite < SPECS.UNITS[this.me.unit].KARBONITE_CAPACITY)) {
         // values should be modified as necessary - churches seem to hurt more than help in
         // general.
-        if (this.karbonite >= 50 && this.fuel >= 200 & this.me.turn > 20) {
+        if (this.karbonite >= 50 && this.fuel >= 200 && this.me.turn > 20
+                                 && this.getVisibleRobots().every(i => i.unit > 1)) {
             let move = this.randomMove();
-            return this.buildUnit(SPECS.CHURCH, move[0], move[1]);
+            if (!this.karbonite_map[this.me.y + move[1]][this.me.x + move[0]]
+                    && !this.fuel_map[this.me.y + move[1]][this.me.x + move[0]])
+                return this.buildUnit(SPECS.CHURCH, move[0], move[1]);
         } else {
             if (this.fuel > 5)
                 return this.mine();
@@ -521,7 +524,7 @@ function Church() {
 function churchTurn() {
     this.step++;
     let choice = this.randomMove();
-    if (this.step % 2 && this.fuel >= 150 && this.karbonite >= 10
+    if (this.step % 3 && this.fuel >= 150 && this.karbonite >= 10
                 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
         return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
     } else {

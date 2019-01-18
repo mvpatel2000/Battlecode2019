@@ -6,17 +6,8 @@ export function Prophet() {
 
     this.enemyCastleLocations = this.prepareTargets();
     this.targetCtr = 0;
-    this.target = this.enemyCastleLocations[this.targetCtr];
-    this.defender = this.rand(100) < 20;
-    if (this.defender) {
-        this.log('Building defender')
-        this.target = [this.me.x + this.rand(7) - 4, this.me.y + this.rand(7) - 4]
-    } else if (this.rand(100) < 20) {
-        this.log('Building raider')
-        let res = this.findResources();
-        this.raider = true;
-        this.target = res[this.rand(res.length)];
-    }
+    this.target = this.enemyCastleLocations[this.targetCtr]; 
+
     this.step = 0;
 }
 
@@ -55,20 +46,18 @@ function prophetTurn() {
         }
     }
 
-    // one move per 50 steps
-    if (this.step > 50 || this.fuel_map[this.me.y][this.me.x]
-                       || this.karbonite_map[this.me.y][this.me.x] || this.raider)
+    if(this.step > 50)
         this.step = 0;
-    else if (this.step > 3 && this.me.turn < 600)
+    else if(this.step > 3 && this.me.turn < 600)
         return;
 
     // non-combat mode
     while (this.me.x == this.target[0] && this.me.y == this.target[1]) { //reset target if meet it
-        if (this.targetCtr < this.enemyCastleLocations.length) {
-            this.log("Prepping update: " + this.enemyCastleLocations + " " + this.targetCtr);
-            this.targetCtr += 1;
+        if(this.targetCtr < this.enemyCastleLocations.length) {
+            this.log("Prepping update: "+this.enemyCastleLocations+" "+this.targetCtr);
+            this.targetCtr+=1;
             this.target = this.enemyCastleLocations[this.targetCtr];
-            this.log("Update: " + this.target + " " + this.targetCtr);
+            this.log("Update: "+this.target+" "+this.targetCtr);
         }
         else {
             let r = () => [this.rand(this.map[0].length),
@@ -79,6 +68,7 @@ function prophetTurn() {
             }
         }
     }
+
     // movement code
     return this.go(this.target);
 }

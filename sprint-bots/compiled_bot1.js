@@ -1,6 +1,6 @@
 'use strict';
 
-var SPECS = {"COMMUNICATION_BITS":16,"CASTLE_TALK_BITS":8,"MAX_ROUNDS":1000,"TRICKLE_FUEL":25,"INITIAL_KARBONITE":100,"INITIAL_FUEL":500,"MINE_FUEL_COST":1,"KARBONITE_YIELD":2,"FUEL_YIELD":10,"MAX_TRADE":1024,"MAX_BOARD_SIZE":64,"MAX_ID":4096,"CASTLE":0,"CHURCH":1,"PILGRIM":2,"CRUSADER":3,"PROPHET":4,"PREACHER":5,"RED":0,"BLUE":1,"CHESS_INITIAL":100,"CHESS_EXTRA":20,"TURN_MAX_TIME":200,"MAX_MEMORY":50000000,"UNITS":[{"CONSTRUCTION_KARBONITE":null,"CONSTRUCTION_FUEL":null,"KARBONITE_CAPACITY":null,"FUEL_CAPACITY":null,"SPEED":0,"FUEL_PER_MOVE":null,"STARTING_HP":200,"VISION_RADIUS":100,"ATTACK_DAMAGE":10,"ATTACK_RADIUS":[1,64],"ATTACK_FUEL_COST":10,"DAMAGE_SPREAD":0},{"CONSTRUCTION_KARBONITE":50,"CONSTRUCTION_FUEL":200,"KARBONITE_CAPACITY":null,"FUEL_CAPACITY":null,"SPEED":0,"FUEL_PER_MOVE":null,"STARTING_HP":100,"VISION_RADIUS":100,"ATTACK_DAMAGE":0,"ATTACK_RADIUS":0,"ATTACK_FUEL_COST":0,"DAMAGE_SPREAD":0},{"CONSTRUCTION_KARBONITE":10,"CONSTRUCTION_FUEL":50,"KARBONITE_CAPACITY":20,"FUEL_CAPACITY":100,"SPEED":4,"FUEL_PER_MOVE":1,"STARTING_HP":10,"VISION_RADIUS":100,"ATTACK_DAMAGE":null,"ATTACK_RADIUS":null,"ATTACK_FUEL_COST":null,"DAMAGE_SPREAD":null},{"CONSTRUCTION_KARBONITE":15,"CONSTRUCTION_FUEL":50,"KARBONITE_CAPACITY":20,"FUEL_CAPACITY":100,"SPEED":9,"FUEL_PER_MOVE":1,"STARTING_HP":40,"VISION_RADIUS":49,"ATTACK_DAMAGE":10,"ATTACK_RADIUS":[1,16],"ATTACK_FUEL_COST":10,"DAMAGE_SPREAD":0},{"CONSTRUCTION_KARBONITE":25,"CONSTRUCTION_FUEL":50,"KARBONITE_CAPACITY":20,"FUEL_CAPACITY":100,"SPEED":4,"FUEL_PER_MOVE":2,"STARTING_HP":20,"VISION_RADIUS":64,"ATTACK_DAMAGE":10,"ATTACK_RADIUS":[16,64],"ATTACK_FUEL_COST":25,"DAMAGE_SPREAD":0},{"CONSTRUCTION_KARBONITE":30,"CONSTRUCTION_FUEL":50,"KARBONITE_CAPACITY":20,"FUEL_CAPACITY":100,"SPEED":4,"FUEL_PER_MOVE":3,"STARTING_HP":60,"VISION_RADIUS":16,"ATTACK_DAMAGE":20,"ATTACK_RADIUS":[1,16],"ATTACK_FUEL_COST":15,"DAMAGE_SPREAD":3}]};
+var SPECS = {"COMMUNICATION_BITS":16,"CASTLE_TALK_BITS":8,"MAX_ROUNDS":1000,"TRICKLE_FUEL":25,"INITIAL_KARBONITE":100,"INITIAL_FUEL":500,"MINE_FUEL_COST":1,"KARBONITE_YIELD":2,"FUEL_YIELD":10,"MAX_TRADE":1024,"MAX_BOARD_SIZE":64,"MAX_ID":4096,"CASTLE":0,"CHURCH":1,"PILGRIM":2,"CRUSADER":3,"PROPHET":4,"PREACHER":5,"RED":0,"BLUE":1,"CHESS_INITIAL":100,"CHESS_EXTRA":20,"TURN_MAX_TIME":200,"MAX_MEMORY":50000000,"UNITS":[{"CONSTRUCTION_KARBONITE":null,"CONSTRUCTION_FUEL":null,"KARBONITE_CAPACITY":null,"FUEL_CAPACITY":null,"SPEED":0,"FUEL_PER_MOVE":null,"STARTING_HP":100,"VISION_RADIUS":100,"ATTACK_DAMAGE":null,"ATTACK_RADIUS":null,"ATTACK_FUEL_COST":null,"DAMAGE_SPREAD":null},{"CONSTRUCTION_KARBONITE":50,"CONSTRUCTION_FUEL":200,"KARBONITE_CAPACITY":null,"FUEL_CAPACITY":null,"SPEED":0,"FUEL_PER_MOVE":null,"STARTING_HP":50,"VISION_RADIUS":100,"ATTACK_DAMAGE":null,"ATTACK_RADIUS":null,"ATTACK_FUEL_COST":null,"DAMAGE_SPREAD":null},{"CONSTRUCTION_KARBONITE":10,"CONSTRUCTION_FUEL":50,"KARBONITE_CAPACITY":20,"FUEL_CAPACITY":100,"SPEED":4,"FUEL_PER_MOVE":1,"STARTING_HP":10,"VISION_RADIUS":100,"ATTACK_DAMAGE":null,"ATTACK_RADIUS":null,"ATTACK_FUEL_COST":null,"DAMAGE_SPREAD":null},{"CONSTRUCTION_KARBONITE":20,"CONSTRUCTION_FUEL":50,"KARBONITE_CAPACITY":20,"FUEL_CAPACITY":100,"SPEED":9,"FUEL_PER_MOVE":1,"STARTING_HP":40,"VISION_RADIUS":36,"ATTACK_DAMAGE":10,"ATTACK_RADIUS":[1,16],"ATTACK_FUEL_COST":10,"DAMAGE_SPREAD":0},{"CONSTRUCTION_KARBONITE":25,"CONSTRUCTION_FUEL":50,"KARBONITE_CAPACITY":20,"FUEL_CAPACITY":100,"SPEED":4,"FUEL_PER_MOVE":2,"STARTING_HP":20,"VISION_RADIUS":64,"ATTACK_DAMAGE":10,"ATTACK_RADIUS":[16,64],"ATTACK_FUEL_COST":25,"DAMAGE_SPREAD":0},{"CONSTRUCTION_KARBONITE":30,"CONSTRUCTION_FUEL":50,"KARBONITE_CAPACITY":20,"FUEL_CAPACITY":100,"SPEED":4,"FUEL_PER_MOVE":3,"STARTING_HP":60,"VISION_RADIUS":16,"ATTACK_DAMAGE":20,"ATTACK_RADIUS":[1,16],"ATTACK_FUEL_COST":15,"DAMAGE_SPREAD":3}]};
 
 function insulate(content) {
     return JSON.parse(JSON.stringify(content));
@@ -97,7 +97,7 @@ class BCAbstractRobot {
     signal(value, radius) {
         // Check if enough fuel to signal, and that valid value.
 
-        if (this.fuel < Math.ceil(Math.sqrt(radius))) throw "Not enough fuel to signal given radius.";
+        if (this.fuel < radius) throw "Not enough fuel to signal given radius.";
         if (!Number.isInteger(value) || value < 0 || value >= Math.pow(2,SPECS.COMMUNICATION_BITS)) throw "Invalid signal, must be int within bit range.";
         if (radius > 2*Math.pow(SPECS.MAX_BOARD_SIZE-1,2)) throw "Signal radius is too big.";
 
@@ -187,10 +187,11 @@ class BCAbstractRobot {
     }
 
     attack(dx, dy) {
-        if (this.me.unit === SPECS.CHURCH) throw "Churches cannot attack.";
+        if (this.me.unit !== SPECS.CRUSADER && this.me.unit !== SPECS.PREACHER && this.me.unit !== SPECS.PROPHET) throw "Given unit cannot attack.";
         if (this.fuel < SPECS.UNITS[this.me.unit].ATTACK_FUEL_COST) throw "Not enough fuel to attack.";
         if (!this._bc_check_on_map(this.me.x+dx,this.me.y+dy)) throw "Can't attack off of map.";
         if (this._bc_game_state.shadow[this.me.y+dy][this.me.x+dx] === -1) throw "Cannot attack outside of vision range.";
+        if (!this.map[this.me.y+dy][this.me.x+dx]) throw "Cannot attack impassable terrain.";
 
         var r = Math.pow(dx,2) + Math.pow(dy,2);
         if (r > SPECS.UNITS[this.me.unit]['ATTACK_RADIUS'][1] || r < SPECS.UNITS[this.me.unit]['ATTACK_RADIUS'][0]) throw "Cannot attack outside of attack range.";
@@ -214,7 +215,7 @@ class BCAbstractRobot {
 
     // Check if a given robot is visible.
     isVisible(robot) {
-        return ('unit' in robot);
+        return ('x' in robot);
     }
 
     // Check if a given robot is sending you radio.
@@ -359,18 +360,11 @@ function castleTurn() {
     let choice = this.randomMove();
     const adj = this.me.turn > 10 ? 100 : 0;
 
-    let attackbot = this.getRobotToAttack();
-    if (attackbot) {
-        if (this.fuel > SPECS.UNITS[this.me.unit].ATTACK_FUEL_COST) {
-            return this.attack(attackbot.x - this.me.x, attackbot.y - this.me.y);
-        }
-    }
-
     //one unit spawn
     if (this.initial && this.fuel >= 50 && this.karbonite >= 10 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
         this.initial = false;
         return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
-    }
+    } 
     if (this.prophet < 3 && this.fuel >= 50 && this.karbonite >= 30 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
         this.signal(this.otherCastleLocations, 2);
         this.prophet++;
@@ -387,7 +381,7 @@ function castleTurn() {
         } else {
             return;
         }
-    }
+    } 
   /*  else if (this.preacher || (this.step - 1) % 3 == 0) {
         if (this.fuel >= 50 + adj && this.karbonite >= 30 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
             this.preacher = false;
@@ -404,7 +398,7 @@ function castleTurn() {
         } else {
             return;
         }
-    //}
+    //} 
    /* else {
         if (this.fuel >= 50 + adj && this.karbonite >= 30 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
             this.signal(this.otherCastleLocations, 2);
@@ -609,14 +603,8 @@ function Prophet() {
 
     this.enemyCastleLocations = this.prepareTargets();
     this.targetCtr = 0;
-    this.target = this.enemyCastleLocations[this.targetCtr];
-    this.defender = this.rand(100) < 10;
-    if (this.defender) {
-        this.target = [this.me.x + this.rand(7) - 4, this.me.y + this.rand(7) - 4];
-    } else if (this.rand(100) < 10) {
-        let res = this.findResources();
-        this.target = res[this.rand(res.length)];
-    }
+    this.target = this.enemyCastleLocations[this.targetCtr]; 
+
     this.step = 0;
 }
 
@@ -655,19 +643,18 @@ function prophetTurn() {
         }
     }
 
-    // one move per 50 steps
-    if (this.step > 50 || this.fuel_map[this.me.y][this.me.x] || this.karbonite_map[this.me.y][this.me.x])
+    if(this.step > 50)
         this.step = 0;
-    else if (this.step > 3 && this.me.turn < 600)
+    else if(this.step > 3 && this.me.turn < 600)
         return;
 
     // non-combat mode
     while (this.me.x == this.target[0] && this.me.y == this.target[1]) { //reset target if meet it
-        if (this.targetCtr < this.enemyCastleLocations.length) {
-            this.log("Prepping update: " + this.enemyCastleLocations + " " + this.targetCtr);
-            this.targetCtr += 1;
+        if(this.targetCtr < this.enemyCastleLocations.length) {
+            this.log("Prepping update: "+this.enemyCastleLocations+" "+this.targetCtr);
+            this.targetCtr+=1;
             this.target = this.enemyCastleLocations[this.targetCtr];
-            this.log("Update: " + this.target + " " + this.targetCtr);
+            this.log("Update: "+this.target+" "+this.targetCtr);
         }
         else {
             let r = () => [this.rand(this.map[0].length),
@@ -678,6 +665,7 @@ function prophetTurn() {
             }
         }
     }
+
     // movement code
     return this.go(this.target);
 }
@@ -814,14 +802,7 @@ const Algorithms = (function() {
         dist: dist,
         distSquared: distSquared,
         getSpeed: getSpeed,
-
-        /**
-         * get pseudorandom number
-         */
-        rand: function rand(len) {
-            seed = ((seed + 3) * 7 + 37) % 8117 + this.me.x * 97 + this.me.y * 1013;
-            return seed % len;
-        },
+        rand: rand,
 
         /**
          * Gives list of valid move locations.

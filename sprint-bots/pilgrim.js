@@ -36,14 +36,8 @@ function pilgrimTurn() {
                                  && this.getVisibleRobots().every(i => i.unit > 1)) {
             let move = this.randomMove()
             if (!this.karbonite_map[this.me.y + move[1]][this.me.x + move[0]]
-                    && !this.fuel_map[this.me.y + move[1]][this.me.x + move[0]]) {
+                    && !this.fuel_map[this.me.y + move[1]][this.me.x + move[0]])
                 return this.buildUnit(SPECS.CHURCH, move[0], move[1]);
-            } else {
-                if (this.fuel > 5)
-                    return this.mine();
-                else
-                    return;
-            }
         } else {
             if (this.fuel > 5)
                 return this.mine();

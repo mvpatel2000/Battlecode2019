@@ -80,14 +80,7 @@ export const Algorithms = (function() {
         dist: dist,
         distSquared: distSquared,
         getSpeed: getSpeed,
-
-        /**
-         * get pseudorandom number
-         */
-        rand: function rand(len) {
-            seed = ((seed + 3) * 7 + 37) % 8117 + this.me.x * 97 + this.me.y * 1013;
-            return seed % len;
-        },
+        rand: rand,
 
         /**
          * Gives list of valid move locations.
