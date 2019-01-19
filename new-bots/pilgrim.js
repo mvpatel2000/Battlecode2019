@@ -72,6 +72,7 @@ function pilgrimDropping() {
         occupied: (x, y) =>
                     y < 0 || x < 0 || y >= this.map.length
                             || x >= this.map[0].length || !this.map[y][x],
+        rand: this.rand.bind(this),
         me: {x: x, y: y},
     });
     for (let i of this.getVisibleRobots()) {

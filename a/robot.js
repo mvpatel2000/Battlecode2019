@@ -380,7 +380,9 @@ function castleTurn() {
 
     // base spawn rate
     if (this.starting || this.step % 6 == 0) {
-        if (this.rand(100) < 50 && (this.rand(100) < 20 || this.me.turn < 60) && this.fuel >= 50 + adj && this.karbonite >= 10 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
+        if ((this.rand(100) < 20 || this.me.turn < 60)
+                && this.fuel >= 50 + adj && this.karbonite >= 10
+                && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
             this.starting = false;
             this.signal(this.otherCastleLocations, 2);
             return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
@@ -451,8 +453,14 @@ function pilgrimTurn() {
                                  && this.getVisibleRobots().every(i => i.unit > 1)) {
             let move = this.randomMove();
             if (!this.karbonite_map[this.me.y + move[1]][this.me.x + move[0]]
-                    && !this.fuel_map[this.me.y + move[1]][this.me.x + move[0]])
+                    && !this.fuel_map[this.me.y + move[1]][this.me.x + move[0]]) {
                 return this.buildUnit(SPECS.CHURCH, move[0], move[1]);
+            } else {
+                if (this.fuel > 5)
+                    return this.mine();
+                else
+                    return;
+            }
         } else {
             if (this.fuel > 5)
                 return this.mine();
@@ -495,6 +503,7 @@ function pilgrimDropping() {
         occupied: (x, y) =>
                     y < 0 || x < 0 || y >= this.map.length
                             || x >= this.map[0].length || !this.map[y][x],
+        rand: this.rand.bind(this),
         me: {x: x, y: y},
     });
     for (let i of this.getVisibleRobots()) {
@@ -530,7 +539,7 @@ function Church() {
 function churchTurn() {
     this.step++;
     let choice = this.randomMove();
-    if (this.step % 3 && this.fuel >= 150 && this.karbonite >= 10
+    if (this.step % 6 && this.fuel >= 150 && this.karbonite >= 10
                 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
         return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
     } else {
@@ -610,11 +619,14 @@ function Prophet() {
     this.enemyCastleLocations = this.prepareTargets();
     this.targetCtr = 0;
     this.target = this.enemyCastleLocations[this.targetCtr];
-    this.defender = this.rand(100) < 10;
+    this.defender = this.rand(100) < 20;
     if (this.defender) {
+        this.log('Building defender');
         this.target = [this.me.x + this.rand(7) - 4, this.me.y + this.rand(7) - 4];
-    } else if (this.rand(100) < 10) {
+    } else if (this.rand(100) < 20) {
+        this.log('Building raider');
         let res = this.findResources();
+        this.raider = true;
         this.target = res[this.rand(res.length)];
     }
     this.step = 0;
@@ -764,11 +776,6 @@ class PriorityQueue {
 const Algorithms = (function() {
     let seed = 1;
 
-    function rand(len) {
-        seed = ((seed + 3) * 7 + 37) % 8117;
-        return seed % len;
-    }
-
     function dist(a, b) {
         let dx = a[0] - b[0];
         let dy = a[1] - b[1];
@@ -819,7 +826,8 @@ const Algorithms = (function() {
          * get pseudorandom number
          */
         rand: function rand(len) {
-            seed = ((seed + 3) * 7 + 37) % 8117 + this.me.x * 97 + this.me.y * 1013;
+            seed = ((seed + 3) * 7 + 37) % 8117 + this.me.x * 97
+                    + this.me.y * 1013 + this.getVisibleRobots().length * 37;
             return seed % len;
         },
 
@@ -1070,8 +1078,8 @@ const Algorithms = (function() {
                     return enemyCastleLocations;
                 }
             }
-            let r = () => [rand(this.map[0].length),
-                            rand(this.map.length)];
+            let r = () => [this.rand(this.map[0].length),
+                            this.rand(this.map.length)];
             let target = r();
             while (!this.map[target[1]][target[0]]) {
                 target = r();
@@ -1208,13 +1216,13 @@ const Algorithms = (function() {
          */
         randomMove: function() {
             const choices = [[0,-1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1]];
-            let choice = choices[rand(choices.length)];
+            let choice = choices[this.rand(choices.length)];
             for (;;) {
                 let locx = this.me.x + choice[0];
                 let locy = this.me.y + choice[1];
                 if (!this.occupied(locx, locy))
                     break;
-                choice = choices[rand(choices.length)];
+                choice = choices[this.rand(choices.length)];
             }
             return choice;
         },
@@ -1235,13 +1243,13 @@ const Algorithms = (function() {
                     }
                 }
             }
-            let choice = choices[rand(choices.length)];
+            let choice = choices[this.rand(choices.length)];
             for (;;) {
                 let locx = this.me.x + choice[0];
                 let locy = this.me.y + choice[1];
                 if (!this.occupied(locx, locy))
                     break;
-                choice = choices[rand(choices.length)];
+                choice = choices[this.rand(choices.length)];
             }
             return choice;
         },

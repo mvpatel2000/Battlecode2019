@@ -4,11 +4,6 @@ import {PriorityQueue} from './priorityqueue'
 export const Algorithms = (function() {
     let seed = 1;
 
-    function rand(len) {
-        seed = ((seed + 3) * 7 + 37) % 8117;
-        return seed % len;
-    }
-
     function dist(a, b) {
         let dx = a[0] - b[0];
         let dy = a[1] - b[1];
@@ -85,7 +80,8 @@ export const Algorithms = (function() {
          * get pseudorandom number
          */
         rand: function rand(len) {
-            seed = ((seed + 3) * 7 + 37) % 8117 + this.me.x * 97 + this.me.y * 1013;
+            seed = ((seed + 3) * 7 + 37) % 8117 + this.me.x * 97
+                    + this.me.y * 1013 + this.getVisibleRobots().length * 37;
             return seed % len;
         },
 
@@ -336,8 +332,8 @@ export const Algorithms = (function() {
                     return enemyCastleLocations;
                 }
             }
-            let r = () => [rand(this.map[0].length),
-                            rand(this.map.length)];
+            let r = () => [this.rand(this.map[0].length),
+                            this.rand(this.map.length)];
             let target = r();
             while (!this.map[target[1]][target[0]]) {
                 target = r();
@@ -514,13 +510,13 @@ export const Algorithms = (function() {
          */
         randomMove: function() {
             const choices = [[0,-1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1]];
-            let choice = choices[rand(choices.length)]
+            let choice = choices[this.rand(choices.length)]
             for (;;) {
                 let locx = this.me.x + choice[0];
                 let locy = this.me.y + choice[1];
                 if (!this.occupied(locx, locy))
                     break;
-                choice = choices[rand(choices.length)];
+                choice = choices[this.rand(choices.length)];
             }
             return choice;
         },
@@ -541,13 +537,13 @@ export const Algorithms = (function() {
                     }
                 }
             }
-            let choice = choices[rand(choices.length)]
+            let choice = choices[this.rand(choices.length)]
             for (;;) {
                 let locx = this.me.x + choice[0];
                 let locy = this.me.y + choice[1];
                 if (!this.occupied(locx, locy))
                     break;
-                choice = choices[rand(choices.length)];
+                choice = choices[this.rand(choices.length)];
             }
             return choice;
         },

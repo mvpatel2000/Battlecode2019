@@ -359,18 +359,11 @@ function castleTurn() {
     let choice = this.randomMove();
     const adj = this.me.turn > 10 ? 100 : 0;
 
-    let attackbot = this.getRobotToAttack();
-    if (attackbot) {
-        if (this.fuel > SPECS.UNITS[this.me.unit].ATTACK_FUEL_COST) {
-            return this.attack(attackbot.x - this.me.x, attackbot.y - this.me.y);
-        }
-    }
-
     //one unit spawn
     if (this.initial && this.fuel >= 50 && this.karbonite >= 10 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
         this.initial = false;
         return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
-    }
+    } 
     if (this.prophet < 3 && this.fuel >= 50 && this.karbonite >= 30 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
         this.signal(this.otherCastleLocations, 2);
         this.prophet++;
@@ -387,7 +380,7 @@ function castleTurn() {
         } else {
             return;
         }
-    }
+    } 
   /*  else if (this.preacher || (this.step - 1) % 3 == 0) {
         if (this.fuel >= 50 + adj && this.karbonite >= 30 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
             this.preacher = false;
@@ -404,7 +397,7 @@ function castleTurn() {
         } else {
             return;
         }
-    //}
+    //} 
    /* else {
         if (this.fuel >= 50 + adj && this.karbonite >= 30 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
             this.signal(this.otherCastleLocations, 2);
@@ -609,14 +602,8 @@ function Prophet() {
 
     this.enemyCastleLocations = this.prepareTargets();
     this.targetCtr = 0;
-    this.target = this.enemyCastleLocations[this.targetCtr];
-    this.defender = this.rand(100) < 10;
-    if (this.defender) {
-        this.target = [this.me.x + this.rand(7) - 4, this.me.y + this.rand(7) - 4];
-    } else if (this.rand(100) < 10) {
-        let res = this.findResources();
-        this.target = res[this.rand(res.length)];
-    }
+    this.target = this.enemyCastleLocations[this.targetCtr]; 
+
     this.step = 0;
 }
 
@@ -655,19 +642,18 @@ function prophetTurn() {
         }
     }
 
-    // one move per 50 steps
-    if (this.step > 50 || this.fuel_map[this.me.y][this.me.x] || this.karbonite_map[this.me.y][this.me.x])
+    if(this.step > 50)
         this.step = 0;
-    else if (this.step > 3 && this.me.turn < 600)
+    else if(this.step > 3 && this.me.turn < 600)
         return;
 
     // non-combat mode
     while (this.me.x == this.target[0] && this.me.y == this.target[1]) { //reset target if meet it
-        if (this.targetCtr < this.enemyCastleLocations.length) {
-            this.log("Prepping update: " + this.enemyCastleLocations + " " + this.targetCtr);
-            this.targetCtr += 1;
+        if(this.targetCtr < this.enemyCastleLocations.length) {
+            this.log("Prepping update: "+this.enemyCastleLocations+" "+this.targetCtr);
+            this.targetCtr+=1;
             this.target = this.enemyCastleLocations[this.targetCtr];
-            this.log("Update: " + this.target + " " + this.targetCtr);
+            this.log("Update: "+this.target+" "+this.targetCtr);
         }
         else {
             let r = () => [this.rand(this.map[0].length),
@@ -678,6 +664,7 @@ function prophetTurn() {
             }
         }
     }
+
     // movement code
     return this.go(this.target);
 }
@@ -814,14 +801,7 @@ const Algorithms = (function() {
         dist: dist,
         distSquared: distSquared,
         getSpeed: getSpeed,
-
-        /**
-         * get pseudorandom number
-         */
-        rand: function rand(len) {
-            seed = ((seed + 3) * 7 + 37) % 8117 + this.me.x * 97 + this.me.y * 1013;
-            return seed % len;
-        },
+        rand: rand,
 
         /**
          * Gives list of valid move locations.
