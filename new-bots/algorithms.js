@@ -179,7 +179,7 @@ export const Algorithms = (function() {
                  }
              }
              return aoelocation;
-         },
+        },
 
         /**
          * Returns a robot to attack if possible.
@@ -347,6 +347,30 @@ export const Algorithms = (function() {
         },
 
         /**
+         * Check nearby tiles to get mines
+         * Karbonite mines are prioritized over fuel mines
+         */
+        getNearbyMines: function() {
+            let x = this.me.x;
+            let y = this.me.y;
+            let mines = []
+            let zonesize = 3;
+            for(let dx = -zonesize; dx < zonesize+1; dx++) {
+                for(let dy = -zonesize; dy<zonesize+1; dy++) {
+                    if(dx*dx + dy*dy <= zonesize*zonesize + 1) { //within r^2
+                        if(this.karbonite_map[y+dy][x+dx]) {
+                            mines.unshift([x+dx, y+dy]);
+                        }
+                        if(this.fuel_map[y+dy][x+dx]) {
+                            mines.push([x+dx, y+dy]);
+                        }
+                    }
+                }
+            }
+            return mines;
+        },
+
+        /**
          * Returns the zone # from x,y
          * current implementation: 7-bit integer, so we can
          * encode 2 zones in 1 comm (the two castles that
@@ -372,6 +396,21 @@ export const Algorithms = (function() {
             let y = Math.floor(0.5 + ((zone%ybits) + 0.5) * sz / ybits);
             return this.nearestEmptyLocation(x, y);
         },
+
+        /**
+         * Encodes exact location into 12 bits
+         * location[0] = x, location[y] = 1
+         */
+         encodeExactLocation: function(location) {
+            return location[0]*64 + location[1];
+         },
+
+         /**
+         * Decodes exact location into 12 bits
+         */
+         decodeExactLocation: function(zone) {
+            return [ (zone / 64) % 64, zone % 64];
+         },
 
         /**
          * Returns x,y nearby that is empty

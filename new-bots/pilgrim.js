@@ -2,7 +2,7 @@ import {SPECS} from 'battlecode';
 
 export function Pilgrim() {
     // add castles + churches to list of known drop-off points
-    this.turn = pilgrimTurn;
+    this.turn = doNothing; //pilgrimTurn;
     this.queue = this.findResources();
     this.dropoffs = [];
     this.findDropoffs = function () {
@@ -20,6 +20,8 @@ export function Pilgrim() {
         }
     }
 }
+
+function doNothing() {}
 
 function pilgrimTurn() {
     this.findDropoffs();

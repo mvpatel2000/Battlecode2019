@@ -9,27 +9,34 @@ export function Castle() {
     this.otherCastleLocations = 0;
 
     this.alphaCastle = true;
+
+    this.nearbyMines = this.getNearbyMines();
+    this.log(this.nearbyMines);
 }
 
 function castleTurn() {
     this.step++;
+    this.log(this.me.time+" "+this.me.x+" "+this.me.y);
     
     //if(this.alphaCastle == false)
     //    return;
 
     let choice = this.randomMove();
 
-    let attackbot = this.getRobotToAttack(); //attack if enemy is in range
-    if (attackbot) {
-        if (this.fuel > SPECS.UNITS[this.me.unit].ATTACK_FUEL_COST) {
-            return this.attack(attackbot.x - this.me.x, attackbot.y - this.me.y);
-        }
+    // let attackbot = this.getRobotToAttack(); //attack if enemy is in range
+    // if (attackbot) {
+    //     if (this.fuel > SPECS.UNITS[this.me.unit].ATTACK_FUEL_COST) {
+    //         return this.attack(attackbot.x - this.me.x, attackbot.y - this.me.y);
+    //     }
+    // }
+
+    if (this.fuel >= 50 && this.karbonite >= 10 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1]) && this.nearbyMines.length>0) {
+        //this.log(this.nearbyMines[0]);
+        this.signal(this.encodeExactLocation(this.nearbyMines.shift()), 2);
+        this.log(this.me.time);
+        return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
     }
 
-
-    // if you can build a pilgrim && not saturated
-        // build
-        // communicate exact square it is going to
     // if you have enough for mission 
         // determine which mission to go to
         // launch mission
@@ -39,11 +46,7 @@ function castleTurn() {
 //       Each church should continuously say alive & if still saturating, saturated, or under attack
 
 
-
-    //one unit spawn
-    if (this.fuel >= 50 && this.karbonite >= 10 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
-        return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
-    }
+    
 
 //     if (this.prophet < 3 && this.fuel >= 50 && this.karbonite >= 30 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
 //         this.signal(this.otherCastleLocations, 2);
