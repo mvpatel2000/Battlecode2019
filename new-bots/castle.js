@@ -9,33 +9,42 @@ export function Castle() {
     this.otherCastleLocations = 0;
 
     this.alphaCastle = true;
+    this.resourceClusters = [];
 
     this.nearbyMines = this.getNearbyMines();
-    this.log(this.nearbyMines);
+    this.mission = true;
 }
 
 function castleTurn() {
     this.step++;
-    this.log(this.me.time+" "+this.me.x+" "+this.me.y);
     
     //if(this.alphaCastle == false)
     //    return;
 
+    if(this.me.turn == 1) {
+        let this.resourceClusters = this.clusterResourceTiles();
+    }
+
     let choice = this.randomMove();
 
-    // let attackbot = this.getRobotToAttack(); //attack if enemy is in range
-    // if (attackbot) {
-    //     if (this.fuel > SPECS.UNITS[this.me.unit].ATTACK_FUEL_COST) {
-    //         return this.attack(attackbot.x - this.me.x, attackbot.y - this.me.y);
-    //     }
-    // }
+    let attackbot = this.getRobotToAttack(); //attack if enemy is in range
+    if (attackbot) {
+        if (this.fuel > SPECS.UNITS[this.me.unit].ATTACK_FUEL_COST) {
+            return this.attack(attackbot.x - this.me.x, attackbot.y - this.me.y);
+        }
+    }
 
     if (this.fuel >= 50 && this.karbonite >= 10 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1]) && this.nearbyMines.length>0) {
-        //this.log(this.nearbyMines[0]);
         this.signal(this.encodeExactLocation(this.nearbyMines.shift()), 2);
-        this.log(this.me.time);
         return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
     }
+    else if (this.fuel >= 500 && this.karbonite >= 100 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1]) && this.mission) {
+        //this.signal(this.encodeExactLocation(this.nearbyMines.shift()), 2);
+        this.mission = false;
+        return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
+    }
+
+    return; 
 
     // if you have enough for mission 
         // determine which mission to go to
@@ -44,9 +53,6 @@ function castleTurn() {
 
 //Notes: Each pilgrim should comm back its tile its at (indicating alive) or under attack
 //       Each church should continuously say alive & if still saturating, saturated, or under attack
-
-
-    
 
 //     if (this.prophet < 3 && this.fuel >= 50 && this.karbonite >= 30 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
 //         this.signal(this.otherCastleLocations, 2);

@@ -1,27 +1,11 @@
 import {SPECS} from 'battlecode';
 
 export function Pilgrim() {
-    // add castles + churches to list of known drop-off points
-    this.turn = doNothing; //pilgrimTurn;
-    this.queue = this.findResources();
-    this.dropoffs = [];
-    this.findDropoffs = function () {
-        outer: for (let i of this.getVisibleRobots()) {
-            if (i.unit <= 1 && i.team == this.me.team) {
-                for (let j of this.dropoffs) {
-                    if (j[0] == i.x && j[1] == i.y)
-                        continue outer;
-                    if (!this.occupied(j[0], j[1])) {
-                        this.dropoffs = this.dropoffs.filter(d => d[0] != j[0] || d[1] != j[1]);
-                    }
-                }
-                this.dropoffs.push([i.x, i.y]);
-            }
-        }
-    }
+    this.turn = pilgrimTurn;
+    this spawnPoint = this.getVisibleRobots().filter(i => (i.unit == SPECS.CHURCH || i.unit == SPECS.CASTLE) &&
+        Math.pow(i.x - this.me.x,2) + Math.pow(i.y - this.me.y,2) <= 2 && this.signal>=0)[0];
+    this.destination = this.decodeExactLocation(spawnPoint.signal);
 }
-
-function doNothing() {}
 
 function pilgrimTurn() {
     this.findDropoffs();
