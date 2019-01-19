@@ -344,26 +344,27 @@ function castleTurn() {
     let choice = this.randomMove();
     const adj = this.me.turn > 10 ? 100 : 0;
 
-    // one unit spawn
-    if (this.fuel >= 80 && this.karbonite >= 30 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
+    //one unit spawn
+    if (this.fuel >= 50 && this.karbonite >= 25 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
         this.signal(this.otherCastleLocations, 2);
-        return this.buildUnit(SPECS.CRUSADER, choice[0], choice[1]);
+        return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
     }
-    else if (this.fuel >= 80 && this.karbonite >= 10 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
+    else if (this.fuel >= 50 && this.karbonite >= 10 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
         return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
-    } 
+    }
+    return;
 
     // base spawn rate
     if (this.starting || this.step % 6 == 0) {
-        if (this.fuel >= 80 + adj && this.karbonite >= 10 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
+        if (this.fuel >= 50 + adj && this.karbonite >= 10 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
             this.starting = false;
-            this.signal(this.otherCastleLocations, 1);
+            this.signal(this.otherCastleLocations, 2);
             return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
         } else {
             return;
         }
     } else if (this.preacher || (this.step - 1) % 3 == 0) {
-        if (this.fuel >= 80 + adj && this.karbonite >= 30 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
+        if (this.fuel >= 50 + adj && this.karbonite >= 30 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
             this.preacher = false;
             this.signal(this.otherCastleLocations, 2);
             return this.buildUnit(SPECS.PREACHER, choice[0], choice[1]);
@@ -371,14 +372,14 @@ function castleTurn() {
             return;
         }
     } else if ((this.step - 2) % 3 == 0) {
-        if (this.fuel >= 80 + adj && this.karbonite >= 30 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
-            this.signal(this.otherCastleLocations, 1);
+        if (this.fuel >= 50 + adj && this.karbonite >= 30 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
+            this.signal(this.otherCastleLocations, 2);
             return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
         } else {
             return;
         }
     } else {
-        if (this.fuel >= 80 + adj && this.karbonite >= 30 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
+        if (this.fuel >= 50 + adj && this.karbonite >= 30 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
             this.signal(this.otherCastleLocations, 2);
             return this.buildUnit(SPECS.CRUSADER, choice[0], choice[1]);
         } else {
@@ -413,7 +414,7 @@ function pilgrimTurn() {
     let [x, y] = [this.me.x, this.me.y];
 
     // mine if not at capacity
-    if ((this.fuel_map[y][x]
+    if (x == this.queue[0][0] && y == this.queue[0][1] && (this.fuel_map[y][x]
                 && this.me.fuel < SPECS.UNITS[this.me.unit].FUEL_CAPACITY)
             || (this.karbonite_map[y][x]
                 && this.me.karbonite < SPECS.UNITS[this.me.unit].KARBONITE_CAPACITY)) {
@@ -449,10 +450,12 @@ function pilgrimDropping() {
     }
     // return to normal turn function
     let restore = () => {
-        if (this.karbonite < 10 && !this.karbonite_map[this.queue[0][1]][this.queue[0][0]]) {
-            this.queue.push(this.queue.shift()); // cycle if mining fuel when needing karbonite
+        if (this.karbonite < 25 && !this.karbonite_map[this.queue[0][1]][this.queue[0][0]]) {
+            while (!this.karbonite_map[this.queue[0][1]][this.queue[0][0]])
+                this.queue.push(this.queue.shift()); // cycle if mining fuel when needing karbonite
         } else if (this.fuel < 100 && !this.fuel_map[this.queue[0][1]][this.queue[0][0]]) {
-            this.queue.push(this.queue.shift()); // the opposite
+            while (!this.fuel_map[this.queue[0][1]][this.queue[0][0]])
+                this.queue.push(this.queue.shift()); // the opposite
         }
         this.turn = pilgrimTurn;
     };
@@ -511,78 +514,13 @@ function Preacher() {
 
     this.enemyCastleLocations = this.prepareTargets();
     this.targetCtr = 0;
-    this.target = this.enemyCastleLocations[this.targetCtr]; 
+    this.target = this.enemyCastleLocations[this.targetCtr];
 }
 
 /**
  * March across map reflection.
  */
 function preacherTurn() {
-    // attack code
-    // if there are robots that I can attack,
-    // and I have enough fuel to attack,
-    // attack them.
-    //aoeAnalysis returns a location [x,y]
-    let attackbot = this.aoeAnalysis();
-    if (attackbot) {
-        if (this.fuel > SPECS.UNITS[this.me.unit].ATTACK_FUEL_COST) {
-            return this.attack(attackbot[0] - this.me.x, attackbot[1] - this.me.y);
-        }
-    }
-    // If there are robots that can attack me,
-    // move to location that minimizes the sum of the hp damage.
-    // Tiebreaker: location closest (euclidean distance) from the original path move to target
-    // Fall through if no robots can attack me, or not enough fuel to move.
-    let optimalmove = this.getOptimalEscapeLocation();
-    if (optimalmove.length && this.fuel >= this.fuelpermove) {
-        let route = this.path(this.target);
-        let [dx, dy] = route.length ? route[0] : [0, 0];
-        let old = [this.me.x + dx, this.me.y + dy];
-        let finmove = optimalmove.reduce((a, b) => this.dist(a, old) < this.dist(b, old) ? a : b);
-        //if best possible move is to stay still, return nothing.
-        if (finmove[0] == this.me.x && finmove[1] == this.me.y) {
-            return;
-        } else {
-            return this.go(finmove);
-        }
-    }
-
-    // non-combat mode
-    while (this.me.x == this.target[0] && this.me.y == this.target[1]) { //reset target if meet it
-        if(this.targetCtr < this.enemyCastleLocations.length) {
-            this.log("Prepping update: "+this.enemyCastleLocations+" "+this.targetCtr);
-            this.targetCtr+=1;
-            this.target = this.enemyCastleLocations[this.targetCtr];
-            this.log("Update: "+this.target+" "+this.targetCtr);
-        }
-        else {
-            let r = () => [this.rand(this.map[0].length),
-                            this.rand(this.map.length)];
-            this.target = r();
-            while (!this.map[this.target[1]][this.target[0]]) {
-                this.target = r();
-            }
-        }
-    }
-
-    // movement code
-    return this.go(this.target);
-}
-
-function Prophet() {
-    this.turn = prophetTurn;
-    this.fuelpermove = SPECS.UNITS[this.me.unit].FUEL_PER_MOVE;
-
-    this.enemyCastleLocations = this.prepareTargets();
-    this.targetCtr = 0;
-    this.target = this.enemyCastleLocations[this.targetCtr]; 
-}
-
-/**
- * March across map reflection.
- */
-function prophetTurn() {
-
     // attack code
     // if there are robots that I can attack,
     // and I have enough fuel to attack,
@@ -611,6 +549,74 @@ function prophetTurn() {
         }
     }
 
+
+    // non-combat mode
+    while (this.me.x == this.target[0] && this.me.y == this.target[1]) { //reset target if meet it
+        if (this.targetCtr < this.enemyCastleLocations.length) {
+            this.log("Prepping update: "+this.enemyCastleLocations+" "+this.targetCtr);
+            this.targetCtr+=1;
+            this.target = this.enemyCastleLocations[this.targetCtr];
+            this.log("Update: "+this.target+" "+this.targetCtr);
+        }
+        else {
+            let r = () => [this.rand(this.map[0].length),
+                            this.rand(this.map.length)];
+            this.target = r();
+            while (!this.map[this.target[1]][this.target[0]]) {
+                this.target = r();
+            }
+        }
+    }
+
+
+    // movement code
+    return this.go(this.target);
+}
+
+function Prophet() {
+    this.turn = prophetTurn;
+    this.fuelpermove = SPECS.UNITS[this.me.unit].FUEL_PER_MOVE;
+
+    this.enemyCastleLocations = this.prepareTargets();
+    this.targetCtr = 0;
+    this.target = this.enemyCastleLocations[this.targetCtr]; 
+
+}
+
+/**
+ * March across map reflection.
+ */
+function prophetTurn() {
+
+    // attack code
+    // if there are robots that I can attack,
+    // and I have enough fuel to attack,
+    // attack them.
+    let attackbot = this.getRobotToAttack();
+    if (attackbot && !shouldRun.call(this)) {
+        if (this.fuel > SPECS.UNITS[this.me.unit].ATTACK_FUEL_COST) {
+            return this.attack(attackbot.x - this.me.x, attackbot.y - this.me.y);
+        }
+    }
+
+    // If there are robots that can attack me,
+    // move to location that minimizes the sum of the hp damage.
+    // Tiebreaker: location closest (euclidean distance) from the original path move to target
+    // Fall through if no robots can attack me, or not enough fuel to move.
+    let optimalmove = this.getOptimalEscapeLocationProphet();
+    if (optimalmove.length && this.fuel >= this.fuelpermove) {
+        let route = this.path(this.target);
+        let [dx, dy] = route.length ? route[0] : [0, 0];
+        let old = [this.me.x + dx, this.me.y + dy];
+        let finmove = optimalmove.reduce((a, b) => this.dist(a, old) < this.dist(b, old) ? a : b);
+        //if best possible move is to stay still, return nothing.
+        if (finmove[0] == this.me.x && finmove[1] == this.me.y) {
+            return;
+        } else {
+            return this.go(finmove);
+        }
+    }
+
     // non-combat mode
     while (this.me.x == this.target[0] && this.me.y == this.target[1]) { //reset target if meet it
         if(this.targetCtr < this.enemyCastleLocations.length) {
@@ -631,6 +637,17 @@ function prophetTurn() {
 
     // movement code
     return this.go(this.target);
+}
+
+/**
+ * tells if should run from nearby preachers
+ */
+function shouldRun() {
+    return this.getVisibleRobots()
+            .filter(i => i.team != this.me.team && i.unit == SPECS.PREACHER)
+            .map(i => this.distSquared([this.me.x, this.me.y], [i.x, i.y]))
+            .map(i => i < 18)
+            .reduce((a, b) => a || b, false);
 }
 
 const top = 0;
@@ -706,7 +723,7 @@ const Algorithms = (function() {
 
     function rand(len) {
         seed = ((seed + 3) * 7 + 37) % 8117;
-        return seed % len
+        return seed % len;
     }
 
     function dist(a, b) {
@@ -779,7 +796,7 @@ const Algorithms = (function() {
 
         /**
          * Helper function for aoeAnalysis method.
-         * Given a 2d array from getVsitibleRobotMap(), the length of the y and x-axis
+         * Given a 2d array from getVisibleRobotMap(), the length of the y and x-axis
          * and a given [j][i] index that might be in the 2d array, caculated
          * the damage done by an attack at the given index.
          * Returns 0 for a location outside of the visibleRobotMap array or for a location without robots.
@@ -916,6 +933,64 @@ const Algorithms = (function() {
             return optimalmove;
         },
 
+        /**
+         * Given a robot, tells you if it can kill you.
+         * Returns the amount of HP damage.
+         */
+        expectedDamageProphet: function(i, dSquared) {
+            let attack_rad2 = SPECS.UNITS[i.unit].ATTACK_RADIUS;
+            if (!attack_rad2) {
+                return 0;
+            } else {
+                if (attack_rad2[0] <= dSquared && (dSquared <= attack_rad2[1] || i.unit==5 && dSquared <= attack_rad2[1]+2) ) {
+                    return SPECS.UNITS[i.unit].ATTACK_DAMAGE;
+                } else {
+                    return 0;
+                }
+            }
+        },
+
+        /*
+         * Returns the optimal absolute location you should move to
+         * by minimizing hp damage from enemy robots around you.
+         * Return value: null if NO enemies are present or the
+         * max hp damage by enemy robots is 0.
+         */
+        getOptimalEscapeLocationProphet: function() {
+            let visibleRobots = this.getVisibleRobots().filter(i => i.unit > 2 && i.team != this.me.team);
+            if (visibleRobots.length == 0) {
+                return [];
+            }
+            let minhpdamage = Infinity;
+            let maxhpdamage = 0;
+            let optimalmove = [];
+            let possiblemoves = this.validAbsoluteMoves();
+            //add "staying still" to possible moves list
+            possiblemoves.push([this.me.x,this.me.y]);
+            //this.log(possiblemoves.length)
+            for (let move of possiblemoves) {
+                let hpdamage = 0;
+                for (let i of visibleRobots) {
+                    let dSquaredtoEnemy = distSquared([i.x, i.y], [move[0], move[1]]);
+                    hpdamage += this.expectedDamageProphet(i, dSquaredtoEnemy);
+                }
+                //this.log(`movr=${move} hpp=${hpdamage}`);
+                if (hpdamage < minhpdamage) {
+                    optimalmove = [move];
+                    minhpdamage = hpdamage;
+                } else if (hpdamage == minhpdamage) {
+                    optimalmove.push(move);
+                }
+                if (hpdamage > maxhpdamage) {
+                    maxhpdamage = hpdamage;
+                }
+            }
+            if (maxhpdamage == 0) {
+                return [];
+            }
+            return optimalmove;
+        },
+
         prepareTargets: function() {
             let enemyCastleLocations = [];
             let castles = this.getVisibleRobots().filter(i => i.team == this.me.team && i.unit == 0);
@@ -957,24 +1032,28 @@ const Algorithms = (function() {
 
         /**
          * Returns the zone # from x,y
-         * current implementation: 8-bit integer, so we can
+         * current implementation: 7-bit integer, so we can
          * encode 2 zones in 1 comm (the two castles that
-         * the attacker is not spawned in)
-         * first 4 bits: x coord
+         * the attacker is not spawned in) plus extra info
+         * first 3 bits: x coord
          * second 4 bits: y coord
          */
-        encodeLocation: function(x, y) {
+        encodeLocation: function(x, y, xbits, ybits) {
+            if (typeof(xbits)==='undefined') xbits = 8;
+            if (typeof(ybits)==='undefined') ybits = 16;
             let sz = this.fuel_map.length;
-            return 16 * Math.floor(x * 16 / sz) + Math.floor(y * 16 / sz);
+            return ybits * Math.floor(x * xbits / sz) + Math.floor(y * ybits / sz);
         },
 
         /**
          * Returns x,y from the zone #
          */
-        decodeLocation: function(zone) {
+        decodeLocation: function(zone, xbits, ybits) {
+            if (typeof(xbits)==='undefined') xbits = 8;
+            if (typeof(ybits)==='undefined') ybits = 16;
             let sz = this.fuel_map.length;
-            let x = Math.floor(0.5 + (Math.floor(zone / 16) + 0.5) * sz / 16);
-            let y = Math.floor(0.5 + ((zone%16) + 0.5) * sz / 16);
+            let x = Math.floor(0.5 + (Math.floor(zone / ybits) + 0.5) * sz / xbits);
+            let y = Math.floor(0.5 + ((zone%ybits) + 0.5) * sz / ybits);
             return this.nearestEmptyLocation(x, y);
         },
 
@@ -1145,7 +1224,7 @@ const Algorithms = (function() {
 
             const queue = new PriorityQueue((a, b) => f[a] < f[b]);
             queue.push(start);
-            let i = 196;
+            let i = 128;
             while (!queue.isEmpty()) {
                 let current = queue.pop(); //pop from priority queue instead of magic symbols
                 done.push(current);

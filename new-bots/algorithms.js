@@ -82,6 +82,7 @@ export const Algorithms = (function() {
         dist: dist,
         distSquared: distSquared,
         getSpeed: getSpeed,
+        arrEq: arrEq,
 
         /**
          * get pseudorandom number
@@ -666,7 +667,8 @@ export const Algorithms = (function() {
                 let current = queue.pop(); //pop from priority queue instead of magic symbols
                 done.push(current)
                 if (i-- < 0 || arrEq(current, dest)) { //found destination
-                    current = done.pop();
+                    if(i<0)
+                        current = done.pop();
                     let totalPath = [current];
                     while (current in prev) { //reconstruct path
                         current = prev[current];
@@ -732,7 +734,8 @@ export const Algorithms = (function() {
                 let current = queue.pop(); //pop from priority queue instead of magic symbols
                 done.push(current)
                 if (i-- < 0 || adjacentTo(current, dest)) { //found destination
-                    current = done.pop();
+                    if(i < 0)
+                        current = done.pop();
                     let totalPath = [current];
                     while (current in prev) { //reconstruct path
                         current = prev[current];
