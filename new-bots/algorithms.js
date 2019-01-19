@@ -4,11 +4,6 @@ import {PriorityQueue} from './priorityqueue'
 export const Algorithms = (function() {
     let seed = 1;
 
-    function rand(len) {
-        seed = ((seed + 3) * 7 + 37) % 8117;
-        return seed % len;
-    }
-
     function dist(a, b) {
         let dx = a[0] - b[0];
         let dy = a[1] - b[1];
@@ -85,7 +80,8 @@ export const Algorithms = (function() {
          * get pseudorandom number
          */
         rand: function rand(len) {
-            seed = ((seed + 3) * 7 + 37) % 8117 + this.me.x * 97 + this.me.y * 1013;
+            seed = ((seed + 3) * 7 + 37) % 8117 + this.me.x * 97
+                    + this.me.y * 1013 + this.getVisibleRobots().length * 37;
             return seed % len;
         },
 
@@ -179,7 +175,7 @@ export const Algorithms = (function() {
                  }
              }
              return aoelocation;
-         },
+        },
 
         /**
          * Returns a robot to attack if possible.
@@ -336,14 +332,39 @@ export const Algorithms = (function() {
                     return enemyCastleLocations;
                 }
             }
-            let r = () => [rand(this.map[0].length),
-                            rand(this.map.length)];
+            let r = () => [this.rand(this.map[0].length),
+                            this.rand(this.map.length)];
             let target = r();
             while (!this.map[target[1]][target[0]]) {
                 target = r();
             }
             enemyCastleLocations.push(target)
             return enemyCastleLocations;
+        },
+
+        /**
+         * Check nearby tiles to get mines
+         * Karbonite mines are prioritized over fuel mines
+         */
+        getNearbyMines: function() {
+            let x = this.me.x;
+            let y = this.me.y;
+            let mines = []
+            let zonesize = 3;
+            for(let dx = -zonesize; dx < zonesize+1; dx++) {
+                for(let dy = -zonesize; dy<zonesize+1; dy++) {
+                    if(x+dx>=0 && y+dy>=0 && x+dx<this.map.length && y+dy<this.map.length &&
+                         dx*dx + dy*dy <= zonesize*zonesize + 1) { //within r^2
+                        if(this.karbonite_map[y+dy][x+dx]) {
+                            mines.unshift([x+dx, y+dy]);
+                        }
+                        if(this.fuel_map[y+dy][x+dx]) {
+                            mines.push([x+dx, y+dy]);
+                        }
+                    }
+                }
+            }
+            return mines;
         },
 
         /**
@@ -372,6 +393,21 @@ export const Algorithms = (function() {
             let y = Math.floor(0.5 + ((zone%ybits) + 0.5) * sz / ybits);
             return this.nearestEmptyLocation(x, y);
         },
+
+        /**
+         * Encodes exact location into 12 bits
+         * location[0] = x, location[y] = 1
+         */
+         encodeExactLocation: function(location) {
+            return location[0]*64 + location[1];
+         },
+
+         /**
+         * Decodes exact location into 12 bits
+         */
+         decodeExactLocation: function(zone) {
+            return [ (zone / 64) % 64, zone % 64];
+         },
 
         /**
          * Returns x,y nearby that is empty
@@ -522,13 +558,13 @@ export const Algorithms = (function() {
          */
         randomMove: function() {
             const choices = [[0,-1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1]];
-            let choice = choices[rand(choices.length)]
+            let choice = choices[this.rand(choices.length)]
             for (;;) {
                 let locx = this.me.x + choice[0];
                 let locy = this.me.y + choice[1];
                 if (!this.occupied(locx, locy))
                     break;
-                choice = choices[rand(choices.length)];
+                choice = choices[this.rand(choices.length)];
             }
             return choice;
         },
@@ -549,13 +585,13 @@ export const Algorithms = (function() {
                     }
                 }
             }
-            let choice = choices[rand(choices.length)]
+            let choice = choices[this.rand(choices.length)]
             for (;;) {
                 let locx = this.me.x + choice[0];
                 let locy = this.me.y + choice[1];
                 if (!this.occupied(locx, locy))
                     break;
-                choice = choices[rand(choices.length)];
+                choice = choices[this.rand(choices.length)];
             }
             return choice;
         },
