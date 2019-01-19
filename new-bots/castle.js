@@ -14,6 +14,7 @@ export function Castle() {
     this.clusterStatus = this.resourceClusters.map(x => 0); // one for each resource cluster.  status codes:
     // 0: unknown/open; 1: on the way; 2: church/castle built and pilgrims present;
     // 3: fortified and ours; 4: enemy; can add other codes if necessary
+    this.mycluster = 0;
 
     this.nearbyMines = this.getNearbyMines();
     this.mission = true;
@@ -38,9 +39,28 @@ function nextMissionTarget() { // currently assumes that this.isColonized just w
 }
 
 function castleTurn() {
+    /*
+     * outline of opening protocol (not BO)
+     * step 1:
+     *  - castletalk my location
+     *  - figure out my cluster
+     *  - start a mission on my cluster
+     * step 2:
+     *  - find other castles
+     *  - castletalk my location again (so if i go first, others can still find me)
+     *  - assign alpha castle
+     * step 3:
+     *  - castletalk my cluster
+     * step 4:
+     *  - castletalk my cluster again
+     *  - figure out other castle's clusters
+     */
+
     this.step++;
     if (this.step == 1) { // wait for all castles to broadcast
         this.castleTalk(this.myEncodedLocation);
+        this.mycluster = nextMissionTarget.call(this); // send out first pilgrim
+
         return;
     }
     else if (this.step == 2) { // get castle locations
@@ -52,21 +72,15 @@ function castleTurn() {
         this.castleTalk(this.myEncodedLocation);
 
         let castleturns = this.getVisibleRobots().filter(i => i.castle_talk!=0 && i.id != this.me.id).map(i => i.turn);
-        for(let i=0; i<castleturns.length; i++) {
+        for(let i = 0; i<castleturns.length; i++) {
             if(this.me.turn!=castleturns[i]) {
                 this.alphaCastle = false;
             }
         }
     }
-    //else if (this.step == 3) { // build first pilgrim and claim first zone
-        // let target = nextMissionTarget.call(this);
-
-    // }
-
-    //if(this.alphaCastle == false)
-    //    return;
-
-    // let choice = this.randomMove();
+    else if(this.step == 3) { // build first pilgrim and claim first zone
+        
+    }
 
     let attackbot = this.getRobotToAttack(); //attack if enemy is in range
     if (attackbot) {
