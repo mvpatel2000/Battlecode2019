@@ -4,14 +4,21 @@ export function Church() {
     this.turn = churchTurn;
     this.step = 0;
 
-    this.nearbyMines = this.getNearbyMines();
+    let broadcastingPilgrims = this.getVisibleRobots().filter(i => (i.unit == SPECS.PILGRIM) &&
+        Math.pow(i.x - this.me.x,2) + Math.pow(i.y - this.me.y,2) <= 2 && i.signal>=0);
+    this.nearbyMines = [];
+    if(!(broadcastingPilgrims.length>0 && broadcastingPilgrims[0].signal == 1)) //it is a mission church!
+        this.nearbyMines = this.getNearbyMines();
 }
 
 function churchTurn() {
-    let choice = this.randomMove();
-    if (this.fuel >= 50 && this.karbonite >= 10 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1]) && this.nearbyMines.length>0) {
-        this.signal(this.encodeExactLocation(this.nearbyMines.shift()), 2);
-        return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
+    if (this.fuel >= 50 && this.karbonite >= 10 && this.nearbyMines.length>0) {
+        let target = this.nearbyMines.shift();
+        let choice = this.getSpawnLocation(target[0], target[1]);
+        if(choice != null) {
+            this.signal(this.encodeExactLocation(this.nearbyMines.shift()), 2);
+            return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
+        }
     }
     return;
 }

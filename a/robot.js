@@ -327,16 +327,55 @@ function Castle() {
     this.resourceClusters = this.clusterResourceTiles();
     this.resourceCentroids = this.resourceClusters.map(x => this.centroid(x));
     this.clusterStatus = this.resourceClusters.map(x => 0); // one for each resource cluster.  status codes:
-    // 0: unknown/open; 1: on the way; 2: church built; 3: fortified and ours; 4: enemy; can add other codes if necessary
+    // 0: unknown/open; 1: on the way; 2: church/castle built and pilgrims present;
+    // 3: fortified and ours; 4: enemy; can add other codes if necessary
+    this.mycluster = 0;
 
     this.nearbyMines = this.getNearbyMines();
     this.mission = true;
 }
 
+/**
+ * Function to return the index in this.resourceClusters of the next cluster to send a mission to.
+ */
+function nextMissionTarget() { // currently assumes that this.isColonized just works, but this is not done yet.
+    var openClusters = this.resourceClusters.filter((item, i) => this.clusterStatus[i] == 0);
+    var openCentroids = this.resourceCentroids.filter((item, i) => this.clusterStatus[i] == 0);
+    let minScore = 7939; // R^2; this is 2*63^2 + 1
+    let target = 0;
+    for(let i = 0; i < openClusters.length; i++) {
+        let d = this.distSquared(openCentroids[i][0], openCentroids[i][1]);
+        if(d < minScore) {
+            minScore = d;
+            target = i;
+        }
+    }
+    return target;
+}
+
 function castleTurn() {
+    /*
+     * outline of opening protocol (not BO)
+     * step 1:
+     *  - castletalk my location
+     *  - figure out my cluster
+     *  - start a mission on my cluster
+     * step 2:
+     *  - find other castles
+     *  - castletalk my location again (so if i go first, others can still find me)
+     *  - assign alpha castle
+     * step 3:
+     *  - castletalk my cluster
+     * step 4:
+     *  - castletalk my cluster again
+     *  - figure out other castle's clusters
+     */
+
     this.step++;
     if (this.step == 1) { // wait for all castles to broadcast
         this.castleTalk(this.myEncodedLocation);
+        this.mycluster = nextMissionTarget.call(this); // send out first pilgrim
+
         return;
     }
     else if (this.step == 2) { // get castle locations
@@ -348,17 +387,13 @@ function castleTurn() {
         this.castleTalk(this.myEncodedLocation);
 
         let castleturns = this.getVisibleRobots().filter(i => i.castle_talk!=0 && i.id != this.me.id).map(i => i.turn);
-        for(let i=0; i<castleturns.length; i++) {
+        for(let i = 0; i<castleturns.length; i++) {
             if(this.me.turn!=castleturns[i]) {
                 this.alphaCastle = false;
             }
         }
     }
-
-    //if(this.alphaCastle == false)
-    //    return;
-
-    let choice = this.randomMove();
+    else if(this.step == 3) ;
 
     let attackbot = this.getRobotToAttack(); //attack if enemy is in range
     if (attackbot) {
@@ -367,11 +402,15 @@ function castleTurn() {
         }
     }
 
-    if (this.fuel >= 50 && this.karbonite >= 10 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1]) && this.nearbyMines.length>0) {
-        this.signal(this.encodeExactLocation(this.nearbyMines.shift()), 2);
+    if (this.fuel >= 50 && this.karbonite >= 10 && this.nearbyMines.length>0) {
+        let target = this.nearbyMines.shift();
+        let choice = this.getSpawnLocation(target[0], target[1]);
+        this.log("Castle at ("+this.me.x+","+this.me.y+") spawning pilgrim in direction "+choice+" towards "+target);
+        this.signal(this.encodeExactLocation(target), 2);
         return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
     }
-    else if (this.fuel >= 500 && this.karbonite >= 100 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1]) && this.mission) {
+    // else if (this.fuel >= 500 && this.karbonite >= 100 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1]) && this.mission) {
+    else if (this.fuel >= 500 && this.karbonite >= 100 && this.mission) {
         //this.signal(this.encodeExactLocation(this.nearbyMines.shift()), 2);
         this.mission = false;
         //return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
@@ -404,6 +443,8 @@ function Pilgrim() {
 
     this.baseLocation = [this.spawnPoint.x, this.spawnPoint.y];
     this.mineLocation = this.decodeExactLocation(this.spawnPoint.signal);
+    this.adjacentDestinations = this.distSquared(this.baseLocation, this.mineLocation) <= 2;
+
     this.destination = this.mineLocation;
     this.karboniteMine = this.karbonite_map[this.mineLocation[1]][this.mineLocation[0]];
     this.fuelMine = this.fuel_map[this.mineLocation[1]][this.mineLocation[0]];
@@ -414,16 +455,35 @@ function pilgrimTurn() {
 
     //TODO: Add mission code to determine what type of cluster we're in / heading to
     //TODO: Add code to report status so church can replace if dead
+    //TODO: Kiting is performing suboptimally. Fix this
+    if(!this.adjacentDestinations) {
+        let adjacentBases = this.getVisibleRobots().filter(i => i.unit < 2 && this.distSquared([i.x,i.y], this.mineLocation)<=2);
+        if(adjacentBases.length > 0) {
+            this.baseLocation = [adjacentBases[0].x, adjacentBases[0].y];
+            this.adjacentDestinations = true;
+        }
+    }
 
     let escapemove = this.getOptimalHidingLocation(); //TODO: Add condition to hold ground anyways if there are suffient defenses
     //this.log(escapemove)
     if( this.arrEq(this.destination, this.mineLocation) && x == this.mineLocation[0] && y == this.mineLocation[1]) { //at mine
-        if( (this.fuelMine && this.me.fuel < SPECS.UNITS[this.me.unit].FUEL_CAPACITY)
+        if(this.karbonite > 400 && this.fuel > 400 && this.getVisibleRobots().filter(i => i.unit < 2 
+            && i.team == this.me.team && this.distSquared([i.x, i.y], [this.me.x, this.me.y])<=2).length==0) { //church because floating cash
+            let nearbyPilgrims = this.getVisibleRobots().filter(i => i.unit == SPECS.PILGRIM && this.distSquared([i.x, i.y], [this.me.x, this.me.y])<=4);
+            let target = [1,0];
+            if(nearbyPilgrims.length > 0)
+                target = [ Math.min(Math.max(nearbyPilgrims[0].x - this.me.x,1),-1), Math.min(Math.max(nearbyPilgrims[0].y - this.me.y,1),-1)];
+            let choice = this.getChurchSpawnLocation(target[0], target[1]);
+            if(choice != null) {
+                this.signal(1, 2);
+                this.baseLocation = [this.me.x + choice[0], this.me.y + choice[1]];
+                return this.buildUnit(SPECS.CHURCH, choice[0], choice[1]);
+            }
+        }
+        else if( (this.fuelMine && this.me.fuel < SPECS.UNITS[this.me.unit].FUEL_CAPACITY)
             || (this.karboniteMine && this.me.karbonite < SPECS.UNITS[this.me.unit].KARBONITE_CAPACITY) ) { //want to mine
             if(escapemove.length > 0 && !this.arrEq(escapemove[0],[this.me.x,this.me.y]) 
                 && this.fuel > (SPECS.UNITS[this.me.unit].FUEL_PER_MOVE * this.getSpeed())) { //must flee if optimal dodge is not stay still
-                this.log("Turn: "+this.me.turn+" Move: "+escapemove[0]+" ("+this.me.x+", "+this.me.y+") Delta: "+([escapemove[0][0] - this.me.x, escapemove[0][1] - this.me.y]));
-                this.log(escapemove);
                 return this.move(...[escapemove[0][0] - this.me.x, escapemove[0][1] - this.me.y]);
             }
             return this.mine();
@@ -432,7 +492,11 @@ function pilgrimTurn() {
             this.destination = this.baseLocation;
         }
     }
-    if( this.arrEq(this.destination, this.baseLocation) && Math.pow(x - this.baseLocation[0],2) + Math.pow(y - this.baseLocation[1], 2) <=2 ) { //at base
+    if( this.arrEq(this.destination, this.baseLocation) && this.distSquared([x,y], this.baseLocation) <=2 ) { //at base
+        if(escapemove.length > 0 && !this.arrEq(escapemove[0],[this.me.x,this.me.y]) 
+            && this.fuel > (SPECS.UNITS[this.me.unit].FUEL_PER_MOVE * this.getSpeed())) { //must flee if optimal dodge is not stay still
+            return this.move(...[escapemove[0][0] - this.me.x, escapemove[0][1] - this.me.y]);
+        }
         let base = this.getVisibleRobots().filter(i => (i.unit == SPECS.CHURCH || i.unit == SPECS.CASTLE) &&
             Math.pow(i.x - this.me.x,2) + Math.pow(i.y - this.me.y,2) <= 2);
         if(base.length>0) { //we don't flee here! better to return resources then to flee
@@ -452,19 +516,13 @@ function pilgrimTurn() {
 
     if (this.fuel > (SPECS.UNITS[this.me.unit].FUEL_PER_MOVE * this.getSpeed()) && route.length > 0) { //A* towards target
         if(escapemove.length > 0) { //flee in direction of path
-            this.log("Turn: "+this.me.turn+" Move: "+escapemove[0]+" ("+this.me.x+", "+this.me.y+") Delta: "+([escapemove[0][0] - this.me.x, escapemove[0][1] - this.me.y]));
-            this.log(escapemove);
-//            return this.move(...[escapemove[0][0] - this.me.x, escapemove[0][1] - this.me.y]);
-
-//TODO: THE CODE HERE SEEMS INEFFICIENT. FIX THIS!!!!
             let [dx, dy] = route.length ? route[0] : [0, 0];
             let old = [this.me.x + dx, this.me.y + dy];
             let finmove = escapemove.reduce((a, b) => this.dist(a, old) < this.dist(b, old) ? a : b);
-            //if best possible move is to stay still, return nothing.
             if (finmove[0] == this.me.x && finmove[1] == this.me.y) {
                 return;
             } else {
-                return this.go(finmove);
+                return this.move(...[finmove[0] - this.me.x, finmove[1] - this.me.y]);
             }
         }
         else { //move normally
@@ -479,14 +537,21 @@ function Church() {
     this.turn = churchTurn;
     this.step = 0;
 
-    this.nearbyMines = this.getNearbyMines();
+    let broadcastingPilgrims = this.getVisibleRobots().filter(i => (i.unit == SPECS.PILGRIM) &&
+        Math.pow(i.x - this.me.x,2) + Math.pow(i.y - this.me.y,2) <= 2 && i.signal>=0);
+    this.nearbyMines = [];
+    if(!(broadcastingPilgrims.length>0 && broadcastingPilgrims[0].signal == 1)) //it is a mission church!
+        this.nearbyMines = this.getNearbyMines();
 }
 
 function churchTurn() {
-    let choice = this.randomMove();
-    if (this.fuel >= 50 && this.karbonite >= 10 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1]) && this.nearbyMines.length>0) {
-        this.signal(this.encodeExactLocation(this.nearbyMines.shift()), 2);
-        return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
+    if (this.fuel >= 50 && this.karbonite >= 10 && this.nearbyMines.length>0) {
+        let target = this.nearbyMines.shift();
+        let choice = this.getSpawnLocation(target[0], target[1]);
+        if(choice != null) {
+            this.signal(this.encodeExactLocation(this.nearbyMines.shift()), 2);
+            return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
+        }
     }
     return;
 }
@@ -607,7 +672,7 @@ function prophetTurn() {
         if (finmove[0] == this.me.x && finmove[1] == this.me.y) {
             return;
         } else {
-            return this.go(finmove);
+            return this.move(...[finmove[0] - this.me.x, finmove[1] - this.me.y]);
         }
     }
 
@@ -963,7 +1028,7 @@ const Algorithms = (function() {
                 let validmove = true;
                 for (let i of visibleRobots) {
                     let dSquaredtoEnemy = distSquared([i.x, i.y], [move[0], move[1]]);
-                    if(dSquaredtoEnemy <=  Math.pow(Math.sqrt(SPECS.UNITS[i.unit].VISION_RADIUS)+1,2)) {
+                    if(dSquaredtoEnemy <=  SPECS.UNITS[i.unit].VISION_RADIUS + 1) {
                         validmove = false;
                         break;
                     }
@@ -1290,7 +1355,53 @@ const Algorithms = (function() {
             return [Math.floor((xsum/cluster.length)+0.5), Math.floor((ysum/cluster.length)+0.5)];
         },
 
-        
+        /**
+         * Return optimal spawn location (as a one-tile move) towards a destination (x, y)
+         * Returns null if all 8 locations are occupied
+         */
+        getSpawnLocation: function(x, y) {
+            const choices = [[1,0], [1,1], [0,1], [-1,1], [-1,0], [-1,-1], [0,-1], [1,-1]];
+            let optimalIndex = Math.floor((4*(Math.atan2(y-this.me.y,x-this.me.x)/Math.PI))+8.5) % 8;
+            let choice = choices[optimalIndex];
+            if(!this.occupied(this.me.x + choice[0], this.me.y + choice[1]))
+                return choice;
+            for(let i = 1; i <= 4; i++) {
+                choice = choices[(optimalIndex+1)%8];
+                if(!this.occupied(this.me.x + choice[0], this.me.y + choice[1]))
+                    return choice;
+                choice = choices[(optimalIndex+(8-i))%8];
+                if(!this.occupied(this.me.x + choice[0], this.me.y + choice[1]))
+                    return choice;
+            }
+            return null;
+        },
+
+        /**
+         * Return optimal spawn location (as a one-tile move) towards a destination (x, y)
+         * Returns null if all 8 locations are occupied
+         */
+        getChurchSpawnLocation: function(x, y) {
+            const choices = [[1,0], [1,1], [0,1], [-1,1], [-1,0], [-1,-1], [0,-1], [1,-1]];
+            let optimalIndex = Math.floor((4*(Math.atan2(y-this.me.y,x-this.me.x)/Math.PI))+8.5) % 8;
+            let choice = choices[optimalIndex];
+            if(!this.occupied(this.me.x + choice[0], this.me.y + choice[1]) 
+                && !this.karbonite_map[this.me.y + choice[1]][this.me.x + choice[0]] 
+                && !this.fuel_map[this.me.y + choice[1]][this.me.x + choice[0]])
+                return choice;
+            for(let i = 1; i <= 4; i++) {
+                choice = choices[(optimalIndex+1)%8];
+                if(!this.occupied(this.me.x + choice[0], this.me.y + choice[1])
+                    && !this.karbonite_map[this.me.y + choice[1]][this.me.x + choice[0]] 
+                    && !this.fuel_map[this.me.y + choice[1]][this.me.x + choice[0]])
+                    return choice;
+                choice = choices[(optimalIndex+(8-i))%8];
+                if(!this.occupied(this.me.x + choice[0], this.me.y + choice[1])
+                    && !this.karbonite_map[this.me.y + choice[1]][this.me.x + choice[0]] 
+                    && !this.fuel_map[this.me.y + choice[1]][this.me.x + choice[0]])
+                    return choice;
+            }
+            return null;
+        },
 
         /**
          * Return random, valid, one-tile move.

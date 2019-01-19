@@ -272,7 +272,7 @@ export const Algorithms = (function() {
                 let validmove = true;
                 for (let i of visibleRobots) {
                     let dSquaredtoEnemy = distSquared([i.x, i.y], [move[0], move[1]])
-                    if(dSquaredtoEnemy <=  Math.pow(Math.sqrt(SPECS.UNITS[i.unit].VISION_RADIUS)+1,2)) {
+                    if(dSquaredtoEnemy <=  SPECS.UNITS[i.unit].VISION_RADIUS + 1) {
                         validmove = false;
                         break;
                     }
@@ -616,6 +616,33 @@ export const Algorithms = (function() {
                     return choice;
                 choice = choices[(optimalIndex+(8-i))%8];
                 if(!this.occupied(this.me.x + choice[0], this.me.y + choice[1]))
+                    return choice;
+            }
+            return null;
+        },
+
+        /**
+         * Return optimal spawn location (as a one-tile move) towards a destination (x, y)
+         * Returns null if all 8 locations are occupied
+         */
+        getChurchSpawnLocation: function(x, y) {
+            const choices = [[1,0], [1,1], [0,1], [-1,1], [-1,0], [-1,-1], [0,-1], [1,-1]];
+            let optimalIndex = Math.floor((4*(Math.atan2(y-this.me.y,x-this.me.x)/Math.PI))+8.5) % 8;
+            let choice = choices[optimalIndex];
+            if(!this.occupied(this.me.x + choice[0], this.me.y + choice[1]) 
+                && !this.karbonite_map[this.me.y + choice[1]][this.me.x + choice[0]] 
+                && !this.fuel_map[this.me.y + choice[1]][this.me.x + choice[0]])
+                return choice;
+            for(let i = 1; i <= 4; i++) {
+                choice = choices[(optimalIndex+1)%8];
+                if(!this.occupied(this.me.x + choice[0], this.me.y + choice[1])
+                    && !this.karbonite_map[this.me.y + choice[1]][this.me.x + choice[0]] 
+                    && !this.fuel_map[this.me.y + choice[1]][this.me.x + choice[0]])
+                    return choice;
+                choice = choices[(optimalIndex+(8-i))%8];
+                if(!this.occupied(this.me.x + choice[0], this.me.y + choice[1])
+                    && !this.karbonite_map[this.me.y + choice[1]][this.me.x + choice[0]] 
+                    && !this.fuel_map[this.me.y + choice[1]][this.me.x + choice[0]])
                     return choice;
             }
             return null;

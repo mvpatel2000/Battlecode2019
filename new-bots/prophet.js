@@ -51,7 +51,7 @@ function prophetTurn() {
         if (finmove[0] == this.me.x && finmove[1] == this.me.y) {
             return;
         } else {
-            return this.go(finmove);
+            return this.move(...[finmove[0] - this.me.x, finmove[1] - this.me.y]);
         }
     }
 
