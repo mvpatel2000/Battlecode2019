@@ -10,14 +10,30 @@ export function Castle() {
 
     this.alphaCastle = true;
     this.resourceClusters = this.clusterResourceTiles();
-    this.isColonized = []; // one for each resource cluster
+    this.resourceCentroids = this.resourceClusters.map(x => this.centroid(x));
+    this.clusterStatus = this.resourceClusters.map(x => 0); // one for each resource cluster.  status codes:
+    // 0: unknown/open; 1: on the way; 2: church built; 3: fortified and ours; 4: enemy; can add other codes if necessary
 
     this.nearbyMines = this.getNearbyMines();
     this.mission = true;
 }
 
+/**
+ * Function to return the index in this.resourceClusters of the next cluster to send a mission to.
+ */
 function nextMissionTarget() { // currently assumes that this.isColonized just works, but this is not done yet.
-    return false;
+    var openClusters = this.resourceClusters.filter((item, i) => this.clusterStatus[i] == 0);
+    var openCentroids = this.resourceCentroids.filter((item, i) => this.clusterStatus[i] == 0);
+    let minScore = 7939; // R^2; this is 2*63^2 + 1
+    let target = 0;
+    for(let i = 0; i < uncolonizedClusters.length; i++) {
+        let d = this.distSquared(openCentroids[i][0], openCentroids[i][1]);
+        if(d < minScore) {
+            minScore = d;
+            target = i;
+        }
+    }
+    return target;
 }
 
 function castleTurn() {
