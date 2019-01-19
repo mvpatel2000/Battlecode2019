@@ -30,13 +30,16 @@ function pilgrimTurn() {
         }
     }
 
-    let escapemove = this.getOptimalHidingLocation(); //TODO: Add condition to hold ground anyways if there are suffient defenses
-    //this.log(escapemove)
+    let escapemove = this.getOptimalHidingLocation();
     if( this.arrEq(this.destination, this.mineLocation) && x == this.mineLocation[0] && y == this.mineLocation[1]) { //at mine
-        if(false) { //want to build church for mission
+        if(this.getVisibleRobots().filter(i => i.unit < 2 && i.team == this.me.team && this.distSquared([i.x, i.y], [this.me.x, this.me.y])<=10).length==0) { //want to build church for mission
             //TODO: consider if there are enemies && can hold groud by dropping church isntead of fleeing
-            //add code to reset base as church
-            return;
+            let target = [1,0]; //TODO: Update this to update with centroid stuff
+            let choice = this.getChurchSpawnLocation(target[0], target[1]);
+            if(choice != null) {
+                this.baseLocation = [this.me.x + choice[0], this.me.y + choice[1]];
+                return this.buildUnit(SPECS.CHURCH, choice[0], choice[1]);
+            }
         }
         if(this.karbonite > 400 && this.fuel > 400 && this.getVisibleRobots().filter(i => i.unit < 2 
             && i.team == this.me.team && this.distSquared([i.x, i.y], [this.me.x, this.me.y])<=2).length==0) { //church because floating cash
