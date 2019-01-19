@@ -556,8 +556,17 @@ export const Algorithms = (function() {
             return clusters;
         },
 
-        getClusterCentroids: function() {
-
+        /**
+         * given a list of points, compute their centroid rounded to the nearest integer.
+         */
+        centroid: function(cluster) {
+            let xsum = 0;
+            let ysum = 0;
+            for(let i = 0; i < cluster.length; i++) {
+                xsum += cluster[i][0];
+                ysum += cluster[i][1];
+            }
+            return [Math.floor((xsum/cluster.length)+0.5, Math.floor((ysum/cluster.length)+0.5)];
         },
 
         /**
