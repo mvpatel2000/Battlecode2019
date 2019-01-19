@@ -2,14 +2,18 @@ import {SPECS} from 'battlecode';
 
 export function Pilgrim() {
     this.turn = pilgrimTurn;
+    //this.spawnPoint = this.getVisibleRobots().filter(i => (i.unit == SPECS.CHURCH || i.unit == SPECS.CASTLE) &&
+    //    Math.pow(i.x - this.me.x,2) + Math.pow(i.y - this.me.y,2) <= 2 && this.signal>=0);
     this.spawnPoint = this.getVisibleRobots().filter(i => (i.unit == SPECS.CHURCH || i.unit == SPECS.CASTLE) &&
-        Math.pow(i.x - this.me.x,2) + Math.pow(i.y - this.me.y,2) <= 2 && this.signal>=0)[0];
+        Math.pow(i.x - this.me.x,2) + Math.pow(i.y - this.me.y,2) <= 2 && i.signal>=0)[0];
 
-    this.base = [spawnPoint.x, spawnPoint.y];
-    this.mine = this.decodeExactLocation(spawnPoint.signal);
-    this.destination = this.mine;
-    this.karboniteMine = this.karbonite_map[mine[1]][mine[0]];
-    this.fuelMine = this.fuel_map[mine[1]][mine[0]];
+    this.baseLocation = [this.spawnPoint.x, this.spawnPoint.y];
+    this.mineLocation = this.decodeExactLocation(this.spawnPoint.signal);
+    this.destination = this.mineLocation;
+    this.karboniteMine = this.karbonite_map[this.mineLocation[1]][this.mineLocation[0]];
+    this.fuelMine = this.fuel_map[this.mineLocation[1]][this.mineLocation[0]];
+
+    //this.log(this.baseLocation+" "+this.mineLocation+" "+this.karboniteMine+" "+this.fuelMine);
 }
 
 function pilgrimTurn() {
@@ -18,27 +22,53 @@ function pilgrimTurn() {
     //if bad guys, run away INTEGRATE THIS!
     //let escapemove = this.getOptimalEscapeLocationProphet();
 
-    if(x==mine[0] && y==mine[1]) { //at mine
+    if(this.destination[0] == this.mineLocation[0] && this.destination[1] == this.mineLocation[1] 
+        && x == this.mineLocation[0] && y == this.mineLocation[1]) { //at mine
+        //return;
+        //this.log(x+" "+y+" "+(this.fuelMine && this.me.fuel < SPECS.UNITS[this.me.unit].FUEL_CAPACITY)+" "+(this.karboniteMine && this.me.karbonite < SPECS.UNITS[this.me.unit].KARBONITE_CAPACITY));
         if(false) { //want to build church
+            this.log("FAIL");
             //add code to reset base as church
             return;
         }
-        else if(this.fuelMine && this.me.fuel < SPECS.PILGRIM.FUEL_CAPACITY
-            || this.karboniteMine && this.me.karbonite < SPECS.PILGRIM.KARBONITE_CAPACITY) { //want to mine
+        else if( (this.fuelMine && this.me.fuel < SPECS.UNITS[this.me.unit].FUEL_CAPACITY)
+            || (this.karboniteMine && this.me.karbonite < SPECS.UNITS[this.me.unit].KARBONITE_CAPACITY) ) { //want to mine
+            //this.log("Mining...");
             return this.mine();
         }
         else { //move back to base
-            this.destination = this.base;
+            //this.log("retreat");
+            this.destination = this.baseLocation;
         }
     }
-    let route = this.workerpath(this.target);
-    if (this.fuel > (SPECS.UNITS[this.me.unit].FUEL_PER_MOVE * this.getSpeed()) && route.length > 0) { //A* towards target
-        return this.move(...route[0]);
+    else if( this.destination[0] == this.baseLocation[0] && this.destination[1] == this.baseLocation[1]
+        && Math.pow(x - this.baseLocation[0],2) + Math.pow(y - this.baseLocation[1], 2) <=2 ) { //at base
+        let base = this.getVisibleRobots().filter(i => (i.unit == SPECS.CHURCH || i.unit == SPECS.CASTLE) &&
+            Math.pow(i.x - this.me.x,2) + Math.pow(i.y - this.me.y,2) <= 2);
+        if(base.length>0) {
+            //this.log("charge");
+            this.destination = this.mineLocation;
+            return this.give(base[0].x - x, base[0].y -y, this.me.karbonite, this.me.fuel);
+        }
     }
+
+    if(this.destination[0] == this.mineLocation[0] && this.destination[1] == this.mineLocation[1]) {
+        let route = this.path(this.destination);
+        if (this.fuel > (SPECS.UNITS[this.me.unit].FUEL_PER_MOVE * this.getSpeed()) && route.length > 0) { //A* towards target
+            return this.move(...route[0]);
+        }
+    }
+    else if(this.destination[0] == this.baseLocation[0] && this.destination[1] == this.baseLocation[1]) {
+        let route = this.workerpath(this.destination);
+        if (this.fuel > (SPECS.UNITS[this.me.unit].FUEL_PER_MOVE * this.getSpeed()) && route.length > 0) { //A* towards target
+            return this.move(...route[0]);
+        }
+    }
+    
     return;
 
     // mine if not at capacity
-    if (x == this.queue[0][0] && y == this.queue[0][1] && (this.fuel_map[y][x]
+/*    if (x == this.queue[0][0] && y == this.queue[0][1] && (this.fuel_map[y][x]
                 && this.me.fuel < SPECS.UNITS[this.me.unit].FUEL_CAPACITY)
             || (this.karbonite_map[y][x]
                 && this.me.karbonite < SPECS.UNITS[this.me.unit].KARBONITE_CAPACITY)) {
@@ -70,12 +100,13 @@ function pilgrimTurn() {
     if (this.getVisibleRobotMap()[this.queue[0][1]][this.queue[0][0]] > 0) {
          this.queue.push(this.queue.shift());
     }
-    return this.go(this.queue[0]);
+    return this.go(this.queue[0]); */
 }
 
 /**
  * Called in place of pilgrimTurn() when dropping off resources.
  */
+ /*
 function pilgrimDropping() {
     this.findDropoffs();
     if (this.dropoffs.length == 0) {
@@ -125,3 +156,4 @@ function pilgrimDropping() {
         }
     }
 }
+*/

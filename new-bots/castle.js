@@ -22,7 +22,25 @@ function nextMissionTarget() { // currently assumes that this.isColonized just w
 
 function castleTurn() {
     this.step++;
-    setup();
+    if (this.step == 1) { // wait for all castles to broadcast
+        this.castleTalk(this.myEncodedLocation);
+        return;
+    }
+    else if (this.step == 2) { // get castle locations
+        let castles = this.getVisibleRobots().filter(i => i.castle_talk!=0 && i.id != this.me.id).map(i => i.castle_talk);
+        while(castles.length < 2) {
+            castles.push(this.myEncodedLocation);
+        }
+        this.otherCastleLocations = castles[0] + (2**8)*castles[1];
+        this.castleTalk(this.myEncodedLocation);
+
+        let castleturns = this.getVisibleRobots().filter(i => i.castle_talk!=0 && i.id != this.me.id).map(i => i.turn);
+        for(let i=0; i<castleturns.length; i++) {
+            if(this.me.turn!=castleturns[i]) {
+                this.alphaCastle = false;
+            }
+        }
+    }
 
     //if(this.alphaCastle == false)
     //    return;
@@ -43,7 +61,7 @@ function castleTurn() {
     else if (this.fuel >= 500 && this.karbonite >= 100 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1]) && this.mission) {
         //this.signal(this.encodeExactLocation(this.nearbyMines.shift()), 2);
         this.mission = false;
-        return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
+        //return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
     }
 
     return; 
@@ -62,32 +80,4 @@ function castleTurn() {
 //         return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
 //     }
 
-}
-
-/**
- * Gets other castle locations
- */
-function setup() {
-    if(this.step > 2) { // set up complete
-        return;
-    }
-    else if (this.step == 1) { // wait for all castles to broadcast
-        this.castleTalk(this.myEncodedLocation);
-        return;
-    }
-    else if (this.step == 2) { // get castle locations
-        let castles = this.getVisibleRobots().filter(i => i.castle_talk!=0 && i.id != this.me.id).map(i => i.castle_talk);
-        while(castles.length < 2) {
-            castles.push(this.myEncodedLocation);
-        }
-        this.otherCastleLocations = castles[0] + (2**8)*castles[1];
-        this.castleTalk(this.myEncodedLocation);
-
-        let castleturns = this.getVisibleRobots().filter(i => i.castle_talk!=0 && i.id != this.me.id).map(i => i.turn);
-        for(let i=0; i<castleturns.length; i++) {
-            if(this.me.turn!=castleturns[i]) {
-                this.alphaCastle = false;
-            }
-        }
-    }
 }
