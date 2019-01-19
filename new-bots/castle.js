@@ -9,7 +9,7 @@ export function Castle() {
     this.otherCastleLocations = 0;
 
     this.alphaCastle = true;
-    this.resourceClusters = [];
+    this.resourceClusters = this.clusterResourceTiles();
 
     this.nearbyMines = this.getNearbyMines();
     this.mission = true;
@@ -17,13 +17,10 @@ export function Castle() {
 
 function castleTurn() {
     this.step++;
-    
+    setup();
+
     //if(this.alphaCastle == false)
     //    return;
-
-    if(this.me.turn == 1) {
-        let this.resourceClusters = this.clusterResourceTiles();
-    }
 
     let choice = this.randomMove();
 

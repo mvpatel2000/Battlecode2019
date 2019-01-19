@@ -413,7 +413,7 @@ export const Algorithms = (function() {
          * Decodes exact location into 12 bits
          */
          decodeExactLocation: function(zone) {
-            return [ (zone / 64) % 64, zone % 64];
+            return [ Math.floor(zone / 64) % 64, zone % 64];
          },
 
         /**

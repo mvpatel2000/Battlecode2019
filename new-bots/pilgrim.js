@@ -7,17 +7,30 @@ export function Pilgrim() {
     this.base = [spawnPoint.x, spawnPoint.y];
     this.mine = this.decodeExactLocation(spawnPoint.signal);
     this.destination = this.mine;
+    this.karboniteMine = this.karbonite_map[mine[1]][mine[0]];
+    this.fuelMine = this.fuel_map[mine[1]][mine[0]];
 }
 
 function pilgrimTurn() {
     let [x, y] = [this.me.x, this.me.y];
 
-    //if bad guys, run away
-    //elif at target
-        //if not at capacity, mine
-        //if at capacity, move to base
+    //if bad guys, run away INTEGRATE THIS!
+    //let escapemove = this.getOptimalEscapeLocationProphet();
+
+    if(x==mine[0] && y==mine[1]) { //at mine
+        if(false) { //want to build church
+            //add code to reset base as church
+        }
+        else if(this.fuelMine && this.me.fuel < SPECS.PILGRIM.FUEL_CAPACITY
+            || this.karboniteMine && this.me.karbonite < SPECS.PILGRIM.KARBONITE_CAPACITY) { //want to mine
+            return this.mine();
+        }
+        else { //move back to base
+            this.destination = this.base;
+        }
+    }
     // elif target is base and adjacent
-        //drop off
+        //drop off & turn around
     //else workerpath
 
     // mine if not at capacity
