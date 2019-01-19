@@ -4,12 +4,21 @@ export function Pilgrim() {
     this.turn = pilgrimTurn;
     this spawnPoint = this.getVisibleRobots().filter(i => (i.unit == SPECS.CHURCH || i.unit == SPECS.CASTLE) &&
         Math.pow(i.x - this.me.x,2) + Math.pow(i.y - this.me.y,2) <= 2 && this.signal>=0)[0];
-    this.destination = this.decodeExactLocation(spawnPoint.signal);
+    this.base = [spawnPoint.x, spawnPoint.y];
+    this.mine = this.decodeExactLocation(spawnPoint.signal);
+    this.destination = this.mine;
 }
 
 function pilgrimTurn() {
-    this.findDropoffs();
     let [x, y] = [this.me.x, this.me.y];
+
+    //if bad guys, run away
+    //elif at target
+        //if not at capacity, mine
+        //if at capacity, move to base
+    // elif target is base and adjacent
+        //drop off
+    //else workerpath
 
     // mine if not at capacity
     if (x == this.queue[0][0] && y == this.queue[0][1] && (this.fuel_map[y][x]

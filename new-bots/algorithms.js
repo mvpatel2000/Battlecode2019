@@ -17,6 +17,13 @@ export const Algorithms = (function() {
         return a.length == b.length && a.map((v, i) => b[i] == v).reduce((x, y) => x && y);
     }
 
+    /**
+     * Element-wise list equality. Checks if locations off by 1
+     */
+    function adjacentTo(a, b) {
+        return Math.pow(a[0]-b[0], 2) + Math.pow(a[1]-b[1], 2) <=2;
+    }
+
     function distSquared(a, b) {
         let dx = a[0] - b[0];
         let dy = a[1] - b[1];
@@ -581,6 +588,72 @@ export const Algorithms = (function() {
                 let current = queue.pop(); //pop from priority queue instead of magic symbols
                 done.push(current)
                 if (i-- < 0 || arrEq(current, dest)) { //found destination
+                    current = done.pop();
+                    let totalPath = [current];
+                    while (current in prev) { //reconstruct path
+                        current = prev[current];
+                        totalPath.push(current);
+                    }
+                    let path = [];
+                    for (let i = 1; i < totalPath.length; i++) { //reformat path
+                        let [a, b] = totalPath[i];
+                        let [c, d] = totalPath[i - 1];
+                        path.push([c - a, d - b]);
+                    }
+                    path.reverse();
+                    return path;
+                }
+                for (let neighbor of absoluteMoves(getSpeed.call(this), current[0], current[1])) { //loops over all moves
+                    if (neighbor[1] >= map.length
+                            || neighbor[0] >= map[0].length
+                            || neighbor[1] < 0
+                            || neighbor[0] < 0
+                            || !map[neighbor[1]][neighbor[0]]
+                            || occupied[neighbor[1]][neighbor[0]] > 0
+                            || openHash[hash(neighbor)]
+                            || g[neighbor] != undefined) //filters invalid moves or already taken moves
+                        continue;
+                    queue.push(neighbor); //push
+                    openHash[hash(neighbor)] = true;
+                    prev[neighbor] = current; //sets current path for backtrace
+                    g[neighbor] = g[current] + 1;
+                    f[neighbor] = g[neighbor] + h(neighbor);
+                }
+            }
+            return [];
+        },
+
+        /**
+         * Takes in destination [x, y].
+         * Return a list of [dx, dy] instructions to get from current location to destination.
+         */
+        workerpath: function(dest) {
+            let start = [this.me.x, this.me.y];
+            let map = this.map;
+            let occupied = this.getVisibleRobotMap();
+            if (dest[1] >= map.length
+                || dest[0] >= map[0].length
+                || dest[1] < 0
+                || dest[0] < 0) {
+                return [];
+            }
+            let openHash = {};
+            let done = new PriorityQueue((a, b) => h(a) < h(b));
+            let prev = {}; //used to reconstruct map
+            let h = x => (Math.abs(dest[0] - x[0]) + Math.abs(dest[1] - x[1])) / getSpeed.call(this); //~steps away from destination
+            let hash = p => p[0] * 67 * 73 + p[1];
+            let g = {}; //distance from origin in terms of steps taken
+            g[start] = 0;
+            let f = {}; //g + heuristic (dist to destination)
+            f[start] = h(start);
+
+            const queue = new PriorityQueue((a, b) => f[a] < f[b]);
+            queue.push(start);
+            let i = 128;
+            while (!queue.isEmpty()) {
+                let current = queue.pop(); //pop from priority queue instead of magic symbols
+                done.push(current)
+                if (i-- < 0 || adjacentTo(current, dest)) { //found destination
                     current = done.pop();
                     let totalPath = [current];
                     while (current in prev) { //reconstruct path
