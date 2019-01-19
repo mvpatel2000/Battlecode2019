@@ -566,8 +566,10 @@ export const Algorithms = (function() {
                 xsum += cluster[i][0];
                 ysum += cluster[i][1];
             }
-            return [Math.floor((xsum/cluster.length)+0.5, Math.floor((ysum/cluster.length)+0.5)];
+            return [Math.floor((xsum/cluster.length)+0.5), Math.floor((ysum/cluster.length)+0.5)];
         },
+
+        
 
         /**
          * Return random, valid, one-tile move.

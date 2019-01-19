@@ -10,9 +10,14 @@ export function Castle() {
 
     this.alphaCastle = true;
     this.resourceClusters = this.clusterResourceTiles();
+    this.isColonized = []; // one for each resource cluster
 
     this.nearbyMines = this.getNearbyMines();
     this.mission = true;
+}
+
+function nextMissionTarget() { // currently assumes that this.isColonized just works, but this is not done yet.
+    return false;
 }
 
 function castleTurn() {
