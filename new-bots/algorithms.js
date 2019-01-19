@@ -253,6 +253,36 @@ export const Algorithms = (function() {
             return optimalmove;
         },
 
+        /*
+         * Returns move that ensures no enemies can see you 
+         * Used for pilgrims to kite
+         */
+        getOptimalHidingLocation: function() {
+            let visibleRobots = this.getVisibleRobots().filter(i => i.unit > 2 && i.team != this.me.team);
+            let visibleAllies = this.getVisibleRobots().filter(i => i.unit > 2 && i.team == this.me.team);
+            if (visibleRobots.length == 0 || visibleAllies.length > 8) {
+                return [];
+            }
+            let optimalmove = [];
+            let possiblemoves = this.validAbsoluteMoves();
+            //add "staying still" to possible moves list
+            possiblemoves.unshift([this.me.x,this.me.y]);
+
+            for (let move of possiblemoves) {
+                let validmove = true;
+                for (let i of visibleRobots) {
+                    let dSquaredtoEnemy = distSquared([i.x, i.y], [move[0], move[1]])
+                    if(dSquaredtoEnemy <=  Math.pow(Math.sqrt(SPECS.UNITS[i.unit].VISION_RADIUS)+1,2)) {
+                        validmove = false;
+                        break;
+                    }
+                }
+                if(validmove)
+                    optimalmove.push(move);
+            }
+            return optimalmove;
+        },
+
         /**
          * Given a robot, tells you if it can kill you.
          * Returns the amount of HP damage.
