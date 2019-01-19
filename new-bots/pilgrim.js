@@ -12,12 +12,12 @@ export function Pilgrim() {
     this.destination = this.mineLocation;
     this.karboniteMine = this.karbonite_map[this.mineLocation[1]][this.mineLocation[0]];
     this.fuelMine = this.fuel_map[this.mineLocation[1]][this.mineLocation[0]];
-
-    //this.log(this.baseLocation+" "+this.mineLocation+" "+this.karboniteMine+" "+this.fuelMine);
 }
 
 function pilgrimTurn() {
     let [x, y] = [this.me.x, this.me.y];
+
+    //TODO: Broadcast back to church so it can track when u die and replace.
 
     //if bad guys, run away INTEGRATE THIS!
     //let escapemove = this.getOptimalEscapeLocationProphet();
@@ -49,9 +49,6 @@ function pilgrimTurn() {
         let route = this.path(this.destination);
         if (this.fuel > (SPECS.UNITS[this.me.unit].FUEL_PER_MOVE * this.getSpeed()) && route.length > 0) { //A* towards target
             return this.move(...route[0]);
-        }
-        else {
-            this.log(this.me.turn+" "+this.destination+" "+this.me.x+" "+this.me.y);
         }
     }
     else if( this.arrEq(this.destination, this.baseLocation) ) { //moving to base

@@ -318,191 +318,153 @@ function crusaderTurn() {
 function Castle() {
     this.turn = castleTurn;
     this.step = 0;
-    this.starting = true;
-    this.preacher = true;
 
     this.reflectedLocation = this.reflectPoint(this.me.x, this.me.y);
     this.myEncodedLocation = this.encodeLocation(this.reflectedLocation[0], this.reflectedLocation[1]);
     this.otherCastleLocations = 0;
+
+    this.alphaCastle = true;
+    this.resourceClusters = this.clusterResourceTiles();
+    this.resourceCentroids = this.resourceClusters.map(x => this.centroid(x));
+    this.clusterStatus = this.resourceClusters.map(x => 0); // one for each resource cluster.  status codes:
+    // 0: unknown/open; 1: on the way; 2: church built; 3: fortified and ours; 4: enemy; can add other codes if necessary
+
+    this.nearbyMines = this.getNearbyMines();
+    this.mission = true;
 }
 
 function castleTurn() {
     this.step++;
-    if (this.step == 1) { //wait for all castles to broadcast
+    if (this.step == 1) { // wait for all castles to broadcast
         this.castleTalk(this.myEncodedLocation);
         return;
     }
-    else if (this.step == 2) { //get castle locations
+    else if (this.step == 2) { // get castle locations
         let castles = this.getVisibleRobots().filter(i => i.castle_talk!=0 && i.id != this.me.id).map(i => i.castle_talk);
         while(castles.length < 2) {
             castles.push(this.myEncodedLocation);
         }
         this.otherCastleLocations = castles[0] + (2**8)*castles[1];
         this.castleTalk(this.myEncodedLocation);
+
+        let castleturns = this.getVisibleRobots().filter(i => i.castle_talk!=0 && i.id != this.me.id).map(i => i.turn);
+        for(let i=0; i<castleturns.length; i++) {
+            if(this.me.turn!=castleturns[i]) {
+                this.alphaCastle = false;
+            }
+        }
     }
+
+    //if(this.alphaCastle == false)
+    //    return;
 
     let choice = this.randomMove();
-    const adj = this.me.turn > 10 ? 100 : 0;
 
-    // one unit spawn
-    if (this.fuel >= 80 && this.karbonite >= 30 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
-        this.signal(this.otherCastleLocations, 2);
-        return this.buildUnit(SPECS.PREACHER, choice[0], choice[1]);
+    let attackbot = this.getRobotToAttack(); //attack if enemy is in range
+    if (attackbot) {
+        if (this.fuel > SPECS.UNITS[this.me.unit].ATTACK_FUEL_COST) {
+            return this.attack(attackbot.x - this.me.x, attackbot.y - this.me.y);
+        }
     }
-    else if (this.fuel >= 80 && this.karbonite >= 10 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
+
+    if (this.fuel >= 50 && this.karbonite >= 10 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1]) && this.nearbyMines.length>0) {
+        this.signal(this.encodeExactLocation(this.nearbyMines.shift()), 2);
         return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
-    } 
-
-    // base spawn rate
-    if (this.starting || this.step % 6 == 0) {
-        if (this.fuel >= 80 + adj && this.karbonite >= 10 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
-            this.starting = false;
-            this.signal(this.otherCastleLocations, 1);
-            return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
-        } else {
-            return;
-        }
-    } else if (this.preacher || (this.step - 1) % 3 == 0) {
-        if (this.fuel >= 80 + adj && this.karbonite >= 30 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
-            this.preacher = false;
-            this.signal(this.otherCastleLocations, 2);
-            return this.buildUnit(SPECS.PREACHER, choice[0], choice[1]);
-        } else {
-            return;
-        }
-    } else if ((this.step - 2) % 3 == 0) {
-        if (this.fuel >= 80 + adj && this.karbonite >= 30 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
-            this.signal(this.otherCastleLocations, 1);
-            return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
-        } else {
-            return;
-        }
-    } else {
-        if (this.fuel >= 80 + adj && this.karbonite >= 30 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
-            this.signal(this.otherCastleLocations, 2);
-            return this.buildUnit(SPECS.CRUSADER, choice[0], choice[1]);
-        } else {
-            return;
-        }
     }
+    else if (this.fuel >= 500 && this.karbonite >= 100 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1]) && this.mission) {
+        //this.signal(this.encodeExactLocation(this.nearbyMines.shift()), 2);
+        this.mission = false;
+        //return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
+    }
+
+    return; 
+
+    // if you have enough for mission 
+        // determine which mission to go to
+        // launch mission
+        // communicate to other churches mission is built
+
+//Notes: Each pilgrim should comm back its tile its at (indicating alive) or under attack
+//       Each church should continuously say alive & if still saturating, saturated, or under attack
+
+//     if (this.prophet < 3 && this.fuel >= 50 && this.karbonite >= 30 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
+//         this.signal(this.otherCastleLocations, 2);
+//         this.prophet++;
+//         return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
+//     }
+
 }
 
 function Pilgrim() {
-    // add castles + churches to list of known drop-off points
     this.turn = pilgrimTurn;
-    this.queue = this.findResources();
-    this.dropoffs = [];
-    this.findDropoffs = function () {
-        outer: for (let i of this.getVisibleRobots()) {
-            if (i.unit <= 1 && i.team == this.me.team) {
-                for (let j of this.dropoffs) {
-                    if (j[0] == i.x && j[1] == i.y)
-                        continue outer;
-                    if (!this.occupied(j[0], j[1])) {
-                        this.dropoffs = this.dropoffs.filter(d => d[0] != j[0] || d[1] != j[1]);
-                    }
-                }
-                this.dropoffs.push([i.x, i.y]);
-            }
-        }
-    };
+    //this.spawnPoint = this.getVisibleRobots().filter(i => (i.unit == SPECS.CHURCH || i.unit == SPECS.CASTLE) &&
+    //    Math.pow(i.x - this.me.x,2) + Math.pow(i.y - this.me.y,2) <= 2 && this.signal>=0);
+    this.spawnPoint = this.getVisibleRobots().filter(i => (i.unit == SPECS.CHURCH || i.unit == SPECS.CASTLE) &&
+        Math.pow(i.x - this.me.x,2) + Math.pow(i.y - this.me.y,2) <= 2 && i.signal>=0)[0];
+
+    this.baseLocation = [this.spawnPoint.x, this.spawnPoint.y];
+    this.mineLocation = this.decodeExactLocation(this.spawnPoint.signal);
+    this.destination = this.mineLocation;
+    this.karboniteMine = this.karbonite_map[this.mineLocation[1]][this.mineLocation[0]];
+    this.fuelMine = this.fuel_map[this.mineLocation[1]][this.mineLocation[0]];
+
+    //this.log(this.baseLocation+" "+this.mineLocation+" "+this.karboniteMine+" "+this.fuelMine);
 }
 
 function pilgrimTurn() {
-    this.findDropoffs();
     let [x, y] = [this.me.x, this.me.y];
 
-    // mine if not at capacity
-    if ((this.fuel_map[y][x]
-                && this.me.fuel < SPECS.UNITS[this.me.unit].FUEL_CAPACITY)
-            || (this.karbonite_map[y][x]
-                && this.me.karbonite < SPECS.UNITS[this.me.unit].KARBONITE_CAPACITY)) {
-        // values should be modified as necessary - churches seem to hurt more than help in
-        // general.
-        if (this.karbonite >= 50 && this.fuel >= 200 & this.me.turn > 20) {
-            let move = this.randomMove();
-            return this.buildUnit(SPECS.CHURCH, move[0], move[1]);
-        } else {
-            if (this.fuel > 5)
-                return this.mine();
-            else
-                return;
-        }
-    } else if (this.fuel_map[y][x] || this.karbonite_map[y][x]) { // if done mining, return
-        this.turn = pilgrimDropping;
-        return this.turn();
-    }
-    // get new location if full
-    if (this.getVisibleRobotMap()[this.queue[0][1]][this.queue[0][0]] > 0) {
-         this.queue.push(this.queue.shift());
-    }
-    return this.go(this.queue[0]);
-}
+    //if bad guys, run away INTEGRATE THIS!
+    //let escapemove = this.getOptimalEscapeLocationProphet();
 
-/**
- * Called in place of pilgrimTurn() when dropping off resources.
- */
-function pilgrimDropping() {
-    this.findDropoffs();
-    if (this.dropoffs.length == 0) {
-        return this.move(...this.randomMove());
-    }
-    // return to normal turn function
-    let restore = () => {
-        if (this.karbonite < 10 && !this.karbonite_map[this.queue[0][1]][this.queue[0][0]]) {
-            this.queue.push(this.queue.shift()); // cycle if mining fuel when needing karbonite
-        } else if (this.fuel < 100 && !this.fuel_map[this.queue[0][1]][this.queue[0][0]]) {
-            this.queue.push(this.queue.shift()); // the opposite
+    if( this.arrEq(this.destination, this.mineLocation) && x == this.mineLocation[0] && y == this.mineLocation[1]) { //at mine
+        if( (this.fuelMine && this.me.fuel < SPECS.UNITS[this.me.unit].FUEL_CAPACITY)
+            || (this.karboniteMine && this.me.karbonite < SPECS.UNITS[this.me.unit].KARBONITE_CAPACITY) ) { //want to mine
+            return this.mine();
         }
-        this.turn = pilgrimTurn;
-    };
-    let [x, y] = this.dropoffs.reduce((a, b) =>
-        this.dist([this.me.x, this.me.y], a) < this.dist([this.me.x, this.me.y], b) ? a : b);
-    let [z, w] = this.randomMove.call({ // center move on castle
-        occupied: (x, y) =>
-                    y < 0 || x < 0 || y >= this.map.length
-                            || x >= this.map[0].length || !this.map[y][x],
-        me: {x: x, y: y},
-    });
-    for (let i of this.getVisibleRobots()) {
-        if (i.unit <= 1 && i.team == this.me.team
-                && Math.abs(i.x - this.me.x) <= 1
-                && Math.abs(i.y - this.me.y) <= 1) {
-            restore();
-            if (this.occupied(i.x, i.y))
-                return this.give(i.x - this.me.x, i.y - this.me.y, this.me.karbonite, this.me.fuel);
-            else return;
+        else { //move back to base
+            this.destination = this.baseLocation;
         }
     }
-    let route = this.path([x + z, y + w]);
-    if (route.length && this.fuel > 5) {
-        let [dx, dy] = route[0];
-        return this.move(dx, dy);
-    } else {
-        if (x == this.me.x - z && y == this.me.y - w) {
-            restore();
-            if (this.occupied(x, y))
-                return this.give(-z, -w, this.me.karbonite, this.me.fuel);
-            else
-                return;
+    if( this.arrEq(this.destination, this.baseLocation) && Math.pow(x - this.baseLocation[0],2) + Math.pow(y - this.baseLocation[1], 2) <=2 ) { //at base
+        let base = this.getVisibleRobots().filter(i => (i.unit == SPECS.CHURCH || i.unit == SPECS.CASTLE) &&
+            Math.pow(i.x - this.me.x,2) + Math.pow(i.y - this.me.y,2) <= 2);
+        if(base.length>0) {
+            this.destination = this.mineLocation;
+            return this.give(base[0].x - x, base[0].y -y, this.me.karbonite, this.me.fuel);
         }
     }
+
+    if( this.arrEq(this.destination, this.mineLocation) ) { //moving to mine
+        let route = this.path(this.destination);
+        if (this.fuel > (SPECS.UNITS[this.me.unit].FUEL_PER_MOVE * this.getSpeed()) && route.length > 0) { //A* towards target
+            return this.move(...route[0]);
+        }
+    }
+    else if( this.arrEq(this.destination, this.baseLocation) ) { //moving to base
+        let route = this.workerpath(this.destination);
+        if (this.fuel > (SPECS.UNITS[this.me.unit].FUEL_PER_MOVE * this.getSpeed()) && route.length > 0) { //A* towards target
+            return this.move(...route[0]);
+        }
+    }
+    
+    return;
 }
 
 function Church() {
     this.turn = churchTurn;
     this.step = 0;
+
+    this.nearbyMines = this.getNearbyMines();
 }
 
 function churchTurn() {
-    this.step++;
     let choice = this.randomMove();
-    if (this.step % 2 && this.fuel >= 150 && this.karbonite >= 10
-                && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
+    if (this.fuel >= 50 && this.karbonite >= 10 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1]) && this.nearbyMines.length>0) {
+        this.signal(this.encodeExactLocation(this.nearbyMines.shift()), 2);
         return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
-    } else {
-        return;
     }
+    return;
 }
 
 function Preacher() {
@@ -511,78 +473,13 @@ function Preacher() {
 
     this.enemyCastleLocations = this.prepareTargets();
     this.targetCtr = 0;
-    this.target = this.enemyCastleLocations[this.targetCtr]; 
+    this.target = this.enemyCastleLocations[this.targetCtr];
 }
 
 /**
  * March across map reflection.
  */
 function preacherTurn() {
-    // attack code
-    // if there are robots that I can attack,
-    // and I have enough fuel to attack,
-    // attack them.
-    //aoeAnalysis returns a location [x,y]
-    let attackbot = this.aoeAnalysis();
-    if (attackbot) {
-        if (this.fuel > SPECS.UNITS[this.me.unit].ATTACK_FUEL_COST) {
-            return this.attack(attackbot[0] - this.me.x, attackbot[1] - this.me.y);
-        }
-    }
-    // If there are robots that can attack me,
-    // move to location that minimizes the sum of the hp damage.
-    // Tiebreaker: location closest (euclidean distance) from the original path move to target
-    // Fall through if no robots can attack me, or not enough fuel to move.
-    let optimalmove = this.getOptimalEscapeLocation();
-    if (optimalmove.length && this.fuel >= this.fuelpermove) {
-        let route = this.path(this.target);
-        let [dx, dy] = route.length ? route[0] : [0, 0];
-        let old = [this.me.x + dx, this.me.y + dy];
-        let finmove = optimalmove.reduce((a, b) => this.dist(a, old) < this.dist(b, old) ? a : b);
-        //if best possible move is to stay still, return nothing.
-        if (finmove[0] == this.me.x && finmove[1] == this.me.y) {
-            return;
-        } else {
-            return this.go(finmove);
-        }
-    }
-
-    // non-combat mode
-    while (this.me.x == this.target[0] && this.me.y == this.target[1]) { //reset target if meet it
-        if(this.targetCtr < this.enemyCastleLocations.length) {
-            this.log("Prepping update: "+this.enemyCastleLocations+" "+this.targetCtr);
-            this.targetCtr+=1;
-            this.target = this.enemyCastleLocations[this.targetCtr];
-            this.log("Update: "+this.target+" "+this.targetCtr);
-        }
-        else {
-            let r = () => [this.rand(this.map[0].length),
-                            this.rand(this.map.length)];
-            this.target = r();
-            while (!this.map[this.target[1]][this.target[0]]) {
-                this.target = r();
-            }
-        }
-    }
-
-    // movement code
-    return this.go(this.target);
-}
-
-function Prophet() {
-    this.turn = prophetTurn;
-    this.fuelpermove = SPECS.UNITS[this.me.unit].FUEL_PER_MOVE;
-
-    this.enemyCastleLocations = this.prepareTargets();
-    this.targetCtr = 0;
-    this.target = this.enemyCastleLocations[this.targetCtr]; 
-}
-
-/**
- * March across map reflection.
- */
-function prophetTurn() {
-
     // attack code
     // if there are robots that I can attack,
     // and I have enough fuel to attack,
@@ -611,9 +508,10 @@ function prophetTurn() {
         }
     }
 
+
     // non-combat mode
     while (this.me.x == this.target[0] && this.me.y == this.target[1]) { //reset target if meet it
-        if(this.targetCtr < this.enemyCastleLocations.length) {
+        if (this.targetCtr < this.enemyCastleLocations.length) {
             this.log("Prepping update: "+this.enemyCastleLocations+" "+this.targetCtr);
             this.targetCtr+=1;
             this.target = this.enemyCastleLocations[this.targetCtr];
@@ -629,8 +527,103 @@ function prophetTurn() {
         }
     }
 
+
     // movement code
     return this.go(this.target);
+}
+
+function Prophet() {
+    this.turn = prophetTurn;
+    this.fuelpermove = SPECS.UNITS[this.me.unit].FUEL_PER_MOVE;
+
+    this.enemyCastleLocations = this.prepareTargets();
+    this.targetCtr = 0;
+    this.target = this.enemyCastleLocations[this.targetCtr];
+    this.defender = this.rand(100) < 20;
+    if (this.defender) {
+        this.log('Building defender');
+        this.target = [this.me.x + this.rand(7) - 4, this.me.y + this.rand(7) - 4];
+    } else if (this.rand(100) < 20) {
+        this.log('Building raider');
+        let res = this.findResources();
+        this.raider = true;
+        this.target = res[this.rand(res.length)];
+    }
+    this.step = 0;
+}
+
+/**
+ * March across map reflection.
+ */
+function prophetTurn() {
+    this.step++;
+
+    // attack code
+    // if there are robots that I can attack,
+    // and I have enough fuel to attack,
+    // attack them.
+    let attackbot = this.getRobotToAttack();
+    if (attackbot && !shouldRun.call(this)) {
+        if (this.fuel > SPECS.UNITS[this.me.unit].ATTACK_FUEL_COST) {
+            return this.attack(attackbot.x - this.me.x, attackbot.y - this.me.y);
+        }
+    }
+
+    // If there are robots that can attack me,
+    // move to location that minimizes the sum of the hp damage.
+    // Tiebreaker: location closest (euclidean distance) from the original path move to target
+    // Fall through if no robots can attack me, or not enough fuel to move.
+    let optimalmove = this.getOptimalEscapeLocationProphet();
+    if (optimalmove.length && this.fuel >= this.fuelpermove) {
+        let route = this.path(this.target);
+        let [dx, dy] = route.length ? route[0] : [0, 0];
+        let old = [this.me.x + dx, this.me.y + dy];
+        let finmove = optimalmove.reduce((a, b) => this.dist(a, old) < this.dist(b, old) ? a : b);
+        //if best possible move is to stay still, return nothing.
+        if (finmove[0] == this.me.x && finmove[1] == this.me.y) {
+            return;
+        } else {
+            return this.go(finmove);
+        }
+    }
+
+    // one move per 50 steps
+    if (this.step > 50 || this.fuel_map[this.me.y][this.me.x]
+                       || this.karbonite_map[this.me.y][this.me.x] || this.raider)
+        this.step = 0;
+    else if (this.step > 3 && this.me.turn < 600)
+        return;
+
+    // non-combat mode
+    while (this.me.x == this.target[0] && this.me.y == this.target[1]) { //reset target if meet it
+        if (this.targetCtr < this.enemyCastleLocations.length) {
+            this.log("Prepping update: " + this.enemyCastleLocations + " " + this.targetCtr);
+            this.targetCtr += 1;
+            this.target = this.enemyCastleLocations[this.targetCtr];
+            this.log("Update: " + this.target + " " + this.targetCtr);
+        }
+        else {
+            let r = () => [this.rand(this.map[0].length),
+                            this.rand(this.map.length)];
+            this.target = r();
+            while (!this.map[this.target[1]][this.target[0]]) {
+                this.target = r();
+            }
+        }
+    }
+    // movement code
+    return this.go(this.target);
+}
+
+/**
+ * tells if should run from nearby preachers
+ */
+function shouldRun() {
+    return this.getVisibleRobots()
+            .filter(i => i.team != this.me.team && i.unit == SPECS.PREACHER)
+            .map(i => this.distSquared([this.me.x, this.me.y], [i.x, i.y]))
+            .map(i => i < 18)
+            .reduce((a, b) => a || b, false);
 }
 
 const top = 0;
@@ -704,11 +697,6 @@ class PriorityQueue {
 const Algorithms = (function() {
     let seed = 1;
 
-    function rand(len) {
-        seed = ((seed + 3) * 7 + 37) % 8117;
-        return seed % len
-    }
-
     function dist(a, b) {
         let dx = a[0] - b[0];
         let dy = a[1] - b[1];
@@ -720,6 +708,13 @@ const Algorithms = (function() {
      */
     function arrEq(a, b) {
         return a.length == b.length && a.map((v, i) => b[i] == v).reduce((x, y) => x && y);
+    }
+
+    /**
+     * Element-wise list equality. Checks if locations off by 1
+     */
+    function adjacentTo(a, b) {
+        return Math.pow(a[0]-b[0], 2) + Math.pow(a[1]-b[1], 2) <=2;
     }
 
     function distSquared(a, b) {
@@ -754,7 +749,16 @@ const Algorithms = (function() {
         dist: dist,
         distSquared: distSquared,
         getSpeed: getSpeed,
-        rand: rand,
+        arrEq: arrEq,
+
+        /**
+         * get pseudorandom number
+         */
+        rand: function rand(len) {
+            seed = ((seed + 3) * 7 + 37) % 8117 + this.me.x * 97
+                    + this.me.y * 1013 + this.getVisibleRobots().length * 37;
+            return seed % len;
+        },
 
         /**
          * Gives list of valid move locations.
@@ -779,7 +783,7 @@ const Algorithms = (function() {
 
         /**
          * Helper function for aoeAnalysis method.
-         * Given a 2d array from getVsitibleRobotMap(), the length of the y and x-axis
+         * Given a 2d array from getVisibleRobotMap(), the length of the y and x-axis
          * and a given [j][i] index that might be in the 2d array, caculated
          * the damage done by an attack at the given index.
          * Returns 0 for a location outside of the visibleRobotMap array or for a location without robots.
@@ -846,7 +850,7 @@ const Algorithms = (function() {
                  }
              }
              return aoelocation;
-         },
+        },
 
         /**
          * Returns a robot to attack if possible.
@@ -916,6 +920,64 @@ const Algorithms = (function() {
             return optimalmove;
         },
 
+        /**
+         * Given a robot, tells you if it can kill you.
+         * Returns the amount of HP damage.
+         */
+        expectedDamageProphet: function(i, dSquared) {
+            let attack_rad2 = SPECS.UNITS[i.unit].ATTACK_RADIUS;
+            if (!attack_rad2) {
+                return 0;
+            } else {
+                if (attack_rad2[0] <= dSquared && (dSquared <= attack_rad2[1] || i.unit==5 && dSquared <= attack_rad2[1]+2) ) {
+                    return SPECS.UNITS[i.unit].ATTACK_DAMAGE;
+                } else {
+                    return 0;
+                }
+            }
+        },
+
+        /*
+         * Returns the optimal absolute location you should move to
+         * by minimizing hp damage from enemy robots around you.
+         * Return value: null if NO enemies are present or the
+         * max hp damage by enemy robots is 0.
+         */
+        getOptimalEscapeLocationProphet: function() {
+            let visibleRobots = this.getVisibleRobots().filter(i => i.unit > 2 && i.team != this.me.team);
+            if (visibleRobots.length == 0) {
+                return [];
+            }
+            let minhpdamage = Infinity;
+            let maxhpdamage = 0;
+            let optimalmove = [];
+            let possiblemoves = this.validAbsoluteMoves();
+            //add "staying still" to possible moves list
+            possiblemoves.push([this.me.x,this.me.y]);
+            //this.log(possiblemoves.length)
+            for (let move of possiblemoves) {
+                let hpdamage = 0;
+                for (let i of visibleRobots) {
+                    let dSquaredtoEnemy = distSquared([i.x, i.y], [move[0], move[1]]);
+                    hpdamage += this.expectedDamageProphet(i, dSquaredtoEnemy);
+                }
+                //this.log(`movr=${move} hpp=${hpdamage}`);
+                if (hpdamage < minhpdamage) {
+                    optimalmove = [move];
+                    minhpdamage = hpdamage;
+                } else if (hpdamage == minhpdamage) {
+                    optimalmove.push(move);
+                }
+                if (hpdamage > maxhpdamage) {
+                    maxhpdamage = hpdamage;
+                }
+            }
+            if (maxhpdamage == 0) {
+                return [];
+            }
+            return optimalmove;
+        },
+
         prepareTargets: function() {
             let enemyCastleLocations = [];
             let castles = this.getVisibleRobots().filter(i => i.team == this.me.team && i.unit == 0);
@@ -945,8 +1007,8 @@ const Algorithms = (function() {
                     return enemyCastleLocations;
                 }
             }
-            let r = () => [rand(this.map[0].length),
-                            rand(this.map.length)];
+            let r = () => [this.rand(this.map[0].length),
+                            this.rand(this.map.length)];
             let target = r();
             while (!this.map[target[1]][target[0]]) {
                 target = r();
@@ -956,27 +1018,71 @@ const Algorithms = (function() {
         },
 
         /**
+         * Check nearby tiles to get mines
+         * Karbonite mines are prioritized over fuel mines
+         */
+        getNearbyMines: function() {
+            let x = this.me.x;
+            let y = this.me.y;
+            let mines = [];
+            let zonesize = 3;
+            for(let dx = -zonesize; dx < zonesize+1; dx++) {
+                for(let dy = -zonesize; dy<zonesize+1; dy++) {
+                    if(x+dx>=0 && y+dy>=0 && x+dx<this.map.length && y+dy<this.map.length &&
+                         dx*dx + dy*dy <= zonesize*zonesize + 1) { //within r^2
+                        if(this.karbonite_map[y+dy][x+dx]) {
+                            mines.unshift([x+dx, y+dy]);
+                        }
+                        if(this.fuel_map[y+dy][x+dx]) {
+                            mines.push([x+dx, y+dy]);
+                        }
+                    }
+                }
+            }
+            return mines;
+        },
+
+        /**
          * Returns the zone # from x,y
-         * current implementation: 8-bit integer, so we can
+         * current implementation: 7-bit integer, so we can
          * encode 2 zones in 1 comm (the two castles that
-         * the attacker is not spawned in)
-         * first 4 bits: x coord
+         * the attacker is not spawned in) plus extra info
+         * first 3 bits: x coord
          * second 4 bits: y coord
          */
-        encodeLocation: function(x, y) {
+        encodeLocation: function(x, y, xbits, ybits) {
+            if (typeof(xbits)==='undefined') xbits = 8;
+            if (typeof(ybits)==='undefined') ybits = 16;
             let sz = this.fuel_map.length;
-            return 16 * Math.floor(x * 16 / sz) + Math.floor(y * 16 / sz);
+            return ybits * Math.floor(x * xbits / sz) + Math.floor(y * ybits / sz);
         },
 
         /**
          * Returns x,y from the zone #
          */
-        decodeLocation: function(zone) {
+        decodeLocation: function(zone, xbits, ybits) {
+            if (typeof(xbits)==='undefined') xbits = 8;
+            if (typeof(ybits)==='undefined') ybits = 16;
             let sz = this.fuel_map.length;
-            let x = Math.floor(0.5 + (Math.floor(zone / 16) + 0.5) * sz / 16);
-            let y = Math.floor(0.5 + ((zone%16) + 0.5) * sz / 16);
+            let x = Math.floor(0.5 + (Math.floor(zone / ybits) + 0.5) * sz / xbits);
+            let y = Math.floor(0.5 + ((zone%ybits) + 0.5) * sz / ybits);
             return this.nearestEmptyLocation(x, y);
         },
+
+        /**
+         * Encodes exact location into 12 bits
+         * location[0] = x, location[y] = 1
+         */
+         encodeExactLocation: function(location) {
+            return location[0]*64 + location[1];
+         },
+
+         /**
+         * Decodes exact location into 12 bits
+         */
+         decodeExactLocation: function(zone) {
+            return [ Math.floor(zone / 64) % 64, zone % 64];
+         },
 
         /**
          * Returns x,y nearby that is empty
@@ -1075,17 +1181,75 @@ const Algorithms = (function() {
         },
 
         /**
+         * returns a list of clusters
+         * each cluster is a list of tuples [x,y,t] where [x,y] is the resource loc,
+         * t = true if karbonite, false if fuel
+         */
+        clusterResourceTiles: function() {
+            const placesToLook = [[-2, 1], [-2, 0], [-2, -1], [-1, 2], [-1, 1], [-1, 0], [-1, -1], [-1, -2],
+                [0, 2], [0, 1], [0, -1], [0, -2], [1, 2], [1, 1], [1, 0], [1, -1], [1, -2], [2, 1], [2, 0], [2, -1]];
+            let fmap = this.fuel_map;
+            let kmap = this.karbonite_map;
+            let sz = fmap.length;
+            let clustered = new Array(sz).fill(0).map(x => new Array(sz).fill(false));
+            let clusters = new Array();
+
+            for(let i = 0; i < sz; i++) {
+                for(let j = 0; j < sz; j++) {
+                    if(!clustered[j][i] && (fmap[j][i] || kmap[j][i])) {
+                        clustered[j][i] = true;
+                        let searchQueue = [];
+                        searchQueue.push([i, j]);
+                        let cluster = [[i,j]];
+                        while(searchQueue.length > 0) {
+                            searchQueue.shift(); // O(n) but should be ok
+                            for(let k = 0; k < placesToLook.length; k++) {
+                                let delta = placesToLook[k];
+                                let newi = i + delta[0];
+                                let newj = j + delta[1];
+                                if(0 <= newi && newi < sz && 0 <= newj && newj < sz
+                                    && (fmap[newj][newi] || kmap[newj][newi]) && !clustered[newj][newi]) {
+
+                                    searchQueue.push([newi, newj]);
+                                    cluster.push([newi, newj]);
+                                    clustered[newj][newi] = true;
+                                }
+                            }
+                        }
+                        clusters.push(cluster);
+                    }
+                }
+            }
+            return clusters;
+        },
+
+        /**
+         * given a list of points, compute their centroid rounded to the nearest integer.
+         */
+        centroid: function(cluster) {
+            let xsum = 0;
+            let ysum = 0;
+            for(let i = 0; i < cluster.length; i++) {
+                xsum += cluster[i][0];
+                ysum += cluster[i][1];
+            }
+            return [Math.floor((xsum/cluster.length)+0.5), Math.floor((ysum/cluster.length)+0.5)];
+        },
+
+        
+
+        /**
          * Return random, valid, one-tile move.
          */
         randomMove: function() {
             const choices = [[0,-1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1]];
-            let choice = choices[rand(choices.length)];
+            let choice = choices[this.rand(choices.length)];
             for (;;) {
                 let locx = this.me.x + choice[0];
                 let locy = this.me.y + choice[1];
                 if (!this.occupied(locx, locy))
                     break;
-                choice = choices[rand(choices.length)];
+                choice = choices[this.rand(choices.length)];
             }
             return choice;
         },
@@ -1106,13 +1270,13 @@ const Algorithms = (function() {
                     }
                 }
             }
-            let choice = choices[rand(choices.length)];
+            let choice = choices[this.rand(choices.length)];
             for (;;) {
                 let locx = this.me.x + choice[0];
                 let locy = this.me.y + choice[1];
                 if (!this.occupied(locx, locy))
                     break;
-                choice = choices[rand(choices.length)];
+                choice = choices[this.rand(choices.length)];
             }
             return choice;
         },
@@ -1145,12 +1309,80 @@ const Algorithms = (function() {
 
             const queue = new PriorityQueue((a, b) => f[a] < f[b]);
             queue.push(start);
-            let i = 196;
+            let i = 128;
             while (!queue.isEmpty()) {
                 let current = queue.pop(); //pop from priority queue instead of magic symbols
                 done.push(current);
                 if (i-- < 0 || arrEq(current, dest)) { //found destination
-                    current = done.pop();
+                    if(i<0)
+                        current = done.pop();
+                    let totalPath = [current];
+                    while (current in prev) { //reconstruct path
+                        current = prev[current];
+                        totalPath.push(current);
+                    }
+                    let path = [];
+                    for (let i = 1; i < totalPath.length; i++) { //reformat path
+                        let [a, b] = totalPath[i];
+                        let [c, d] = totalPath[i - 1];
+                        path.push([c - a, d - b]);
+                    }
+                    path.reverse();
+                    return path;
+                }
+                for (let neighbor of absoluteMoves(getSpeed.call(this), current[0], current[1])) { //loops over all moves
+                    if (neighbor[1] >= map.length
+                            || neighbor[0] >= map[0].length
+                            || neighbor[1] < 0
+                            || neighbor[0] < 0
+                            || !map[neighbor[1]][neighbor[0]]
+                            || occupied[neighbor[1]][neighbor[0]] > 0
+                            || openHash[hash(neighbor)]
+                            || g[neighbor] != undefined) //filters invalid moves or already taken moves
+                        continue;
+                    queue.push(neighbor); //push
+                    openHash[hash(neighbor)] = true;
+                    prev[neighbor] = current; //sets current path for backtrace
+                    g[neighbor] = g[current] + 1;
+                    f[neighbor] = g[neighbor] + h(neighbor);
+                }
+            }
+            return [];
+        },
+
+        /**
+         * Takes in destination [x, y].
+         * Return a list of [dx, dy] instructions to get from current location to destination.
+         */
+        workerpath: function(dest) {
+            let start = [this.me.x, this.me.y];
+            let map = this.map;
+            let occupied = this.getVisibleRobotMap();
+            if (dest[1] >= map.length
+                || dest[0] >= map[0].length
+                || dest[1] < 0
+                || dest[0] < 0) {
+                return [];
+            }
+            let openHash = {};
+            let done = new PriorityQueue((a, b) => h(a) < h(b));
+            let prev = {}; //used to reconstruct map
+            let h = x => (Math.abs(dest[0] - x[0]) + Math.abs(dest[1] - x[1])) / getSpeed.call(this); //~steps away from destination
+            let hash = p => p[0] * 67 * 73 + p[1];
+            let g = {}; //distance from origin in terms of steps taken
+            g[start] = 0;
+            let f = {}; //g + heuristic (dist to destination)
+            f[start] = h(start);
+
+            const queue = new PriorityQueue((a, b) => f[a] < f[b]);
+            queue.push(start);
+            let i = 128;
+            while (!queue.isEmpty()) {
+                let current = queue.pop(); //pop from priority queue instead of magic symbols
+                done.push(current);
+                if (i-- < 0 || adjacentTo(current, dest)) { //found destination
+                    if(i < 0)
+                        current = done.pop();
                     let totalPath = [current];
                     while (current in prev) { //reconstruct path
                         current = prev[current];
