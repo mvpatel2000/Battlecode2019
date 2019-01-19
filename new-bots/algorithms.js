@@ -357,7 +357,8 @@ export const Algorithms = (function() {
             let zonesize = 3;
             for(let dx = -zonesize; dx < zonesize+1; dx++) {
                 for(let dy = -zonesize; dy<zonesize+1; dy++) {
-                    if(dx*dx + dy*dy <= zonesize*zonesize + 1) { //within r^2
+                    if(x+dx>=0 && y+dy>=0 && x+dx<this.map.length && y+dy<this.map.length &&
+                         dx*dx + dy*dy <= zonesize*zonesize + 1) { //within r^2
                         if(this.karbonite_map[y+dy][x+dx]) {
                             mines.unshift([x+dx, y+dy]);
                         }
