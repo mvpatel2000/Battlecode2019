@@ -9,6 +9,7 @@ export function Castle() {
     this.otherCastleLocations = 0;
 
     this.alphaCastle = true;
+    this.resourceClusters = [];
 }
 
 function castleTurn() {
@@ -16,6 +17,10 @@ function castleTurn() {
     
     //if(this.alphaCastle == false)
     //    return;
+
+    if(this.me.turn == 1) {
+        let this.resourceClusters = this.clusterResourceTiles();
+    }
 
     let choice = this.randomMove();
 

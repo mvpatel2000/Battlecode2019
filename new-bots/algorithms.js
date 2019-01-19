@@ -470,6 +470,54 @@ export const Algorithms = (function() {
         },
 
         /**
+         * returns a list of clusters
+         * each cluster is a list of tuples [x,y,t] where [x,y] is the resource loc,
+         * t = true if karbonite, false if fuel
+         */
+        clusterResourceTiles: function() {
+            const placesToLook = [[-2, 1], [-2, 0], [-2, -1], [-1, 2], [-1, 1], [-1, 0], [-1, -1], [-1, -2],
+                [0, 2], [0, 1], [0, -1], [0, -2], [1, 2], [1, 1], [1, 0], [1, -1], [1, -2], [2, 1], [2, 0], [2, -1]];
+            let fmap = this.fuel_map;
+            let kmap = this.karbonite_map;
+            let sz = fmap.length;
+            let clustered = new Array(sz).fill(0).map(x => new Array(sz).fill(false));
+            let clusters = new Array();
+
+            for(let i = 0; i < sz; i++) {
+                for(let j = 0; j < sz; j++) {
+                    if(!clustered[j][i] && (fmap[j][i] || kmap[j][i])) {
+                        clustered[j][i] = true;
+                        let searchQueue = [];
+                        searchQueue.push([i, j]);
+                        let cluster = [[i,j]];
+                        while(searchQueue.length > 0) {
+                            let currentLoc = searchQueue[0];
+                            searchQueue.shift(); // O(n) but should be ok
+                            for(let k = 0; k < placesToLook.length; k++) {
+                                let delta = placesToLook[k];
+                                let newi = i + delta[0];
+                                let newj = j + delta[1];
+                                if(0 <= newi && newi < sz && 0 <= newj && newj < sz
+                                    && (fmap[newj][newi] || kmap[newj][newi]) && !clustered[newj][newi]) {
+
+                                    searchQueue.push([newi, newj]);
+                                    cluster.push([newi, newj]);
+                                    clustered[newj][newi] = true;
+                                }
+                            }
+                        }
+                        clusters.push(cluster);
+                    }
+                }
+            }
+            return clusters;
+        },
+
+        getClusterCentroids: function() {
+
+        },
+
+        /**
          * Return random, valid, one-tile move.
          */
         randomMove: function() {
