@@ -12,7 +12,8 @@ export function Castle() {
     this.resourceClusters = this.clusterResourceTiles();
     this.resourceCentroids = this.resourceClusters.map(x => this.centroid(x));
     this.clusterStatus = this.resourceClusters.map(x => 0); // one for each resource cluster.  status codes:
-    // 0: unknown/open; 1: on the way; 2: church built; 3: fortified and ours; 4: enemy; can add other codes if necessary
+    // 0: unknown/open; 1: on the way; 2: church/castle built and pilgrims present;
+    // 3: fortified and ours; 4: enemy; can add other codes if necessary
 
     this.nearbyMines = this.getNearbyMines();
     this.mission = true;
@@ -26,7 +27,7 @@ function nextMissionTarget() { // currently assumes that this.isColonized just w
     var openCentroids = this.resourceCentroids.filter((item, i) => this.clusterStatus[i] == 0);
     let minScore = 7939; // R^2; this is 2*63^2 + 1
     let target = 0;
-    for(let i = 0; i < uncolonizedClusters.length; i++) {
+    for(let i = 0; i < openClusters.length; i++) {
         let d = this.distSquared(openCentroids[i][0], openCentroids[i][1]);
         if(d < minScore) {
             minScore = d;
@@ -57,11 +58,15 @@ function castleTurn() {
             }
         }
     }
+    //else if (this.step == 3) { // build first pilgrim and claim first zone
+        // let target = nextMissionTarget.call(this);
+
+    // }
 
     //if(this.alphaCastle == false)
     //    return;
 
-    let choice = this.randomMove();
+    // let choice = this.randomMove();
 
     let attackbot = this.getRobotToAttack(); //attack if enemy is in range
     if (attackbot) {
@@ -70,11 +75,15 @@ function castleTurn() {
         }
     }
 
-    if (this.fuel >= 50 && this.karbonite >= 10 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1]) && this.nearbyMines.length>0) {
-        this.signal(this.encodeExactLocation(this.nearbyMines.shift()), 2);
+    if (this.fuel >= 50 && this.karbonite >= 10 && this.nearbyMines.length>0) {
+        let target = this.nearbyMines.shift();
+        let choice = this.getSpawnLocation(target[0], target[1]);
+        this.log("Castle at ("+this.me.x+","+this.me.y+") spawning pilgrim in direction "+choice+" towards "+target);
+        this.signal(this.encodeExactLocation(target), 2);
         return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
     }
-    else if (this.fuel >= 500 && this.karbonite >= 100 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1]) && this.mission) {
+    // else if (this.fuel >= 500 && this.karbonite >= 100 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1]) && this.mission) {
+    else if (this.fuel >= 500 && this.karbonite >= 100 && this.mission) {
         //this.signal(this.encodeExactLocation(this.nearbyMines.shift()), 2);
         this.mission = false;
         //return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
