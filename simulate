@@ -1,4 +1,10 @@
 #!/bin/bash
+if [[ ! -e a ]]; then
+    mkdir a
+fi
+if [[ ! -e b ]]; then
+    mkdir b
+fi
 cd $1
 bc19compile -d .
 mv compiled_bot.js ../a/robot.js
