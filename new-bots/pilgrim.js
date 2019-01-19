@@ -2,8 +2,9 @@ import {SPECS} from 'battlecode';
 
 export function Pilgrim() {
     this.turn = pilgrimTurn;
-    this spawnPoint = this.getVisibleRobots().filter(i => (i.unit == SPECS.CHURCH || i.unit == SPECS.CASTLE) &&
+    this.spawnPoint = this.getVisibleRobots().filter(i => (i.unit == SPECS.CHURCH || i.unit == SPECS.CASTLE) &&
         Math.pow(i.x - this.me.x,2) + Math.pow(i.y - this.me.y,2) <= 2 && this.signal>=0)[0];
+
     this.base = [spawnPoint.x, spawnPoint.y];
     this.mine = this.decodeExactLocation(spawnPoint.signal);
     this.destination = this.mine;
@@ -20,6 +21,7 @@ function pilgrimTurn() {
     if(x==mine[0] && y==mine[1]) { //at mine
         if(false) { //want to build church
             //add code to reset base as church
+            return;
         }
         else if(this.fuelMine && this.me.fuel < SPECS.PILGRIM.FUEL_CAPACITY
             || this.karboniteMine && this.me.karbonite < SPECS.PILGRIM.KARBONITE_CAPACITY) { //want to mine
@@ -29,9 +31,11 @@ function pilgrimTurn() {
             this.destination = this.base;
         }
     }
-    // elif target is base and adjacent
-        //drop off & turn around
-    //else workerpath
+    let route = this.workerpath(this.target);
+    if (this.fuel > (SPECS.UNITS[this.me.unit].FUEL_PER_MOVE * this.getSpeed()) && route.length > 0) { //A* towards target
+        return this.move(...route[0]);
+    }
+    return;
 
     // mine if not at capacity
     if (x == this.queue[0][0] && y == this.queue[0][1] && (this.fuel_map[y][x]
