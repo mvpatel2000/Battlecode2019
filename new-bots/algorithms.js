@@ -600,7 +600,26 @@ export const Algorithms = (function() {
             return [Math.floor((xsum/cluster.length)+0.5), Math.floor((ysum/cluster.length)+0.5)];
         },
 
-        
+        /**
+         * Return optimal spawn location (as a one-tile move) towards a destination (x, y)
+         * Returns null if all 8 locations are occupied
+         */
+        getSpawnLocation: function(x, y) {
+            const choices = [[1,0], [1,1], [0,1], [-1,1], [-1,0], [-1,-1], [0,-1], [1,-1]];
+            let optimalIndex = Math.floor((4*(Math.atan2(y-this.me.y,x-this.me.x)/Math.PI))+8.5) % 8;
+            let choice = choices[optimalIndex];
+            if(!this.occupied(this.me.x + choice[0], this.me.y + choice[1]))
+                return choice;
+            for(let i = 1; i <= 4; i++) {
+                choice = choices[(optimalIndex+1)%8];
+                if(!this.occupied(this.me.x + choice[0], this.me.y + choice[1]))
+                    return choice;
+                choice = choices[(optimalIndex+(8-i))%8];
+                if(!this.occupied(this.me.x + choice[0], this.me.y + choice[1]))
+                    return choice;
+            }
+            return null;
+        },
 
         /**
          * Return random, valid, one-tile move.
