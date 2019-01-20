@@ -16,7 +16,7 @@ function churchTurn() {
         let target = this.nearbyMines.shift();
         let choice = this.getSpawnLocation(target[0], target[1]);
         if (choice != null) {
-            this.signal(this.encodeExactLocation(this.nearbyMines.shift()), 2);
+            this.signal(this.encodeExactLocation(target), 2);
             return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
         }
     }

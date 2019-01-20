@@ -29,7 +29,7 @@ export function Castle() {
 
     this.clusterStatus[this.myClusterIndex] = CLUSTER.CONTROLLED;
     let oppositeClusterIndex = this.reflectClusterByIndex(this.myClusterIndex, this.resourceClusters);
-    this.log("my cluster: "+this.myClusterIndex+"; enemy cluster: "+oppositeClusterIndex);
+    //this.log("my cluster: "+this.myClusterIndex+"; enemy cluster: "+oppositeClusterIndex);
     this.clusterStatus[oppositeClusterIndex] = CLUSTER.HOSTILE;
 
     this.nearbyMines = this.getNearbyMines();
@@ -54,8 +54,8 @@ function getNextMissionTarget() {
 }
 
 function castleTurn() {
-    this.log("Castle "+this.me.id+" at ("+this.me.x+","+this.me.y+") here.  Here's what I know about cluster status:");
-    this.log(this.clusterStatus);
+    //this.log("Castle "+this.me.id+" at ("+this.me.x+","+this.me.y+") here.  Here's what I know about cluster status:");
+    //this.log(this.clusterStatus);
     // BEGIN OPENING CASTLETALK CODE
     /*
      * outline of opening protocol
@@ -109,11 +109,11 @@ function castleTurn() {
         }
     }
     else if (this.step == 5) {
-        this.log("Opening complete.  Castle "+this.me.id+" at ("+this.me.x+","+this.me.y+") here.  Clusters we control:");
-        this.log(this.resourceClusters.filter((item, i) => this.clusterStatus[i] == CLUSTER.CONTROLLED));
+        //this.log("Opening complete.  Castle "+this.me.id+" at ("+this.me.x+","+this.me.y+") here.  Clusters we control:");
+        //this.log(this.resourceClusters.filter((item, i) => this.clusterStatus[i] == CLUSTER.CONTROLLED));
         let nextMissionTarget = getNextMissionTarget.call(this);
-        this.log("My next mission target:");
-        this.log(this.resourceClusters[nextMissionTarget]);
+        //this.log("My next mission target:");
+        //this.log(this.resourceClusters[nextMissionTarget]);
     }
     // END OPENING CASTLETALK CODE
 
@@ -130,7 +130,7 @@ function castleTurn() {
         let target = this.nearbyMines.shift();
         let choice = this.getSpawnLocation(target[0], target[1]);
         if (choice) {
-            this.log("Spawning pilgrim in direction " + choice + " towards " + target);
+            //this.log("Spawning pilgrim in direction " + choice + " towards " + target);
             this.signal(this.encodeExactLocation(target), 2);
             return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
         }
@@ -140,10 +140,10 @@ function castleTurn() {
     if(this.step > 4 && talkingCastles.length > 0) {
         for(let i = 0; i < talkingCastles.length; i++) {
             let talk = talkingCastles[i].castle_talk;
-            this.log("I hear "+talk);
+            //this.log("I hear "+talk);
             if(0 < talk && talk < 32) { // means it's a mission index
                 this.clusterStatus[talk - 1] = CLUSTER.CONTROLLED;
-                this.log("Ah, I see that we are sending a mission to cluster "+(talk-1));
+                //this.log("Ah, I see that we are sending a mission to cluster "+(talk-1));
             }
         }
     }
@@ -173,8 +173,8 @@ function castleTurn() {
         if (choice) {
             this.clusterStatus[targetClusterIndex] = CLUSTER.CONTROLLED;
             this.castleTalk(targetClusterIndex + 1);
-            this.log("I'm sending a mission to cluster "+targetClusterIndex+" and broadcasting it.");
-            this.log("Spawning pilgrim in direction " + choice + " towards " + target);
+            //this.log("I'm sending a mission to cluster "+targetClusterIndex+" and broadcasting it.");
+            //this.log("Spawning pilgrim in direction " + choice + " towards " + target);
             this.signal(this.encodeExactLocation(target), 2);
             return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
         }

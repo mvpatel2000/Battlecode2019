@@ -7,17 +7,10 @@ export function Prophet() {
     this.enemyCastleLocations = this.prepareTargets();
     this.targetCtr = 0;
     this.target = this.enemyCastleLocations[this.targetCtr];
-    this.defender = this.rand(100) < 20;
-    if (this.defender) {
-        this.log('Building defender')
-        this.target = [this.me.x + this.rand(7) - 4, this.me.y + this.rand(7) - 4]
-    } else if (this.rand(100) < 20) {
-        this.log('Building raider')
-        let res = this.findResources();
-        this.raider = true;
-        this.target = res[this.rand(res.length)];
-    }
     this.step = 0;
+
+    //determine spawn castle for grid
+    //this.spawnCastle = this.getVisibleRobots().filter(i => i.unit)
 }
 
 /**
@@ -55,14 +48,11 @@ function prophetTurn() {
         }
     }
 
-    // one move per 50 steps
-    if (this.step > 50 || this.fuel_map[this.me.y][this.me.x]
-                       || this.karbonite_map[this.me.y][this.me.x] || this.raider)
-        this.step = 0;
-    else if (this.step > 3 && this.me.turn < 600)
-        return;
+    //get nearest grid square
+    //move to it
 
-    // non-combat mode
+    // non-combat mode -- this code moves toward enemy castles. Should be activated w/ pushes
+    /*
     while (this.me.x == this.target[0] && this.me.y == this.target[1]) { //reset target if meet it
         if (this.targetCtr < this.enemyCastleLocations.length) {
             this.log("Prepping update: " + this.enemyCastleLocations + " " + this.targetCtr);
@@ -80,7 +70,7 @@ function prophetTurn() {
         }
     }
     // movement code
-    return this.go(this.target);
+    return this.go(this.target); */
 }
 
 /**

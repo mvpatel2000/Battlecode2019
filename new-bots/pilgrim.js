@@ -22,6 +22,7 @@ function pilgrimTurn() {
     //TODO: Add mission code to determine what type of cluster we're in / heading to
     //TODO: Add code to report status so church can replace if dead
     //TODO: Kiting is performing suboptimally. Fix this
+
     if(!this.adjacentDestinations) {
         let adjacentBases = this.getVisibleRobots().filter(i => i.unit < 2 && this.distSquared([i.x,i.y], this.mineLocation)<=2)
         if(adjacentBases.length > 0) {
@@ -32,9 +33,9 @@ function pilgrimTurn() {
 
     let escapemove = this.getOptimalHidingLocation();
     if( this.arrEq(this.destination, this.mineLocation) && x == this.mineLocation[0] && y == this.mineLocation[1]) { //at mine
-        if(this.getVisibleRobots().filter(i => i.unit < 2 && i.team == this.me.team && this.distSquared([i.x, i.y], [this.me.x, this.me.y])<=10).length==0) { //want to build church for mission
-            //TODO: consider if there are enemies && can hold groud by dropping church isntead of fleeing
-            let target = [1,0]; //TODO: Update this to update with centroid stuff
+        if(this.karbonite > 80 && this.fuel > 300 && this.getVisibleRobots().filter(i => i.unit < 2 
+            && i.team == this.me.team && this.distSquared([i.x, i.y], [this.me.x, this.me.y])<=13).length==0) { //want to build church for mission
+            let target = this.centroid(this.getNearbyMines());
             let choice = this.getChurchSpawnLocation(target[0], target[1]);
             if(choice != null) {
                 this.baseLocation = [this.me.x + choice[0], this.me.y + choice[1]];
