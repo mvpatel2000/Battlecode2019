@@ -46,16 +46,26 @@ function getNextMissionTarget() {
     let minScore = 7939; // R^2; this is 2*63^2 + 1
     let target = -1;
     let shouldSend = false;
+    let maxSize = 6; // min size threshold for override
+    let overrideTarget = -1;
+    let shouldSendOverride = false;
     for (let i = 0; i < this.resourceClusters.length; i++) {
         let d = this.distSquared(this.resourceCentroids[i], [this.me.x, this.me.y]);
-        if (this.clusterStatus[i] == CLUSTER.OPEN && d < minScore) {
             let karbThresh = 50 + Math.floor(Math.sqrt(d));
             let fuelThresh = 50 + Math.floor(Math.sqrt(d));
+        if (this.clusterStatus[i] == CLUSTER.OPEN && d < minScore) {
             shouldSend = (this.fuel >= fuelThresh) && (this.karbonite >= karbThresh);
             minScore = d;
             target = i;
         }
+        if (this.clusterStatus[i] == CLUSTER.OPEN && this.resourceClusters[i].length >= maxSize) { // override the shortest distance if we have big cluster
+            shouldSendOverride = (this.fuel >= fuelThresh) && (this.karbonite >= karbThresh);
+            maxSize = this.resourceClusters[i].length;
+            overrideTarget = i;
+        }
     }
+    if(overrideTarget != -1)
+        return [overrideTarget, shouldSendOverride];
     return [target, shouldSend];
 }
 
@@ -150,7 +160,7 @@ function castleTurn() {
             //this.log("I hear "+talk);
             if(0 < talk && talk < 32) { // means it's a mission index
                 this.clusterStatus[talk - 1] = CLUSTER.CONTROLLED;
-                // this.log("Ah, I see that we are sending a mission to cluster "+(talk-1));
+                this.log("Ah, I see that we are sending a mission to cluster "+(talk-1));
             }
         }
     }
