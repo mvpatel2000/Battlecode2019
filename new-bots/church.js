@@ -7,8 +7,11 @@ export function Church() {
     let broadcastingPilgrims = this.getVisibleRobots().filter(i => (i.unit == SPECS.PILGRIM) &&
         Math.pow(i.x - this.me.x,2) + Math.pow(i.y - this.me.y,2) <= 2 && i.signal>=0);
     this.nearbyMines = [];
-    if(!(broadcastingPilgrims.length>0 && broadcastingPilgrims[0].signal == 1)) //it is a mission church!
+    if(broadcastingPilgrims.length > 0 && broadcastingPilgrims[0].signal > 0) { //it is a mission church!
+        let missionMineLocation = this.decodeExactLocation(broadcastingPilgrims[0].signal);
         this.nearbyMines = this.getNearbyMines();
+        this.nearbyMines = this.nearbyMines.filter(i => !this.arrEq(i, missionMineLocation));
+    }
 }
 
 function churchTurn() {

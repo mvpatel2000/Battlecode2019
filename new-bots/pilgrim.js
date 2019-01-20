@@ -38,6 +38,7 @@ function pilgrimTurn() {
             let target = this.centroid(this.getNearbyMines());
             let choice = this.getChurchSpawnLocation(target[0], target[1]);
             if(choice != null) {
+                this.signal(this.encodeExactLocation(this.mineLocation), 2);
                 this.baseLocation = [this.me.x + choice[0], this.me.y + choice[1]];
                 return this.buildUnit(SPECS.CHURCH, choice[0], choice[1]);
             }
@@ -50,7 +51,7 @@ function pilgrimTurn() {
                 target = [ Math.min(Math.max(nearbyPilgrims[0].x - this.me.x,1),-1), Math.min(Math.max(nearbyPilgrims[0].y - this.me.y,1),-1)]
             let choice = this.getChurchSpawnLocation(target[0], target[1]);
             if(choice != null) {
-                this.signal(1, 2);
+                this.signal(0, 2);
                 this.baseLocation = [this.me.x + choice[0], this.me.y + choice[1]];
                 return this.buildUnit(SPECS.CHURCH, choice[0], choice[1]);
             }
