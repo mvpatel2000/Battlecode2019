@@ -24,8 +24,10 @@ export function Castle() {
     // 0: unknown/open; 1: on the way; 2: church/castle built and pilgrims present;
     // 3: fortified and ours; 4: enemy; can add other codes if necessary
 
+    this.log(this.resourceClusters);
+
     // identify my cluster
-    this.myClusterIndex = getNextMissionTarget.call(this);
+    this.myClusterIndex = this.findNearestClusterIndex([this.me.x, this.me.y], this.resourceClusters);
 
     this.clusterStatus[this.myClusterIndex] = CLUSTER.CONTROLLED;
     let oppositeClusterIndex = this.reflectClusterByIndex(this.myClusterIndex, this.resourceClusters);
