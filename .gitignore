@@ -5,3 +5,4 @@ replay.bc19
 node_modules
 package-lock.json
 compiled_bot.js
+compiled_bot*
