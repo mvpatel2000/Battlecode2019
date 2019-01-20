@@ -4,3 +4,6 @@ replay.bc19
 .*.swp
 node_modules
 package-lock.json
+compiled_bot.js
+a
+b
