@@ -36,7 +36,7 @@ function prophetTurn() {
     // Tiebreaker: location closest (euclidean distance) from the original path move to target
     // Fall through if no robots can attack me, or not enough fuel to move.
     let optimalmove = this.getOptimalEscapeLocationProphet();
-    if (optimalmove.length && this.fuel >= this.fuelpermove) {
+    if (optimalmove.length && this.fuel >= (SPECS.UNITS[this.me.unit].FUEL_PER_MOVE * this.getSpeed())) {
         let route = this.path(this.target);
         let [dx, dy] = route.length ? route[0] : [0, 0];
         let old = [this.me.x + dx, this.me.y + dy];
