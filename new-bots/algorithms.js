@@ -685,14 +685,17 @@ export const Algorithms = (function() {
             const choices = [[1,0], [1,1], [0,1], [-1,1], [-1,0], [-1,-1], [0,-1], [1,-1]];
             let optimalIndex = Math.floor((4 * (Math.atan2(y - this.me.y,x - this.me.x) / Math.PI)) + 8.5) % 8;
             let choice = choices[optimalIndex];
-            if (!this.occupied(this.me.x + choice[0], this.me.y + choice[1]))
+            if (this.me.x+choice[0]>=0 && this.me.x+choice[0]<this.map.length && this.me.y+choice[1]>=0 && this.me.y+choice[1]<this.map.length
+                && !this.occupied(this.me.x + choice[0], this.me.y + choice[1]))
                 return choice;
             for (let i = 1; i <= 4; i++) {
                 choice = choices[(optimalIndex + 1) % 8];
-                if (!this.occupied(this.me.x + choice[0], this.me.y + choice[1]))
+                if (this.me.x+choice[0]>=0 && this.me.x+choice[0]<this.map.length && this.me.y+choice[1]>=0 && this.me.y+choice[1]<this.map.length
+                    && !this.occupied(this.me.x + choice[0], this.me.y + choice[1]))
                     return choice;
                 choice = choices[(optimalIndex + (8 - i)) % 8];
-                if (!this.occupied(this.me.x + choice[0], this.me.y + choice[1]))
+                if (this.me.x+choice[0]>=0 && this.me.x+choice[0]<this.map.length && this.me.y+choice[1]>=0 && this.me.y+choice[1]<this.map.length
+                    && !this.occupied(this.me.x + choice[0], this.me.y + choice[1]))
                     return choice;
             }
             return null;
