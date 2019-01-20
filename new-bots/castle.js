@@ -128,7 +128,7 @@ function castleTurn() {
     }
 
     // SATURATE CODE: saturate my nearby mines
-    this.homeSaturated = this.nearbyMines.length == 0;
+    this.homeSaturated = (this.nearbyMines.length == 0);
     if (this.fuel >= 50 && this.karbonite >= 10 && !this.homeSaturated) {
         let target = this.nearbyMines.shift();
         let choice = this.getSpawnLocation(target[0], target[1]);
@@ -140,20 +140,20 @@ function castleTurn() {
     }
 
     // LISTENING CODE
-    if(this.step > 4 && !this.homeSaturated && talkingCastles.length > 0) {
+    if(this.step > 4 && talkingCastles.length > 0) {
         for(let i = 0; i < talkingCastles.length; i++) {
             let talk = talkingCastles[i].castle_talk;
             //this.log("I hear "+talk);
             if(0 < talk && talk < 32) { // means it's a mission index
                 this.clusterStatus[talk - 1] = CLUSTER.CONTROLLED;
-                //this.log("Ah, I see that we are sending a mission to cluster "+(talk-1));
+                this.log("Ah, I see that we are sending a mission to cluster "+(talk-1));
             }
         }
     }
 
     // NEW MISSION CODE:
     let targetClusterIndex = getNextMissionTarget.call(this);
-    if (this.step > 4 && targetClusterIndex != -1 && this.fuel >= 200 && this.karbonite >= 100) { // perhaps replace with an actual threshold
+    if (this.step > 4 && this.homeSaturated && targetClusterIndex != -1 && this.fuel >= 200 && this.karbonite >= 100) { // perhaps replace with an actual threshold
         let targetCentroid = this.resourceCentroids[targetClusterIndex];
         let targetCluster = this.resourceClusters[getNextMissionTarget.call(this)];
         let target = targetCluster[0];
@@ -176,7 +176,7 @@ function castleTurn() {
         if (choice) {
             this.clusterStatus[targetClusterIndex] = CLUSTER.CONTROLLED;
             this.castleTalk(targetClusterIndex + 1);
-            //this.log("I'm sending a mission to cluster "+targetClusterIndex+" and broadcasting it.");
+            this.log("I'm sending a mission to cluster "+targetClusterIndex+" and broadcasting it.");
             //this.log("Spawning pilgrim in direction " + choice + " towards " + target);
             this.signal(this.encodeExactLocation(target), 2);
             return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
