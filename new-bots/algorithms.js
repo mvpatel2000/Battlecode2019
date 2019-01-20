@@ -166,7 +166,7 @@ export const Algorithms = (function() {
                      let rely = this.me.y-j;
                      let relx = this.me.x-i;
                      if ((rely*rely + relx*relx) <= rad2) {
-                         if(this.map[j][i] == false || (i == this.me.x && j == this.me.y) || rbotmap[j][i]==-1) {
+                         if((i == this.me.x && j == this.me.y) || rbotmap[j][i]==-1) {
                              continue;
                          }
                          let hpdamage = 0;
