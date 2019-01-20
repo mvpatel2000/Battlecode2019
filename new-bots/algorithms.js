@@ -411,7 +411,7 @@ export const Algorithms = (function() {
         getDefensePositions: function(source) {
             let positions = []
             let dirs = [-1, 1];
-            for(let max = 2; max<10; max+=2) {
+            for(let max = 2; max<50; max+=2) {
                 let delta = [max, 0];
                 for(let i=0; i<max/2*4+4; i++) {
                     //check if valid
