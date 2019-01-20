@@ -1,10 +1,6 @@
 #!/bin/bash
-if [[ ! -e a ]]; then
-    mkdir a
-fi
-if [[ ! -e b ]]; then
-    mkdir b
-fi
+rm -rf a b
+mkdir a b
 cd $1
 bc19compile -d .
 mv compiled_bot.js ../a/robot.js
@@ -16,4 +12,4 @@ cd ..
 seed=${3:-$RANDOM}
 echo "SEED=$seed"
 bc19run -r a -b b -s $seed
-
+rm -rf a b
