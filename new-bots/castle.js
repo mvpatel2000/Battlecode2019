@@ -27,7 +27,7 @@ export function Castle() {
     this.log(this.resourceClusters);
 
     // identify my cluster
-    this.myClusterIndex = getNextMissionTarget.call(this);
+    this.myClusterIndex = this.findNearestClusterIndex([this.me.x, this.me.y], this.resourceClusters);
 
     this.clusterStatus[this.myClusterIndex] = CLUSTER.CONTROLLED;
     let oppositeClusterIndex = this.reflectClusterByIndex(this.myClusterIndex, this.resourceClusters);
