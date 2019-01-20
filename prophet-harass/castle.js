@@ -108,12 +108,12 @@ function castleTurn() {
     else if (this.step == 3) {
         // castletalk my mission
         this.castleTalk(this.myClusterIndex+1);
-        // this.log("castletalking my cluster: "+this.myClusterIndex);
+        this.log("castletalking my cluster: "+this.myClusterIndex);
 
         // listen to others clusters, mark their status
         let otherCastleClusters = talkingCastles.map(i => i.castle_talk);
         for(let i = 0; i < otherCastleClusters.length; i++) {
-            // this.log("I heard a friend at cluster "+(otherCastleClusters[i]-1));
+            this.log("I heard a friend at cluster "+otherCastleClusters[i]-1);
             this.clusterStatus[otherCastleClusters[i]-1] = CLUSTER.CONTROLLED;
             let oppositeClusterIndex = this.reflectClusterByIndex(otherCastleClusters[i]-1, this.resourceClusters);
             this.clusterStatus[oppositeClusterIndex] = CLUSTER.HOSTILE;
@@ -123,8 +123,7 @@ function castleTurn() {
         // listen to others clusters, mark their status
         let otherCastleClusters = talkingCastles.map(i => i.castle_talk);
         for(let i = 0; i < otherCastleClusters.length; i++) {
-            this.log("C");
-            this.log("I heard a friend at cluster "+(otherCastleClusters[i]-1));
+            this.log("I heard a friend at cluster "+otherCastleClusters[i]-1);
             this.clusterStatus[otherCastleClusters[i]-1] = CLUSTER.CONTROLLED;
             let oppositeClusterIndex = this.reflectClusterByIndex(otherCastleClusters[i]-1, this.resourceClusters);
             this.clusterStatus[oppositeClusterIndex] = CLUSTER.HOSTILE;
@@ -156,7 +155,6 @@ function castleTurn() {
     if(visibleEnemies.length > 0) { // rush defense
         // assess the threat
         let threats = visibleEnemies.filter(i => i.unit > 2);
-        let preacherThreats = threats.filter(i => i.unit == 5);
         if(threats.length > 0) { // attacking threat
             if(this.karbonite >= 25 && this.fuel >= 50) {  
                 let minDist = 7939;
@@ -168,25 +166,13 @@ function castleTurn() {
                         closestThreat = [threats[k].x, threats[k].y];
                     }
                 }
-                if(preacherThreats.length > 0 && this.karbonite >= 30) {
-                    let choice = this.getSpawnLocation(closestThreat[0], closestThreat[1]);
-                    if(choice != null) {
-                        if(this.defensePositions.length > 0) {
-                            let defenseTarget = this.defensePositions.shift();
-                            this.signal(this.otherCastleLocations, 2);
-                        }
-                        return this.buildUnit(SPECS.PREACHER, choice[0], choice[1]);
+                let choice = this.getSpawnLocation(-1*closestThreat[0], -1*closestThreat[1]);
+                if(choice != null) {
+                    if(this.defensePositions.length > 0) {
+                        let defenseTarget = this.defensePositions.shift();
+                        this.signal(this.encodeExactLocation(defenseTarget), 2);
                     }
-                }
-                else {
-                    let choice = this.getSpawnLocation(-1*closestThreat[0], -1*closestThreat[1]);
-                    if(choice != null) {
-                        if(this.defensePositions.length > 0) {
-                            let defenseTarget = this.defensePositions.shift();
-                            this.signal(this.encodeExactLocation(defenseTarget), 2);
-                        }
-                        return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
-                    }
+                    return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
                 }
             }
         }
