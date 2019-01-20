@@ -9,6 +9,8 @@ export function Pilgrim() {
     this.mineLocation = this.decodeExactLocation(this.spawnPoint.signal);
     this.adjacentDestinations = this.distSquared(this.baseLocation, this.mineLocation) <= 2;
 
+    this.resourceClusters = this.clusterResourceTiles();
+
     this.destination = this.mineLocation;
     this.karboniteMine = this.karbonite_map[this.mineLocation[1]][this.mineLocation[0]];
     this.fuelMine = this.fuel_map[this.mineLocation[1]][this.mineLocation[0]];
@@ -31,13 +33,18 @@ function pilgrimTurn() {
 
     let escapemove = this.getOptimalHidingLocation();
     if( this.arrEq(this.destination, this.mineLocation) && x == this.mineLocation[0] && y == this.mineLocation[1]) { //at mine
-        if(this.karbonite > 80 && this.fuel > 300 && this.getVisibleRobots().filter(i => i.unit < 2 
-            && i.team == this.me.team && this.distSquared([i.x, i.y], [this.me.x, this.me.y])<=16).length==0) { //want to build church for mission
-            let target = this.exactCentroid(this.getNearbyMines());
+        let myClusterIndex = this.findNearestClusterIndex([this.me.x, this.me.y], this.resourceClusters);
+        let myCluster = this.resourceClusters[myClusterIndex];
+        let lookForBase = this.centroid(myCluster);
+        let onMission = this.getVisibleRobots().filter(i => i.unit < 2 && i.team == this.me.team
+            && this.distSquared(lookForBase, [i.x, i.y])<=2).length == 0;
+        if(this.karbonite > 80 && this.fuel > 300 && onMission) { //want to build mission church for mission
+            let target = this.exactCentroid(myCluster);
             let choice = this.getChurchSpawnLocation(target[0], target[1]);
             if(choice != null) {
                 this.signal(this.encodeExactLocation(this.mineLocation), 2);
                 this.baseLocation = [this.me.x + choice[0], this.me.y + choice[1]];
+                this.log("Pilgrim "+this.me.id+" starting a mission church at "+this.baseLocation);
                 return this.buildUnit(SPECS.CHURCH, choice[0], choice[1]);
             }
         }
