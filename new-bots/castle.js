@@ -150,9 +150,9 @@ function castleTurn() {
         }
     }
 
-    // DEFENSE CODE: always attack if enemy is in range
+    // EMERGENCY DEFENSE CODE: always attack if enemy is in range
     let visibleEnemies = this.getVisibleRobots().filter(i => i.team != this.me.team);
-    if(visibleEnemies.length > 0 && this.step < 50) { // rush defense
+    if(visibleEnemies.length > 0) { // rush defense
         // assess the threat
         let threats = visibleEnemies.filter(i => i.unit > 2);
         if(threats.length > 0) { // attacking threat
@@ -168,7 +168,10 @@ function castleTurn() {
                 }
                 let choice = this.getSpawnLocation(-1*closestThreat[0], -1*closestThreat[1]);
                 if(choice != null) {
-                    this.signal(this.encodeExactLocation([this.me.x + choice[0], this.me.y + choice[1]]), 2);
+                    if(this.defensePositions.length > 0) {
+                        let defenseTarget = this.defensePositions.shift();
+                        this.signal(this.encodeExactLocation(defenseTarget), 2);
+                    }
                     return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
                 }
             }
