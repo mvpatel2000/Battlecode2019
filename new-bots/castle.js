@@ -136,7 +136,7 @@ function castleTurn() {
     if (this.fuel >= 50 && this.karbonite >= 10 && !this.homeSaturated) {
         let target = this.nearbyMines.shift();
         let choice = this.getSpawnLocation(target[0], target[1]);
-        if (choice) {
+        if (choice != null) {
             //this.log("Spawning pilgrim in direction " + choice + " towards " + target);
             this.signal(this.encodeExactLocation(target), 2);
             return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
@@ -179,7 +179,7 @@ function castleTurn() {
         }
 
         let choice = this.getSpawnLocation(target[0], target[1]);
-        if (choice) {
+        if (choice != null) {
             this.clusterStatus[targetClusterIndex] = CLUSTER.CONTROLLED;
             this.castleTalk(targetClusterIndex + 1);
             this.log("I'm sending a mission to cluster "+targetClusterIndex+" and broadcasting it.");
@@ -193,7 +193,7 @@ function castleTurn() {
     if (this.fuel >= 400 && this.karbonite >= 100 && targetClusterIndex == -1) { // last condition: dont pump until all missions sent
         let target = [1,0];
         let choice = this.getSpawnLocation(target[0], target[1]);
-        if (choice) {
+        if (choice != null) {
             this.signal(this.encodeExactLocation(target), 2);
             return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
         }
