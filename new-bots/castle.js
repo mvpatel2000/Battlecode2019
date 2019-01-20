@@ -1,6 +1,15 @@
 import {SPECS} from 'battlecode';
 
+const CLUSTERS = {
+    OPEN: 0,
+    OTW: 1,
+    CONTROLLED: 2,
+    FORT: 3,
+    HOSTILE: 4
+};
+
 export function Castle() {
+    // this.log("Good morning.  Castle "+this.me.id+" at ("+this.me.x+","+this.me.y+") here.");
     this.turn = castleTurn;
     this.step = 0;
 
@@ -12,10 +21,17 @@ export function Castle() {
 
     this.resourceClusters = this.clusterResourceTiles();
     this.resourceCentroids = this.resourceClusters.map(x => this.centroid(x));
-    this.clusterStatus = this.resourceClusters.map(x => 0); // one for each resource cluster.  status codes:
+    this.clusterStatus = this.resourceClusters.map(x => CLUSTERS.OPEN); // one for each resource cluster.  status codes:
     // 0: unknown/open; 1: on the way; 2: church/castle built and pilgrims present;
     // 3: fortified and ours; 4: enemy; can add other codes if necessary
-    this.myCluster = 0;
+
+    // identify my cluster
+    this.myClusterIndex = getNextMissionTarget.call(this);
+
+    this.clusterStatus[this.myClusterIndex] = CLUSTERS.CONTROLLED;
+    let oppositeClusterIndex = this.reflectClusterByIndex(this.myClusterIndex, this.resourceClusters);
+    this.log("my cluster: "+this.myClusterIndex+"; enemy cluster: "+oppositeClusterIndex);
+    this.clusterStatus[oppositeClusterIndex] = CLUSTERS.HOSTILE;
 
     this.nearbyMines = this.getNearbyMines();
     this.mission = true;
@@ -29,7 +45,7 @@ function getNextMissionTarget() {
     let target = 0;
     for(let i = 0; i < this.resourceClusters.length; i++) {
         let d = this.distSquared(this.resourceCentroids[i], [this.me.x, this.me.y]);
-        if(this.clusterStatus[i] == 0 && d < minScore) {
+        if(this.clusterStatus[i] == CLUSTERS.OPEN && d < minScore) {
             minScore = d;
             target = i;
         }
@@ -44,7 +60,6 @@ function castleTurn() {
      * step 1:
      *  - castletalk my location
      *  - listen to others locations, add to list
-     *  - identify my cluster
      * step 2:
      *  - listen to others locations, add to list
      * step 3:
@@ -64,11 +79,6 @@ function castleTurn() {
         // listen to others locations, add to list
         this.otherCastleZoneList.concat(talkingCastles.map(i => i.castle_talk));
         this.otherCastleIDs.concat(talkingCastles.map(i => i.id));
-
-        // identify my cluster
-        this.myCluster = getNextMissionTarget.call(this);
-        this.clusterStatus[this.myCluster] = 2;
-        // TODO: set opposite cluster to enemy status, so we don't try to take it
     }
     else if(this.step == 2) {
         // listen to others locations, add to list
@@ -77,25 +87,28 @@ function castleTurn() {
     }
     else if(this.step == 3) {
         // castletalk my mission
-        this.castleTalk(this.myCluster);
+        this.castleTalk(this.myClusterIndex);
 
         // listen to others clusters, mark their status
         let otherCastleClusters = talkingCastles.map(i => i.castle_talk);
         for(let i = 0; i < otherCastleClusters.length; i++) {
-            this.clusterStatus[otherCastleClusters[i]] = 2;
+            this.clusterStatus[otherCastleClusters[i]] = CLUSTERS.CONTROLLED;
+            let oppositeClusterIndex = this.reflectClusterByIndex(otherCastleClusters[i], this.resourceClusters);
+            this.clusterStatus[oppositeClusterIndex] = CLUSTERS.HOSTILE;
         }
     }
     else if(this.step == 4) {
         // listen to others clusters, mark their status
         let otherCastleClusters = talkingCastles.map(i => i.castle_talk);
         for(let i = 0; i < otherCastleClusters.length; i++) {
-            this.clusterStatus[otherCastleClusters[i]] = 2;
-            // TODO: set opposite cluster to enemy status, so we don't try to take it
+            this.clusterStatus[otherCastleClusters[i]] = CLUSTERS.CONTROLLED;
+            let oppositeClusterIndex = this.reflectClusterByIndex(otherCastleClusters[i], this.resourceClusters);
+            this.clusterStatus[oppositeClusterIndex] = CLUSTERS.HOSTILE;
         }
     }
     else if(this.step == 5) {
         this.log("Opening complete.  Castle "+this.me.id+" at ("+this.me.x+","+this.me.y+") here.  Clusters we control:");
-        this.log(this.resourceClusters.filter((item, i) => this.clusterStatus[i] == 2));
+        this.log(this.resourceClusters.filter((item, i) => this.clusterStatus[i] == CLUSTERS.CONTROLLED));
         let nextMissionTarget = getNextMissionTarget.call(this);
         this.log("My next mission target:");
         this.log(this.resourceClusters[nextMissionTarget]);

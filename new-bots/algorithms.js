@@ -600,6 +600,22 @@ export const Algorithms = (function() {
             return [Math.floor((xsum/cluster.length)+0.5), Math.floor((ysum/cluster.length)+0.5)];
         },
 
+
+        /**
+         *
+         */
+        reflectClusterByIndex: function(i, clusters) {
+            let cluster = clusters[i];
+            let reflected = this.reflectPoint(cluster[0][0], cluster[0][1]);
+            for(let j = 0; j < clusters.length; j++) {
+                for(let k = 0; k < clusters[j].length; k++) {
+                    if(clusters[j][k][0] == reflected[0] && clusters[j][k][1] == reflected[1])
+                        return j;
+                }
+            }
+            return i; // shouldn't actually need to be called but why not
+        },
+
         /**
          * Return optimal spawn location (as a one-tile move) towards a destination (x, y)
          * Returns null if all 8 locations are occupied
