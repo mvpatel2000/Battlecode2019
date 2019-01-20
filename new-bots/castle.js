@@ -43,9 +43,9 @@ export function Castle() {
 function getNextMissionTarget() {
     let minScore = 7939; // R^2; this is 2*63^2 + 1
     let target = 0;
-    for(let i = 0; i < this.resourceClusters.length; i++) {
+    for (let i = 0; i < this.resourceClusters.length; i++) {
         let d = this.distSquared(this.resourceCentroids[i], [this.me.x, this.me.y]);
-        if(this.clusterStatus[i] == CLUSTERS.OPEN && d < minScore) {
+        if (this.clusterStatus[i] == CLUSTERS.OPEN && d < minScore) {
             minScore = d;
             target = i;
         }
@@ -70,7 +70,7 @@ function castleTurn() {
      */
     this.step++;
     let talkingCastles = this.getVisibleRobots().filter(i => i.castle_talk!=0 && i.id != this.me.id);
-    if(this.step == 1) {
+    if (this.step == 1) {
         // this.log("Opening started.  Castle "+this.me.id+" at ("+this.me.x+","+this.me.y+") here.");
 
         // castletalk my location
@@ -80,12 +80,12 @@ function castleTurn() {
         this.otherCastleZoneList.concat(talkingCastles.map(i => i.castle_talk));
         this.otherCastleIDs.concat(talkingCastles.map(i => i.id));
     }
-    else if(this.step == 2) {
+    else if (this.step == 2) {
         // listen to others locations, add to list
         this.otherCastleZoneList.concat(talkingCastles.map(i => i.castle_talk));
         this.otherCastleIDs.concat(talkingCastles.map(i => i.id));
     }
-    else if(this.step == 3) {
+    else if (this.step == 3) {
         // castletalk my mission
         this.castleTalk(this.myClusterIndex);
 
@@ -97,7 +97,7 @@ function castleTurn() {
             this.clusterStatus[oppositeClusterIndex] = CLUSTERS.HOSTILE;
         }
     }
-    else if(this.step == 4) {
+    else if (this.step == 4) {
         // listen to others clusters, mark their status
         let otherCastleClusters = talkingCastles.map(i => i.castle_talk);
         for(let i = 0; i < otherCastleClusters.length; i++) {
@@ -106,7 +106,7 @@ function castleTurn() {
             this.clusterStatus[oppositeClusterIndex] = CLUSTERS.HOSTILE;
         }
     }
-    else if(this.step == 5) {
+    else if (this.step == 5) {
         this.log("Opening complete.  Castle "+this.me.id+" at ("+this.me.x+","+this.me.y+") here.  Clusters we control:");
         this.log(this.resourceClusters.filter((item, i) => this.clusterStatus[i] == CLUSTERS.CONTROLLED));
         let nextMissionTarget = getNextMissionTarget.call(this);
@@ -127,8 +127,9 @@ function castleTurn() {
     if (this.fuel >= 50 && this.karbonite >= 10 && this.nearbyMines.length>0) {
         let target = this.nearbyMines.shift();
         let choice = this.getSpawnLocation(target[0], target[1]);
-        if(choice) {
-            this.log("Castle at ("+this.me.x+","+this.me.y+") spawning pilgrim in direction "+choice+" towards "+target);
+        if (choice) {
+            this.log("Castle at (" + this.me.x + "," + this.me.y +
+                        ") spawning pilgrim in direction " + choice + " towards " + target);
             this.signal(this.encodeExactLocation(target), 2);
             return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
         }
@@ -143,9 +144,9 @@ function castleTurn() {
     //     //return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
     // }
 
-    return; 
+    return;
 
-    // if you have enough for mission 
+    // if you have enough for mission
         // determine which mission to go to
         // launch mission
         // communicate to other churches mission is built
