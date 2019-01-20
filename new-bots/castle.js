@@ -34,7 +34,7 @@ export function Castle() {
     //this.log("my cluster: "+this.myClusterIndex+"; enemy cluster: "+oppositeClusterIndex);
     this.clusterStatus[oppositeClusterIndex] = CLUSTER.HOSTILE;
 
-    this.nearbyMines = this.getNearbyMines();
+    this.nearbyMines = this.resourceClusters[this.myClusterIndex];
     this.mission = true;
 }
 
