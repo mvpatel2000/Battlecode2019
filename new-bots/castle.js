@@ -45,18 +45,28 @@ export function Castle() {
 function getNextMissionTarget() {
     let minScore = 7939; // R^2; this is 2*63^2 + 1
     let target = -1;
+    let shouldSend = false;
+    let maxSize = 6; // min size threshold for override
+    let overrideTarget = -1;
+    let shouldSendOverride = false;
     for (let i = 0; i < this.resourceClusters.length; i++) {
         let d = this.distSquared(this.resourceCentroids[i], [this.me.x, this.me.y]);
-        if (this.clusterStatus[i] == CLUSTER.OPEN && d < minScore) {
             let karbThresh = 50 + Math.floor(Math.sqrt(d));
-            let fuelThresh = 100 + Math.floor(Math.sqrt(d));
-            if(this.fuel >= fuelThresh && this.karbonite >= karbThresh) {
-                minScore = d;
-                target = i;
-            }
+            let fuelThresh = 50 + Math.floor(Math.sqrt(d));
+        if (this.clusterStatus[i] == CLUSTER.OPEN && d < minScore) {
+            shouldSend = (this.fuel >= fuelThresh) && (this.karbonite >= karbThresh);
+            minScore = d;
+            target = i;
+        }
+        if (this.clusterStatus[i] == CLUSTER.OPEN && this.resourceClusters[i].length >= maxSize) { // override the shortest distance if we have big cluster
+            shouldSendOverride = (this.fuel >= fuelThresh) && (this.karbonite >= karbThresh);
+            maxSize = this.resourceClusters[i].length;
+            overrideTarget = i;
         }
     }
-    return target;
+    if(overrideTarget != -1)
+        return [overrideTarget, shouldSendOverride];
+    return [target, shouldSend];
 }
 
 function castleTurn() {
@@ -136,7 +146,7 @@ function castleTurn() {
     if (this.fuel >= 50 && this.karbonite >= 10 && !this.homeSaturated) {
         let target = this.nearbyMines.shift();
         let choice = this.getSpawnLocation(target[0], target[1]);
-        if (choice) {
+        if (choice != null) {
             //this.log("Spawning pilgrim in direction " + choice + " towards " + target);
             this.signal(this.encodeExactLocation(target), 2);
             return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
@@ -156,10 +166,12 @@ function castleTurn() {
     }
 
     // NEW MISSION CODE:
-    let targetClusterIndex = getNextMissionTarget.call(this);
-    if (this.step > 4 && this.homeSaturated && targetClusterIndex != -1 && this.fuel >= 200 && this.karbonite >= 100) { // perhaps replace with an actual threshold
+    let nextMission = getNextMissionTarget.call(this);
+    let targetClusterIndex = nextMission[0];
+    let sendingMission = nextMission[1];
+    if (this.step > 4 && this.homeSaturated && sendingMission) { // perhaps replace with an actual threshold
         let targetCentroid = this.resourceCentroids[targetClusterIndex];
-        let targetCluster = this.resourceClusters[getNextMissionTarget.call(this)];
+        let targetCluster = this.resourceClusters[targetClusterIndex];
         let target = targetCluster[0];
         if(this.karbonite_map[targetCentroid[1]][targetCentroid[0]] || this.fuel_map[targetCentroid[1]][targetCentroid[0]])
             target = targetCentroid;
@@ -177,7 +189,7 @@ function castleTurn() {
         }
 
         let choice = this.getSpawnLocation(target[0], target[1]);
-        if (choice) {
+        if (choice != null) {
             this.clusterStatus[targetClusterIndex] = CLUSTER.CONTROLLED;
             this.castleTalk(targetClusterIndex + 1);
             this.log("I'm sending a mission to cluster "+targetClusterIndex+" and broadcasting it.");
@@ -187,7 +199,15 @@ function castleTurn() {
         }
     }
 
-    // PUMP PROPHETS CODE (TODO)
+    // PUMP PROPHETS CODE
+    if (this.fuel >= 400 && this.karbonite >= 100 && targetClusterIndex == -1) { // last condition: dont pump until all missions sent
+        let target = [1,0];
+        let choice = this.getSpawnLocation(target[0], target[1]);
+        if (choice != null) {
+            this.signal(this.encodeExactLocation(target), 2);
+            return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
+        }
+    }
 
     return;
 
