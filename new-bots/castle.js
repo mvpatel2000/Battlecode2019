@@ -45,18 +45,18 @@ export function Castle() {
 function getNextMissionTarget() {
     let minScore = 7939; // R^2; this is 2*63^2 + 1
     let target = -1;
+    let shouldSend = false;
     for (let i = 0; i < this.resourceClusters.length; i++) {
         let d = this.distSquared(this.resourceCentroids[i], [this.me.x, this.me.y]);
         if (this.clusterStatus[i] == CLUSTER.OPEN && d < minScore) {
             let karbThresh = 50 + Math.floor(Math.sqrt(d));
-            let fuelThresh = 100 + Math.floor(Math.sqrt(d));
-            if(this.fuel >= fuelThresh && this.karbonite >= karbThresh) {
-                minScore = d;
-                target = i;
-            }
+            let fuelThresh = 50 + Math.floor(Math.sqrt(d));
+            shouldSend = (this.fuel >= fuelThresh) && (this.karbonite >= karbThresh);
+            minScore = d;
+            target = i;
         }
     }
-    return target;
+    return [target, shouldSend];
 }
 
 function castleTurn() {
@@ -150,16 +150,18 @@ function castleTurn() {
             //this.log("I hear "+talk);
             if(0 < talk && talk < 32) { // means it's a mission index
                 this.clusterStatus[talk - 1] = CLUSTER.CONTROLLED;
-                this.log("Ah, I see that we are sending a mission to cluster "+(talk-1));
+                // this.log("Ah, I see that we are sending a mission to cluster "+(talk-1));
             }
         }
     }
 
     // NEW MISSION CODE:
-    let targetClusterIndex = getNextMissionTarget.call(this);
-    if (this.step > 4 && this.homeSaturated && targetClusterIndex != -1 && this.fuel >= 200 && this.karbonite >= 100) { // perhaps replace with an actual threshold
+    let nextMission = getNextMissionTarget.call(this);
+    let targetClusterIndex = nextMission[0];
+    let sendingMission = nextMission[1];
+    if (this.step > 4 && this.homeSaturated && sendingMission) { // perhaps replace with an actual threshold
         let targetCentroid = this.resourceCentroids[targetClusterIndex];
-        let targetCluster = this.resourceClusters[getNextMissionTarget.call(this)];
+        let targetCluster = this.resourceClusters[targetClusterIndex];
         let target = targetCluster[0];
         if(this.karbonite_map[targetCentroid[1]][targetCentroid[0]] || this.fuel_map[targetCentroid[1]][targetCentroid[0]])
             target = targetCentroid;
@@ -187,7 +189,15 @@ function castleTurn() {
         }
     }
 
-    // PUMP PROPHETS CODE (TODO)
+    // PUMP PROPHETS CODE
+    if (this.fuel >= 400 && this.karbonite >= 100 && targetClusterIndex == -1) { // last condition: dont pump until all missions sent
+        let target = [1,0];
+        let choice = this.getSpawnLocation(target[0], target[1]);
+        if (choice) {
+            this.signal(this.encodeExactLocation(target), 2);
+            return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
+        }
+    }
 
     return;
 
