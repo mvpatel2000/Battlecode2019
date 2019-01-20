@@ -72,8 +72,8 @@ function getNextMissionTarget() {
 }
 
 function castleTurn() {
-    this.log("Castle "+this.me.id+" at ("+this.me.x+","+this.me.y+") here, on step "+this.step+".  Here's what I know about cluster status:");
-    this.log(this.clusterStatus);
+    // this.log("Castle "+this.me.id+" at ("+this.me.x+","+this.me.y+") here, on step "+this.step+".  Here's what I know about cluster status:");
+    // this.log(this.clusterStatus);
     // BEGIN OPENING CASTLETALK CODE
     /*
      * outline of opening protocol

@@ -590,8 +590,8 @@ export const Algorithms = (function() {
          */
         clusterResourceTiles: function() {
             let placesToLook = [];
-            for(let i = -2; i <= 2; i++) {
-                for(let j = -2; j <= 2; j++) {
+            for(let i = -3; i <= 3; i++) {
+                for(let j = -3; j <= 3; j++) {
                     placesToLook.push([i,j]);
                 }
             }
