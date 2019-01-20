@@ -67,7 +67,7 @@ function crusaderTurn() {
             return this.move(...route[0]);
         }
         else {
-            this.log("FUCK")
+            this.log("Did not move!")
         }
     }
 }
