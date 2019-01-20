@@ -127,8 +127,8 @@ function castleTurn() {
         // listen to others clusters, mark their status
         let otherCastleClusters = talkingCastles.map(i => i.castle_talk);
         for(let i = 0; i < otherCastleClusters.length; i++) {
-            this.log("C");
-            this.log("I heard a friend at cluster "+(otherCastleClusters[i]-1));
+            // this.log("C");
+            // this.log("I heard a friend at cluster "+(otherCastleClusters[i]-1));
             this.clusterStatus[otherCastleClusters[i]-1] = CLUSTER.CONTROLLED;
             let oppositeClusterIndex = this.reflectClusterByIndex(otherCastleClusters[i]-1, this.resourceClusters);
             this.clusterStatus[oppositeClusterIndex] = CLUSTER.HOSTILE;
