@@ -547,7 +547,7 @@ export const Algorithms = (function() {
             let minScore = 7939; // R^2; this is 2*63^2 + 1
             let target = -1;
             for (let i = 0; i < clusters.length; i++) {
-                let d = this.distSquared(centroid(clusters[i]), point);
+                let d = this.distSquared(this.centroid(clusters[i]), point);
                 if (d < minScore) {
                     minScore = d;
                     target = i;
