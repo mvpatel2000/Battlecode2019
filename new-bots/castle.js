@@ -108,12 +108,12 @@ function castleTurn() {
     else if (this.step == 3) {
         // castletalk my mission
         this.castleTalk(this.myClusterIndex+1);
-        this.log("castletalking my cluster: "+this.myClusterIndex);
+        // this.log("castletalking my cluster: "+this.myClusterIndex);
 
         // listen to others clusters, mark their status
         let otherCastleClusters = talkingCastles.map(i => i.castle_talk);
         for(let i = 0; i < otherCastleClusters.length; i++) {
-            this.log("I heard a friend at cluster "+otherCastleClusters[i]-1);
+            // this.log("I heard a friend at cluster "+(otherCastleClusters[i]-1));
             this.clusterStatus[otherCastleClusters[i]-1] = CLUSTER.CONTROLLED;
             let oppositeClusterIndex = this.reflectClusterByIndex(otherCastleClusters[i]-1, this.resourceClusters);
             this.clusterStatus[oppositeClusterIndex] = CLUSTER.HOSTILE;
@@ -123,7 +123,8 @@ function castleTurn() {
         // listen to others clusters, mark their status
         let otherCastleClusters = talkingCastles.map(i => i.castle_talk);
         for(let i = 0; i < otherCastleClusters.length; i++) {
-            this.log("I heard a friend at cluster "+otherCastleClusters[i]-1);
+            this.log("C");
+            this.log("I heard a friend at cluster "+(otherCastleClusters[i]-1));
             this.clusterStatus[otherCastleClusters[i]-1] = CLUSTER.CONTROLLED;
             let oppositeClusterIndex = this.reflectClusterByIndex(otherCastleClusters[i]-1, this.resourceClusters);
             this.clusterStatus[oppositeClusterIndex] = CLUSTER.HOSTILE;
