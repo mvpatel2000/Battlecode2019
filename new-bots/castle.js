@@ -36,6 +36,8 @@ export function Castle() {
 
     this.nearbyMines = this.resourceClusters[this.myClusterIndex];
     this.homeSaturated = false;
+
+    this.defensePositions = this.getDefensePositions([this.me.x, this.me.y]);
 }
 
 /**
@@ -203,11 +205,12 @@ function castleTurn() {
     }
 
     // PUMP PROPHETS CODE
-    if (this.fuel >= 400 && this.karbonite >= 100 && targetClusterIndex == -1) { // last condition: dont pump until all missions sent
+    if (this.fuel >= 200 && this.karbonite >= 200 && this.defensePositions.length > 0 && targetClusterIndex == -1) {
         let target = [1,0];
         let choice = this.getSpawnLocation(target[0], target[1]);
-        if (choice != null) {
-            this.signal(this.encodeExactLocation(target), 2);
+        if (choice) {
+            let defenseTarget = this.defensePositions.shift();
+            this.signal(this.encodeExactLocation(defenseTarget), 2);
             return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
         }
     }
