@@ -160,7 +160,7 @@ function castleTurn() {
             //this.log("I hear "+talk);
             if(0 < talk && talk < 32) { // means it's a mission index
                 this.clusterStatus[talk - 1] = CLUSTER.CONTROLLED;
-                this.log("Ah, I see that we are sending a mission to cluster "+(talk-1));
+                // this.log("Ah, I see that we are sending a mission to cluster "+(talk-1));
             }
         }
     }

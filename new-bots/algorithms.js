@@ -642,6 +642,16 @@ export const Algorithms = (function() {
             return [Math.floor((xsum / cluster.length) + 0.5), Math.floor((ysum / cluster.length) + 0.5)];
         },
 
+        exactCentroid: function(cluster) {
+            let xsum = 0;
+            let ysum = 0;
+            for (let i = 0; i < cluster.length; i++) {
+                xsum += cluster[i][0];
+                ysum += cluster[i][1];
+            }
+            return [(xsum / cluster.length), (ysum / cluster.length)];
+        },
+
 
         /**
          *
