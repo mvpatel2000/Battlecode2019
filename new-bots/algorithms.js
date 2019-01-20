@@ -586,8 +586,12 @@ export const Algorithms = (function() {
          * t = true if karbonite, false if fuel
          */
         clusterResourceTiles: function() {
-            const placesToLook = [[-2, 1], [-2, 0], [-2, -1], [-1, 2], [-1, 1], [-1, 0], [-1, -1], [-1, -2],
-                [0, 2], [0, 1], [0, -1], [0, -2], [1, 2], [1, 1], [1, 0], [1, -1], [1, -2], [2, 1], [2, 0], [2, -1]];
+            let placesToLook = [];
+            for(let i = -2; i <= 2; i++) {
+                for(let j = -2; j <= 2; j++) {
+                    placesToLook.push([i,j]);
+                }
+            }
             let fmap = this.fuel_map;
             let kmap = this.karbonite_map;
             let sz = fmap.length;
@@ -602,12 +606,11 @@ export const Algorithms = (function() {
                         searchQueue.push([i, j]);
                         let cluster = [[i,j]];
                         while(searchQueue.length > 0) {
-                            let currentLoc = searchQueue[0];
-                            searchQueue.shift(); // O(n) but should be ok
+                            let currentLoc = searchQueue.shift(); // O(n) but should be ok
                             for(let k = 0; k < placesToLook.length; k++) {
                                 let delta = placesToLook[k];
-                                let newi = i + delta[0];
-                                let newj = j + delta[1];
+                                let newi = currentLoc[0] + delta[0];
+                                let newj = currentLoc[1] + delta[1];
                                 if(0 <= newi && newi < sz && 0 <= newj && newj < sz
                                     && (fmap[newj][newi] || kmap[newj][newi]) && !clustered[newj][newi]) {
                                     searchQueue.push([newi, newj]);
