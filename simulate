@@ -13,7 +13,7 @@ cd $2
 bc19compile -d .
 mv compiled_bot.js ../b/robot.js
 cd ..
-seed=$RANDOM
+seed=${3:-$RANDOM}
 echo "SEED=$seed"
 bc19run -r a -b b -s $seed
 
