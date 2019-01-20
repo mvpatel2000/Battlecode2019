@@ -411,15 +411,22 @@ export const Algorithms = (function() {
         getDefensePositions: function(source) {
             let positions = []
             let dirs = [-1, 1];
-            for(let max = 2; max<50; max+=2) {
+            for(let max = 2; max<40; max+=2) {
                 let delta = [max, 0];
-                for(let i=0; i<max/2*4+4; i++) {
+                for(let i=0; i<max*4; i++) {
                     let x = source[0] + delta[0];
                     let y = source[1] + delta[1];
+                    //this.log("START "+x+" "+y)
                     if ( x>=0 && y>=0 && x < this.map.length && y < this.map.length
                         && this.map[y][x] && this.getVisibleRobotMap()[y][x] <= 0
                         && !this.karbonite_map[y][x] && !this.fuel_map[y][x]) {
                         positions.push([x, y]);
+                    }
+                    //this.log((x>=0 && y>=0 && x < this.map.length && y < this.map.length))
+                    if((x>=0 && y>=0 && x < this.map.length && y < this.map.length)) {
+                        //this.log((this.map[y][x]))
+                        //this.log((this.getVisibleRobotMap()[y][x] <= 0))
+                        //this.log((!this.karbonite_map[y][x] && !this.fuel_map[y][x]))
                     }
                     
                     delta[0] = delta[0] + dirs[0];
@@ -429,6 +436,7 @@ export const Algorithms = (function() {
                     if(delta[1] == max || delta[1] == -max)
                         dirs[1] = dirs[1] * -1;
                 }
+                //this.log(positions);
             }
             return positions;
         },
