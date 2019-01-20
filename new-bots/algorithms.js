@@ -407,15 +407,15 @@ export const Algorithms = (function() {
 
         /**
          * Returns the zone # from x,y
-         * current implementation: 7-bit integer, so we can
+         * current implementation: 8-bit integer, so we can
          * encode 2 zones in 1 comm (the two castles that
          * the attacker is not spawned in) plus extra info
-         * first 3 bits: x coord
+         * first 4 bits: x coord
          * second 4 bits: y coord
          */
         encodeLocation: function(x, y, xbits, ybits) {
             if (typeof(xbits)==='undefined') xbits = 8;
-            if (typeof(ybits)==='undefined') ybits = 16;
+            if (typeof(ybits)==='undefined') ybits = 8;
             let sz = this.fuel_map.length;
             return ybits * Math.floor(x * xbits / sz) + Math.floor(y * ybits / sz);
         },
@@ -425,7 +425,7 @@ export const Algorithms = (function() {
          */
         decodeLocation: function(zone, xbits, ybits) {
             if (typeof(xbits)==='undefined') xbits = 8;
-            if (typeof(ybits)==='undefined') ybits = 16;
+            if (typeof(ybits)==='undefined') ybits = 8;
             let sz = this.fuel_map.length;
             let x = Math.floor(0.5 + (Math.floor(zone / ybits) + 0.5) * sz / xbits);
             let y = Math.floor(0.5 + ((zone%ybits) + 0.5) * sz / ybits);
