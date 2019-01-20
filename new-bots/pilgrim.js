@@ -71,7 +71,7 @@ function pilgrimTurn() {
             }
             return this.mine();
         }
-        else { //move back to base
+        else if(!onMission) { //move back to base
             this.destination = this.baseLocation;
         }
     }
