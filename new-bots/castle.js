@@ -104,6 +104,10 @@ function castleTurn() {
         // listen to others locations, add to list
         this.otherCastleZoneList.concat(talkingCastles.map(i => i.castle_talk));
         this.otherCastleIDs.concat(talkingCastles.map(i => i.id));
+        while(this.otherCastleZoneList.length < 2) {
+            this.otherCastleZoneList.push(this.myEncodedLocation);
+        }
+        this.otherCastleLocations = this.otherCastleZoneList[0] + (2**8)*this.otherCastleZoneList[1];
     }
     else if (this.step == 3) {
         // castletalk my mission
@@ -174,6 +178,7 @@ function castleTurn() {
                         if(this.defensePositions.length > 0) {
                             let defenseTarget = this.defensePositions.shift();
                             this.signal(this.otherCastleLocations, 2);
+                            this.log(this.otherCastleLocations)
                         }
                         return this.buildUnit(SPECS.PREACHER, choice[0], choice[1]);
                     }

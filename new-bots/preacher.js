@@ -7,6 +7,7 @@ export function Preacher() {
     this.enemyCastleLocations = this.prepareTargets();
     this.targetCtr = 0;
     this.target = this.enemyCastleLocations[this.targetCtr];
+    this.log(this.enemyCastleLocations);
 
     this.defend = true;
     this.movesTaken = 0;
