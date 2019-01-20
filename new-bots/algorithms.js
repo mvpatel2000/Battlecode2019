@@ -254,7 +254,7 @@ export const Algorithms = (function() {
         },
 
         /*
-         * Returns move that ensures no enemies can see you 
+         * Returns move that ensures no enemies can see you
          * Used for pilgrims to kite
          */
         getOptimalHidingLocation: function() {
@@ -593,11 +593,11 @@ export const Algorithms = (function() {
         centroid: function(cluster) {
             let xsum = 0;
             let ysum = 0;
-            for(let i = 0; i < cluster.length; i++) {
+            for (let i = 0; i < cluster.length; i++) {
                 xsum += cluster[i][0];
                 ysum += cluster[i][1];
             }
-            return [Math.floor((xsum/cluster.length)+0.5), Math.floor((ysum/cluster.length)+0.5)];
+            return [Math.floor((xsum / cluster.length) + 0.5), Math.floor((ysum / cluster.length) + 0.5)];
         },
 
         /**
@@ -606,16 +606,16 @@ export const Algorithms = (function() {
          */
         getSpawnLocation: function(x, y) {
             const choices = [[1,0], [1,1], [0,1], [-1,1], [-1,0], [-1,-1], [0,-1], [1,-1]];
-            let optimalIndex = Math.floor((4*(Math.atan2(y-this.me.y,x-this.me.x)/Math.PI))+8.5) % 8;
+            let optimalIndex = Math.floor((4 * (Math.atan2(y - this.me.y,x - this.me.x) / Math.PI)) + 8.5) % 8;
             let choice = choices[optimalIndex];
-            if(!this.occupied(this.me.x + choice[0], this.me.y + choice[1]))
+            if (!this.occupied(this.me.x + choice[0], this.me.y + choice[1]))
                 return choice;
-            for(let i = 1; i <= 4; i++) {
-                choice = choices[(optimalIndex+1)%8];
-                if(!this.occupied(this.me.x + choice[0], this.me.y + choice[1]))
+            for (let i = 1; i <= 4; i++) {
+                choice = choices[(optimalIndex + 1) % 8];
+                if (!this.occupied(this.me.x + choice[0], this.me.y + choice[1]))
                     return choice;
-                choice = choices[(optimalIndex+(8-i))%8];
-                if(!this.occupied(this.me.x + choice[0], this.me.y + choice[1]))
+                choice = choices[(optimalIndex + (8 - i)) % 8];
+                if (!this.occupied(this.me.x + choice[0], this.me.y + choice[1]))
                     return choice;
             }
             return null;
@@ -629,19 +629,19 @@ export const Algorithms = (function() {
             const choices = [[1,0], [1,1], [0,1], [-1,1], [-1,0], [-1,-1], [0,-1], [1,-1]];
             let optimalIndex = Math.floor((4*(Math.atan2(y-this.me.y,x-this.me.x)/Math.PI))+8.5) % 8;
             let choice = choices[optimalIndex];
-            if(!this.occupied(this.me.x + choice[0], this.me.y + choice[1]) 
-                && !this.karbonite_map[this.me.y + choice[1]][this.me.x + choice[0]] 
+            if (!this.occupied(this.me.x + choice[0], this.me.y + choice[1])
+                && !this.karbonite_map[this.me.y + choice[1]][this.me.x + choice[0]]
                 && !this.fuel_map[this.me.y + choice[1]][this.me.x + choice[0]])
                 return choice;
-            for(let i = 1; i <= 4; i++) {
-                choice = choices[(optimalIndex+1)%8];
-                if(!this.occupied(this.me.x + choice[0], this.me.y + choice[1])
-                    && !this.karbonite_map[this.me.y + choice[1]][this.me.x + choice[0]] 
+            for (let i = 1; i <= 4; i++) {
+                choice = choices[(optimalIndex + 1) % 8];
+                if (!this.occupied(this.me.x + choice[0], this.me.y + choice[1])
+                    && !this.karbonite_map[this.me.y + choice[1]][this.me.x + choice[0]]
                     && !this.fuel_map[this.me.y + choice[1]][this.me.x + choice[0]])
                     return choice;
-                choice = choices[(optimalIndex+(8-i))%8];
-                if(!this.occupied(this.me.x + choice[0], this.me.y + choice[1])
-                    && !this.karbonite_map[this.me.y + choice[1]][this.me.x + choice[0]] 
+                choice = choices[(optimalIndex+(8 - i)) % 8];
+                if (!this.occupied(this.me.x + choice[0], this.me.y + choice[1])
+                    && !this.karbonite_map[this.me.y + choice[1]][this.me.x + choice[0]]
                     && !this.fuel_map[this.me.y + choice[1]][this.me.x + choice[0]])
                     return choice;
             }
@@ -724,7 +724,7 @@ export const Algorithms = (function() {
                 let current = queue.pop(); //pop from priority queue instead of magic symbols
                 done.push(current)
                 if (i-- < 0 || arrEq(current, dest)) { //found destination
-                    if(i<0)
+                    if (i < 0)
                         current = done.pop();
                     let totalPath = [current];
                     while (current in prev) { //reconstruct path
@@ -791,7 +791,7 @@ export const Algorithms = (function() {
                 let current = queue.pop(); //pop from priority queue instead of magic symbols
                 done.push(current)
                 if (i-- < 0 || adjacentTo(current, dest)) { //found destination
-                    if(i < 0)
+                    if (i < 0)
                         current = done.pop();
                     let totalPath = [current];
                     while (current in prev) { //reconstruct path

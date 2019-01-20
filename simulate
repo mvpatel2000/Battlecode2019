@@ -1,15 +1,15 @@
 #!/bin/bash
-rm -rf a b
-mkdir a b
+dir=$(mktemp -d)
+mkdir "$dir/a" "$dir/b"
 cd $1
 bc19compile -d .
-mv compiled_bot.js ../a/robot.js
+mv compiled_bot.js "$dir/a/robot.js"
 cd ..
 cd $2
 bc19compile -d .
-mv compiled_bot.js ../b/robot.js
+mv compiled_bot.js "$dir/b/robot.js"
 cd ..
 seed=${3:-$RANDOM}
 echo "SEED=$seed"
-bc19run -r a -b b -s $seed
-rm -rf a b
+bc19run -r "$dir/a" -b "$dir/b" -s $seed
+rm -rf "$dir"
