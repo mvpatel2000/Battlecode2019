@@ -27,5 +27,13 @@ function churchTurn() {
             return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
         }
     }
+    if (this.fuel >= 60 && this.karbonite >= 30) {
+        let target = [1,0];
+        let choice = this.getSpawnLocation(target[0], target[1]);
+        if (choice) {
+            this.signal(this.encodeExactLocation(target), 2);
+            return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
+        }
+    }
     return;
 }

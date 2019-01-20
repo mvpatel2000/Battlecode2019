@@ -405,6 +405,30 @@ export const Algorithms = (function() {
             return mines;
         },
 
+        /*
+         * Gets nearest defense matrix location
+         */
+        getDefensePosition: function(source) {
+            dirs = [-1, 1];
+            delta = [2, 0];
+            for(let max = 2; i<50; i+=2) {
+                for(let i=0; i<max/2*4+4; i++) {
+                    //check if valid
+                    if (!this.occupied(this.me.x + delta[0], this.me.y + delta[1])
+                        && !this.karbonite_map[this.me.y + delta[1]][this.me.x + delta[0]]
+                        && !this.fuel_map[this.me.y + delta[1]][this.me.x + delta[0]])
+                        return delta;
+
+                    delta[0] = delta[0] + 2*dirs[0];
+                    delta[1] = delta[1] + 2*dirs[1];
+                    if(delta[0] == max || delta[0] == -max)
+                        dirs[0] = dirs[0] * -1;
+                    if(delta[1] == max || delta[1] == -max)
+                        dirs[1] = dirs[1] * -1;
+                }
+            }
+        },
+
         /**
          * Returns the zone # from x,y
          * current implementation: 8-bit integer, so we can
