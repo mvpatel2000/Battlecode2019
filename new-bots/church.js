@@ -35,7 +35,7 @@ function churchTurn() {
         let choice = this.getSpawnLocation(target[0], target[1]);
         if (choice) {
             let defenseTarget = this.defensePositions.shift();
-            this.signal(this.encodeExactLocation([defenseTarget[0], defenseTarget[1]]), 2);
+            this.signal(this.encodeExactLocation(defenseTarget), 2);
             return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
         }
     }

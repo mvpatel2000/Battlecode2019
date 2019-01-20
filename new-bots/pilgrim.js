@@ -33,7 +33,7 @@ function pilgrimTurn() {
     if( this.arrEq(this.destination, this.mineLocation) && x == this.mineLocation[0] && y == this.mineLocation[1]) { //at mine
         if(this.karbonite > 80 && this.fuel > 300 && this.getVisibleRobots().filter(i => i.unit < 2 
             && i.team == this.me.team && this.distSquared([i.x, i.y], [this.me.x, this.me.y])<=16).length==0) { //want to build church for mission
-            let target = this.centroid(this.getNearbyMines());
+            let target = this.exactCentroid(this.getNearbyMines());
             let choice = this.getChurchSpawnLocation(target[0], target[1]);
             if(choice != null) {
                 this.signal(this.encodeExactLocation(this.mineLocation), 2);
