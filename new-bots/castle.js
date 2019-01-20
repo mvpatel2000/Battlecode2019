@@ -70,8 +70,8 @@ function getNextMissionTarget() {
 }
 
 function castleTurn() {
-    //this.log("Castle "+this.me.id+" at ("+this.me.x+","+this.me.y+") here.  Here's what I know about cluster status:");
-    //this.log(this.clusterStatus);
+    this.log("Castle "+this.me.id+" at ("+this.me.x+","+this.me.y+") here, on step "+this.step+".  Here's what I know about cluster status:");
+    this.log(this.clusterStatus);
     // BEGIN OPENING CASTLETALK CODE
     /*
      * outline of opening protocol
@@ -105,13 +105,15 @@ function castleTurn() {
     }
     else if (this.step == 3) {
         // castletalk my mission
-        this.castleTalk(this.myClusterIndex);
+        this.castleTalk(this.myClusterIndex+1);
+        this.log("castletalking my cluster: "+this.myClusterIndex);
 
         // listen to others clusters, mark their status
         let otherCastleClusters = talkingCastles.map(i => i.castle_talk);
         for(let i = 0; i < otherCastleClusters.length; i++) {
-            this.clusterStatus[otherCastleClusters[i]] = CLUSTER.CONTROLLED;
-            let oppositeClusterIndex = this.reflectClusterByIndex(otherCastleClusters[i], this.resourceClusters);
+            this.log("I heard a friend at cluster "+otherCastleClusters[i]-1);
+            this.clusterStatus[otherCastleClusters[i]-1] = CLUSTER.CONTROLLED;
+            let oppositeClusterIndex = this.reflectClusterByIndex(otherCastleClusters[i]-1, this.resourceClusters);
             this.clusterStatus[oppositeClusterIndex] = CLUSTER.HOSTILE;
         }
     }
@@ -119,8 +121,9 @@ function castleTurn() {
         // listen to others clusters, mark their status
         let otherCastleClusters = talkingCastles.map(i => i.castle_talk);
         for(let i = 0; i < otherCastleClusters.length; i++) {
-            this.clusterStatus[otherCastleClusters[i]] = CLUSTER.CONTROLLED;
-            let oppositeClusterIndex = this.reflectClusterByIndex(otherCastleClusters[i], this.resourceClusters);
+            this.log("I heard a friend at cluster "+otherCastleClusters[i]-1);
+            this.clusterStatus[otherCastleClusters[i]-1] = CLUSTER.CONTROLLED;
+            let oppositeClusterIndex = this.reflectClusterByIndex(otherCastleClusters[i]-1, this.resourceClusters);
             this.clusterStatus[oppositeClusterIndex] = CLUSTER.HOSTILE;
         }
     }
@@ -159,8 +162,8 @@ function castleTurn() {
             let talk = talkingCastles[i].castle_talk;
             //this.log("I hear "+talk);
             if(0 < talk && talk < 32) { // means it's a mission index
-                this.clusterStatus[talk - 1] = CLUSTER.CONTROLLED;
-                // this.log("Ah, I see that we are sending a mission to cluster "+(talk-1));
+                this.clusterStatus[talk-1] = CLUSTER.CONTROLLED;
+                this.log("Ah, I see that we are sending a mission to cluster "+(talk-1));
             }
         }
     }
@@ -191,7 +194,7 @@ function castleTurn() {
         let choice = this.getSpawnLocation(target[0], target[1]);
         if (choice != null) {
             this.clusterStatus[targetClusterIndex] = CLUSTER.CONTROLLED;
-            this.castleTalk(targetClusterIndex + 1);
+            this.castleTalk(targetClusterIndex+1);
             this.log("I'm sending a mission to cluster "+targetClusterIndex+" and broadcasting it.");
             //this.log("Spawning pilgrim in direction " + choice + " towards " + target);
             this.signal(this.encodeExactLocation(target), 2);
