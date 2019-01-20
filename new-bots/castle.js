@@ -35,7 +35,7 @@ export function Castle() {
     this.clusterStatus[oppositeClusterIndex] = CLUSTER.HOSTILE;
 
     this.nearbyMines = this.resourceClusters[this.myClusterIndex];
-    this.mission = true;
+    this.homeSaturated = false;
 }
 
 /**
@@ -128,7 +128,8 @@ function castleTurn() {
     }
 
     // SATURATE CODE: saturate my nearby mines
-    if (this.fuel >= 50 && this.karbonite >= 10 && this.nearbyMines.length>0) {
+    this.homeSaturated = this.nearbyMines.length == 0;
+    if (this.fuel >= 50 && this.karbonite >= 10 && !this.homeSaturated) {
         let target = this.nearbyMines.shift();
         let choice = this.getSpawnLocation(target[0], target[1]);
         if (choice) {
@@ -139,7 +140,7 @@ function castleTurn() {
     }
 
     // LISTENING CODE
-    if(this.step > 4 && talkingCastles.length > 0) {
+    if(this.step > 4 && !this.homeSaturated && talkingCastles.length > 0) {
         for(let i = 0; i < talkingCastles.length; i++) {
             let talk = talkingCastles[i].castle_talk;
             //this.log("I hear "+talk);
