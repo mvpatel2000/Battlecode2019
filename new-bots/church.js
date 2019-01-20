@@ -14,6 +14,8 @@ export function Church() {
         let missionMineLocation = this.decodeExactLocation(broadcastingPilgrims[0].signal);
         this.nearbyMines = this.resourceClusters[this.myClusterIndex].filter(i => !this.arrEq(i, missionMineLocation));
         this.homeSaturated = false;
+
+        this.defensePositions = this.getDefensePositions([this.me.x, this.me.y]);
     }
 }
 
@@ -27,11 +29,13 @@ function churchTurn() {
             return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
         }
     }
-    if (this.fuel >= 60 && this.karbonite >= 30) {
+    if (this.fuel >= 200 && this.karbonite >= 200) {
         let target = [1,0];
         let choice = this.getSpawnLocation(target[0], target[1]);
         if (choice) {
-            this.signal(this.encodeExactLocation(target), 2);
+            let targ = this.defensePositions.shift();
+            this.log(targ+" "+this.encodeExactLocation(targ));
+            this.signal(this.encodeExactLocation(targ, 2));
             return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
         }
     }
