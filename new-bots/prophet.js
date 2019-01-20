@@ -10,7 +10,7 @@ export function Prophet() {
     this.step = 0;
 
     //determine spawn castle for grid
-    //this.spawnCastle = this.getVisibleRobots().filter(i => i.unit)
+    //this.spawnPoint = this.getVisibleRobots().filter(i => i.unit < 2 && this.distSquared([i.x, i.y], [this.me.x, this.me.y]) <= 2)
 }
 
 /**
