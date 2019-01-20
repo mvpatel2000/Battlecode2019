@@ -53,8 +53,8 @@ function getNextMissionTarget() {
     let shouldSendOverride = false;
     for (let i = 0; i < this.resourceClusters.length; i++) {
         let d = this.distSquared(this.resourceCentroids[i], [this.me.x, this.me.y]);
-            let karbThresh = 50 + Math.floor(Math.sqrt(d));
-            let fuelThresh = 50 + Math.floor(Math.sqrt(d));
+            let karbThresh = 20 + 10*this.clusterStatus.filter(i => i == CLUSTER.CONTROLLED).length + Math.floor(Math.sqrt(d));
+            let fuelThresh = 20 + 10*this.clusterStatus.filter(i => i == CLUSTER.CONTROLLED).length + Math.floor(Math.sqrt(d));
         if (this.clusterStatus[i] == CLUSTER.OPEN && d < minScore) {
             shouldSend = (this.fuel >= fuelThresh) && (this.karbonite >= karbThresh);
             minScore = d;
@@ -138,11 +138,47 @@ function castleTurn() {
     }
     // END OPENING CASTLETALK CODE
 
-    // ATTACK CODE: always attack if enemy is in range
-    let attackbot = this.getRobotToAttack();
-    if (attackbot) {
-        if (this.fuel > SPECS.UNITS[this.me.unit].ATTACK_FUEL_COST) {
-            return this.attack(attackbot.x - this.me.x, attackbot.y - this.me.y);
+    // LISTENING CODE
+    if(this.step > 4 && talkingCastles.length > 0) {
+        for(let i = 0; i < talkingCastles.length; i++) {
+            let talk = talkingCastles[i].castle_talk;
+            //this.log("I hear "+talk);
+            if(0 < talk && talk < 32) { // means it's a mission index
+                this.clusterStatus[talk-1] = CLUSTER.CONTROLLED;
+                this.log("Ah, I see that we are sending a mission to cluster "+(talk-1));
+            }
+        }
+    }
+
+    // DEFENSE CODE: always attack if enemy is in range
+    let visibleEnemies = this.getVisibleRobots().filter(i => i.team != this.me.team);
+    if(visibleEnemies.length > 0 && this.step < 50) { // rush defense
+        // assess the threat
+        let threats = visibleEnemies.filter(i => i.unit > 2);
+        if(threats.length > 0) { // attacking threat
+            if(this.karbonite >= 25 && this.fuel >= 50) {  
+                let minDist = 7939;
+                let closestThreat = [0,0];
+                for(let k = 0; k < threats.length; k++) {
+                    let dist = this.distSquared([this.me.x, this.me.y], [threats[k].x, threats[k].y]);
+                    if(dist < minDist) {
+                        minDist = dist;
+                        closestThreat = [threats[k].x, threats[k].y];
+                    }
+                }
+                let choice = this.getSpawnLocation(-1*closestThreat[0], -1*closestThreat[1]);
+                if(choice != null) {
+                    this.signal(this.encodeExactLocation([this.me.x + choice[0], this.me.y + choice[1]]), 2);
+                    return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
+                }
+            }
+        }
+        // if they're just pilgrims, or if we have no $$ to deploy archers
+        let attackbot = this.getRobotToAttack();
+        if (attackbot) {
+            if (this.fuel > SPECS.UNITS[this.me.unit].ATTACK_FUEL_COST) {
+                return this.attack(attackbot.x - this.me.x, attackbot.y - this.me.y);
+            }
         }
     }
 
@@ -155,18 +191,6 @@ function castleTurn() {
             //this.log("Spawning pilgrim in direction " + choice + " towards " + target);
             this.signal(this.encodeExactLocation(target), 2);
             return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
-        }
-    }
-
-    // LISTENING CODE
-    if(this.step > 4 && talkingCastles.length > 0) {
-        for(let i = 0; i < talkingCastles.length; i++) {
-            let talk = talkingCastles[i].castle_talk;
-            //this.log("I hear "+talk);
-            if(0 < talk && talk < 32) { // means it's a mission index
-                this.clusterStatus[talk-1] = CLUSTER.CONTROLLED;
-                this.log("Ah, I see that we are sending a mission to cluster "+(talk-1));
-            }
         }
     }
 
