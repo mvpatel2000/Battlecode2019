@@ -414,13 +414,14 @@ export const Algorithms = (function() {
             for(let max = 2; max<50; max+=2) {
                 let delta = [max, 0];
                 for(let i=0; i<max/2*4+4; i++) {
-                    //check if valid
-                    if (!this.occupied(source[0] + delta[0], source[1] + delta[1])
-                        && !this.karbonite_map[source[1] + delta[1]][source[0] + delta[0]]
-                        && !this.fuel_map[source[1] + delta[1]][source[0] + delta[0]]) {
-                        positions.push([source[0] + delta[0], source[1] + delta[1]]);
+                    let x = source[0] + delta[0];
+                    let y = source[1] + delta[1];
+                    if ( x>=0 && y>=0 && x < this.map.length && y < this.map.length
+                        && this.map[y][x] && this.getVisibleRobotMap()[y][x] <= 0
+                        && !this.karbonite_map[y][x] && !this.fuel_map[y][x]) {
+                        positions.push([x, y]);
                     }
-
+                    
                     delta[0] = delta[0] + dirs[0];
                     delta[1] = delta[1] + dirs[1];
                     if(delta[0] == max || delta[0] == -max)
