@@ -4,14 +4,11 @@ export function Prophet() {
     this.turn = prophetTurn;
     this.fuelpermove = SPECS.UNITS[this.me.unit].FUEL_PER_MOVE;
 
-    this.enemyCastleLocations = [[0,0], [1,0], [2,0]]; //this.prepareTargets();
+    this.enemyCastleLocations = this.prepareTargets();
     this.targetCtr = 0;
-    this.target = this.enemyCastleLocations[this.targetCtr];
-    this.step = 0;
+    this.target = this.enemyCastleLocations[this.targetCtr]; 
 
-    //determine spawn castle for grid
-    this.spawnPoint = this.getVisibleRobots().filter(i => i.unit < 2 && this.distSquared([i.x, i.y], [this.me.x, this.me.y]) <= 2 && i.signal >= 0)[0];
-    this.target = this.decodeExactLocation(this.spawnPoint.signal);
+    this.step = 0;
 }
 
 /**
@@ -36,7 +33,7 @@ function prophetTurn() {
     // Tiebreaker: location closest (euclidean distance) from the original path move to target
     // Fall through if no robots can attack me, or not enough fuel to move.
     let optimalmove = this.getOptimalEscapeLocationProphet();
-    if (optimalmove.length && this.fuel >= (SPECS.UNITS[this.me.unit].FUEL_PER_MOVE * this.getSpeed())) {
+    if (optimalmove.length && this.fuel >= this.fuelpermove) {
         let route = this.path(this.target);
         let [dx, dy] = route.length ? route[0] : [0, 0];
         let old = [this.me.x + dx, this.me.y + dy];
@@ -45,31 +42,22 @@ function prophetTurn() {
         if (finmove[0] == this.me.x && finmove[1] == this.me.y) {
             return;
         } else {
-            return this.move(...[finmove[0] - this.me.x, finmove[1] - this.me.y]);
-        }
-    }  
-
-    //get nearest grid square
-    //move to it
-
-    // non-combat mode -- this code moves toward enemy castles. Should be activated w/ pushes
-
-    // movement code
-    //this.log(this.target+" | "+[this.spawnPoint.x, this.spawnPoint.y]+" | "+this.me.x+", "+this.me.y);
-    let route = this.path(this.target); //path finding
-    if (this.fuel > (SPECS.UNITS[this.me.unit].FUEL_PER_MOVE * this.getSpeed())) {
-        if (route.length > 0) { //A* towards target
-            return this.move(...route[0]);
+            return this.go(finmove);
         }
     }
-    
-    /*
+
+    if(this.step > 50)
+        this.step = 0;
+    else if(this.step > 3 && this.me.turn < 600)
+        return;
+
+    // non-combat mode
     while (this.me.x == this.target[0] && this.me.y == this.target[1]) { //reset target if meet it
-        if (this.targetCtr < this.enemyCastleLocations.length) {
-            this.log("Prepping update: " + this.enemyCastleLocations + " " + this.targetCtr);
-            this.targetCtr += 1;
+        if(this.targetCtr < this.enemyCastleLocations.length) {
+            this.log("Prepping update: "+this.enemyCastleLocations+" "+this.targetCtr);
+            this.targetCtr+=1;
             this.target = this.enemyCastleLocations[this.targetCtr];
-            this.log("Update: " + this.target + " " + this.targetCtr);
+            this.log("Update: "+this.target+" "+this.targetCtr);
         }
         else {
             let r = () => [this.rand(this.map[0].length),
@@ -79,7 +67,10 @@ function prophetTurn() {
                 this.target = r();
             }
         }
-    } */
+    }
+
+    // movement code
+    return this.go(this.target);
 }
 
 /**

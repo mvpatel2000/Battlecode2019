@@ -4,6 +4,11 @@ import {PriorityQueue} from './priorityqueue'
 export const Algorithms = (function() {
     let seed = 1;
 
+    function rand(len) {
+        seed = ((seed + 3) * 7 + 37) % 8117;
+        return seed % len;
+    }
+
     function dist(a, b) {
         let dx = a[0] - b[0];
         let dy = a[1] - b[1];
@@ -82,16 +87,7 @@ export const Algorithms = (function() {
         dist: dist,
         distSquared: distSquared,
         getSpeed: getSpeed,
-        arrEq: arrEq,
-
-        /**
-         * get pseudorandom number
-         */
-        rand: function rand(len) {
-            seed = ((seed + 3) * 7 + 37) % 8117 + this.me.x * 97
-                    + this.me.y * 1013 + this.getVisibleRobots().length * 37;
-            return seed % len;
-        },
+        rand: rand,
 
         /**
          * Gives list of valid move locations.
@@ -166,7 +162,7 @@ export const Algorithms = (function() {
                      let rely = this.me.y-j;
                      let relx = this.me.x-i;
                      if ((rely*rely + relx*relx) <= rad2) {
-                         if((i == this.me.x && j == this.me.y) || rbotmap[j][i]==-1) {
+                         if(this.map[j][i] == false || (i == this.me.x && j == this.me.y) || rbotmap[j][i]==-1) {
                              continue;
                          }
                          let hpdamage = 0;
@@ -183,7 +179,7 @@ export const Algorithms = (function() {
                  }
              }
              return aoelocation;
-        },
+         },
 
         /**
          * Returns a robot to attack if possible.
@@ -249,36 +245,6 @@ export const Algorithms = (function() {
             }
             if (maxhpdamage == 0) {
                 return [];
-            }
-            return optimalmove;
-        },
-
-        /*
-         * Returns move that ensures no enemies can see you
-         * Used for pilgrims to kite
-         */
-        getOptimalHidingLocation: function() {
-            let visibleRobots = this.getVisibleRobots().filter(i => i.unit > 2 && i.team != this.me.team);
-            let visibleAllies = this.getVisibleRobots().filter(i => i.unit > 2 && i.team == this.me.team);
-            if (visibleRobots.length == 0 || visibleAllies.length > 8) {
-                return [];
-            }
-            let optimalmove = [];
-            let possiblemoves = this.validAbsoluteMoves();
-            //add "staying still" to possible moves list
-            possiblemoves.unshift([this.me.x,this.me.y]);
-
-            for (let move of possiblemoves) {
-                let validmove = true;
-                for (let i of visibleRobots) {
-                    let dSquaredtoEnemy = distSquared([i.x, i.y], [move[0], move[1]])
-                    if(dSquaredtoEnemy <=  SPECS.UNITS[i.unit].VISION_RADIUS + 1) {
-                        validmove = false;
-                        break;
-                    }
-                }
-                if(validmove)
-                    optimalmove.push(move);
             }
             return optimalmove;
         },
@@ -370,8 +336,8 @@ export const Algorithms = (function() {
                     return enemyCastleLocations;
                 }
             }
-            let r = () => [this.rand(this.map[0].length),
-                            this.rand(this.map.length)];
+            let r = () => [rand(this.map[0].length),
+                            rand(this.map.length)];
             let target = r();
             while (!this.map[target[1]][target[0]]) {
                 target = r();
@@ -381,77 +347,16 @@ export const Algorithms = (function() {
         },
 
         /**
-         * Check nearby tiles to get mines
-         * Karbonite mines are prioritized over fuel mines
-         */
-        getNearbyMines: function() {
-            let x = this.me.x;
-            let y = this.me.y;
-            let mines = []
-            let zonesize = 3;
-            for(let dx = -zonesize; dx < zonesize+1; dx++) {
-                for(let dy = -zonesize; dy<zonesize+1; dy++) {
-                    if(x+dx>=0 && y+dy>=0 && x+dx<this.map.length && y+dy<this.map.length &&
-                         dx*dx + dy*dy <= 13) { //within r^2
-                        if(this.karbonite_map[y+dy][x+dx]) {
-                            mines.unshift([x+dx, y+dy]);
-                        }
-                        if(this.fuel_map[y+dy][x+dx]) {
-                            mines.push([x+dx, y+dy]);
-                        }
-                    }
-                }
-            }
-            return mines;
-        },
-
-        /*
-         * Gets nearest defense matrix location
-         */
-        getDefensePositions: function(source) {
-            let positions = []
-            let dirs = [-1, 1];
-            for(let max = 2; max<40; max+=2) {
-                let delta = [max, 0];
-                for(let i=0; i<max*4; i++) {
-                    let x = source[0] + delta[0];
-                    let y = source[1] + delta[1];
-                    //this.log("START "+x+" "+y)
-                    if ( x>=0 && y>=0 && x < this.map.length && y < this.map.length
-                        && this.map[y][x] && this.getVisibleRobotMap()[y][x] <= 0
-                        && !this.karbonite_map[y][x] && !this.fuel_map[y][x]) {
-                        positions.push([x, y]);
-                    }
-                    //this.log((x>=0 && y>=0 && x < this.map.length && y < this.map.length))
-                    if((x>=0 && y>=0 && x < this.map.length && y < this.map.length)) {
-                        //this.log((this.map[y][x]))
-                        //this.log((this.getVisibleRobotMap()[y][x] <= 0))
-                        //this.log((!this.karbonite_map[y][x] && !this.fuel_map[y][x]))
-                    }
-                    
-                    delta[0] = delta[0] + dirs[0];
-                    delta[1] = delta[1] + dirs[1];
-                    if(delta[0] == max || delta[0] == -max)
-                        dirs[0] = dirs[0] * -1;
-                    if(delta[1] == max || delta[1] == -max)
-                        dirs[1] = dirs[1] * -1;
-                }
-                //this.log(positions);
-            }
-            return positions;
-        },
-
-        /**
          * Returns the zone # from x,y
-         * current implementation: 8-bit integer, so we can
+         * current implementation: 7-bit integer, so we can
          * encode 2 zones in 1 comm (the two castles that
          * the attacker is not spawned in) plus extra info
-         * first 4 bits: x coord
+         * first 3 bits: x coord
          * second 4 bits: y coord
          */
         encodeLocation: function(x, y, xbits, ybits) {
             if (typeof(xbits)==='undefined') xbits = 8;
-            if (typeof(ybits)==='undefined') ybits = 8;
+            if (typeof(ybits)==='undefined') ybits = 16;
             let sz = this.fuel_map.length;
             return ybits * Math.floor(x * xbits / sz) + Math.floor(y * ybits / sz);
         },
@@ -461,27 +366,12 @@ export const Algorithms = (function() {
          */
         decodeLocation: function(zone, xbits, ybits) {
             if (typeof(xbits)==='undefined') xbits = 8;
-            if (typeof(ybits)==='undefined') ybits = 8;
+            if (typeof(ybits)==='undefined') ybits = 16;
             let sz = this.fuel_map.length;
             let x = Math.floor(0.5 + (Math.floor(zone / ybits) + 0.5) * sz / xbits);
             let y = Math.floor(0.5 + ((zone%ybits) + 0.5) * sz / ybits);
             return this.nearestEmptyLocation(x, y);
         },
-
-        /**
-         * Encodes exact location into 12 bits
-         * location[0] = x, location[y] = 1
-         */
-         encodeExactLocation: function(location) {
-            return location[0]*64 + location[1];
-         },
-
-         /**
-         * Decodes exact location into 12 bits
-         */
-         decodeExactLocation: function(zone) {
-            return [ Math.floor(zone / 64) % 64, zone % 64];
-         },
 
         /**
          * Returns x,y nearby that is empty
@@ -579,164 +469,18 @@ export const Algorithms = (function() {
             return pos.sort((a, b) => a[0] - b[0]).map(x => x[1]);
         },
 
-        findNearestClusterIndex: function(point, clusters) {
-            let minScore = 7939; // R^2; this is 2*63^2 + 1
-            let target = -1;
-            for (let i = 0; i < clusters.length; i++) {
-                let d = this.distSquared(this.centroid(clusters[i]), point);
-                if (d < minScore) {
-                    minScore = d;
-                    target = i;
-                }
-            }
-            return target;
-        },
-
-        /**
-         * returns a list of clusters
-         * each cluster is a list of tuples [x,y,t] where [x,y] is the resource loc,
-         * t = true if karbonite, false if fuel
-         */
-        clusterResourceTiles: function() {
-            let placesToLook = [];
-            for(let i = -3; i <= 3; i++) {
-                for(let j = -3; j <= 3; j++) {
-                    placesToLook.push([i,j]);
-                }
-            }
-            let fmap = this.fuel_map;
-            let kmap = this.karbonite_map;
-            let sz = fmap.length;
-            let clustered = new Array(sz).fill(0).map(x => new Array(sz).fill(false));
-            let clusters = new Array();
-
-            for(let i = 0; i < sz; i++) {
-                for(let j = 0; j < sz; j++) {
-                    if(!clustered[j][i] && (fmap[j][i] || kmap[j][i])) {
-                        clustered[j][i] = true;
-                        let searchQueue = [];
-                        searchQueue.push([i, j]);
-                        let cluster = [[i,j]];
-                        while(searchQueue.length > 0) {
-                            let currentLoc = searchQueue.shift(); // O(n) but should be ok
-                            for(let k = 0; k < placesToLook.length; k++) {
-                                let delta = placesToLook[k];
-                                let newi = currentLoc[0] + delta[0];
-                                let newj = currentLoc[1] + delta[1];
-                                if(0 <= newi && newi < sz && 0 <= newj && newj < sz
-                                    && (fmap[newj][newi] || kmap[newj][newi]) && !clustered[newj][newi]) {
-                                    searchQueue.push([newi, newj]);
-                                    cluster.push([newi, newj]);
-                                    clustered[newj][newi] = true;
-                                }
-                            }
-                        }
-                        clusters.push(cluster);
-                    }
-                }
-            }
-            return clusters;
-        },
-
-        /**
-         * given a list of points, compute their centroid rounded to the nearest integer.
-         */
-        centroid: function(cluster) {
-            let xsum = 0;
-            let ysum = 0;
-            for (let i = 0; i < cluster.length; i++) {
-                xsum += cluster[i][0];
-                ysum += cluster[i][1];
-            }
-            return [Math.floor((xsum / cluster.length) + 0.5), Math.floor((ysum / cluster.length) + 0.5)];
-        },
-
-        exactCentroid: function(cluster) {
-            let xsum = 0;
-            let ysum = 0;
-            for (let i = 0; i < cluster.length; i++) {
-                xsum += cluster[i][0];
-                ysum += cluster[i][1];
-            }
-            return [(xsum / cluster.length), (ysum / cluster.length)];
-        },
-
-
-        /**
-         *
-         */
-        reflectClusterByIndex: function(i, clusters) {
-            let cluster = clusters[i];
-            let reflected = this.reflectPoint(cluster[0][0], cluster[0][1]);
-            for(let j = 0; j < clusters.length; j++) {
-                for(let k = 0; k < clusters[j].length; k++) {
-                    if(clusters[j][k][0] == reflected[0] && clusters[j][k][1] == reflected[1])
-                        return j;
-                }
-            }
-            return i; // shouldn't actually need to be called but why not
-        },
-
-        /**
-         * Return optimal spawn location (as a one-tile move) towards a destination (x, y)
-         * Returns null if all 8 locations are occupied
-         */
-        getSpawnLocation: function(x, y) {
-            const choices = [[1,0], [1,1], [0,1], [-1,1], [-1,0], [-1,-1], [0,-1], [1,-1]];
-            let optimalIndex = Math.floor((4 * (Math.atan2(y - this.me.y,x - this.me.x) / Math.PI)) + 8.5) % 8;
-            let choice = choices[optimalIndex];
-            if (!this.occupied(this.me.x + choice[0], this.me.y + choice[1]))
-                return choice;
-            for (let i = 1; i <= 4; i++) {
-                choice = choices[(optimalIndex + 1) % 8];
-                if (!this.occupied(this.me.x + choice[0], this.me.y + choice[1]))
-                    return choice;
-                choice = choices[(optimalIndex + (8 - i)) % 8];
-                if (!this.occupied(this.me.x + choice[0], this.me.y + choice[1]))
-                    return choice;
-            }
-            return null;
-        },
-
-        /**
-         * Return optimal spawn location (as a one-tile move) towards a destination (x, y)
-         * Returns null if all 8 locations are occupied
-         */
-        getChurchSpawnLocation: function(x, y) {
-            const choices = [[1,0], [1,1], [0,1], [-1,1], [-1,0], [-1,-1], [0,-1], [1,-1]];
-            let optimalIndex = Math.floor((4*(Math.atan2(y-this.me.y,x-this.me.x)/Math.PI))+8.5) % 8;
-            let choice = choices[optimalIndex];
-            if (!this.occupied(this.me.x + choice[0], this.me.y + choice[1])
-                && !this.karbonite_map[this.me.y + choice[1]][this.me.x + choice[0]]
-                && !this.fuel_map[this.me.y + choice[1]][this.me.x + choice[0]])
-                return choice;
-            for (let i = 1; i <= 4; i++) {
-                choice = choices[(optimalIndex + 1) % 8];
-                if (!this.occupied(this.me.x + choice[0], this.me.y + choice[1])
-                    && !this.karbonite_map[this.me.y + choice[1]][this.me.x + choice[0]]
-                    && !this.fuel_map[this.me.y + choice[1]][this.me.x + choice[0]])
-                    return choice;
-                choice = choices[(optimalIndex+(8 - i)) % 8];
-                if (!this.occupied(this.me.x + choice[0], this.me.y + choice[1])
-                    && !this.karbonite_map[this.me.y + choice[1]][this.me.x + choice[0]]
-                    && !this.fuel_map[this.me.y + choice[1]][this.me.x + choice[0]])
-                    return choice;
-            }
-            return null;
-        },
-
         /**
          * Return random, valid, one-tile move.
          */
         randomMove: function() {
             const choices = [[0,-1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1]];
-            let choice = choices[this.rand(choices.length)]
+            let choice = choices[rand(choices.length)]
             for (;;) {
                 let locx = this.me.x + choice[0];
                 let locy = this.me.y + choice[1];
                 if (!this.occupied(locx, locy))
                     break;
-                choice = choices[this.rand(choices.length)];
+                choice = choices[rand(choices.length)];
             }
             return choice;
         },
@@ -757,21 +501,17 @@ export const Algorithms = (function() {
                     }
                 }
             }
-            let choice = choices[this.rand(choices.length)]
+            let choice = choices[rand(choices.length)]
             for (;;) {
                 let locx = this.me.x + choice[0];
                 let locy = this.me.y + choice[1];
                 if (!this.occupied(locx, locy))
                     break;
-                choice = choices[this.rand(choices.length)];
+                choice = choices[rand(choices.length)];
             }
             return choice;
         },
 
-        /**
-         * Takes in destination [x, y].
-         * Return a list of [dx, dy] instructions to get from current location to destination.
-         */
         path: function(dest) {
             let start = [this.me.x, this.me.y];
             let map = this.map;
