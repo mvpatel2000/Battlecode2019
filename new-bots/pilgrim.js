@@ -37,7 +37,9 @@ function pilgrimTurn() {
         let myCluster = this.resourceClusters[myClusterIndex];
         let lookForBase = this.centroid(myCluster);
         let onMission = this.getVisibleRobots().filter(i => i.unit < 2 && i.team == this.me.team
-            && this.distSquared(lookForBase, [i.x, i.y])<=2).length == 0;
+            && this.distSquared(lookForBase, [i.x, i.y])<=2).length == 0; //check if church/castle at centroid
+        onMission = onMission && this.getVisibleRobots().filter(i => i.unit == 0 && i.team == this.me.team 
+            && this.distSquared(lookForBase, [i.x, i.y])<=16).length == 0; //check if castle nearby
         if(this.karbonite > 80 && this.fuel > 300 && onMission) { //want to build mission church for mission
             let target = this.exactCentroid(myCluster);
             let choice = this.getChurchSpawnLocation(target[0], target[1]);
