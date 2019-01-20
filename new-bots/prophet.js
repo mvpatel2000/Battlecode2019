@@ -11,7 +11,7 @@ export function Prophet() {
 
     //determine spawn castle for grid
     this.spawnPoint = this.getVisibleRobots().filter(i => i.unit < 2 && this.distSquared([i.x, i.y], [this.me.x, this.me.y]) <= 2)[0];
-    this.target = this.getDefensePosition([this.spawnPoint.x, this.spawnPoint.y]);
+    this.target = this.getDefensePosition([this.spawnPoint.x, this.spawnPoint.y]); //TODO: Update this so that it checks out of vision targets
 }
 
 /**
@@ -53,6 +53,16 @@ function prophetTurn() {
     //move to it
 
     // non-combat mode -- this code moves toward enemy castles. Should be activated w/ pushes
+
+    // movement code
+    //this.log(this.target+" | "+[this.spawnPoint.x, this.spawnPoint.y]+" | "+this.me.x+", "+this.me.y);
+    let route = this.path(this.target); //path finding
+    if (this.fuel > (SPECS.UNITS[this.me.unit].FUEL_PER_MOVE * this.getSpeed())) {
+        if (route.length > 0) { //A* towards target
+            return this.move(...route[0]);
+        }
+    }
+    
     /*
     while (this.me.x == this.target[0] && this.me.y == this.target[1]) { //reset target if meet it
         if (this.targetCtr < this.enemyCastleLocations.length) {
@@ -69,9 +79,7 @@ function prophetTurn() {
                 this.target = r();
             }
         }
-    }
-    // movement code
-    return this.go(this.target); */
+    } */
 }
 
 /**

@@ -409,18 +409,18 @@ export const Algorithms = (function() {
          * Gets nearest defense matrix location
          */
         getDefensePosition: function(source) {
-            dirs = [-1, 1];
-            delta = [2, 0];
-            for(let max = 2; i<50; i+=2) {
+            let dirs = [-1, 1];
+            let delta = [2, 0];
+            for(let max = 2; max<50; max+=2) {
                 for(let i=0; i<max/2*4+4; i++) {
                     //check if valid
-                    if (!this.occupied(this.me.x + delta[0], this.me.y + delta[1])
-                        && !this.karbonite_map[this.me.y + delta[1]][this.me.x + delta[0]]
-                        && !this.fuel_map[this.me.y + delta[1]][this.me.x + delta[0]])
-                        return delta;
+                    if (!this.occupied(source[0] + delta[0], source[1] + delta[1])
+                        && !this.karbonite_map[source[1] + delta[1]][source[0] + delta[0]]
+                        && !this.fuel_map[source[1] + delta[1]][source[0] + delta[0]])
+                        return [source[0] + delta[0], source[1] + delta[1]];
 
-                    delta[0] = delta[0] + 2*dirs[0];
-                    delta[1] = delta[1] + 2*dirs[1];
+                    delta[0] = delta[0] + dirs[0];
+                    delta[1] = delta[1] + dirs[1];
                     if(delta[0] == max || delta[0] == -max)
                         dirs[0] = dirs[0] * -1;
                     if(delta[1] == max || delta[1] == -max)

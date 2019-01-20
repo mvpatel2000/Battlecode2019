@@ -54,8 +54,8 @@ function pilgrimTurn() {
                 return this.buildUnit(SPECS.CHURCH, choice[0], choice[1]);
             }
         }
-        else if( (this.fuelMine && this.me.fuel < SPECS.UNITS[this.me.unit].FUEL_CAPACITY)
-            || (this.karboniteMine && this.me.karbonite < SPECS.UNITS[this.me.unit].KARBONITE_CAPACITY) ) { //want to mine
+        else if( this.fuel > 1 && ((this.fuelMine && this.me.fuel < SPECS.UNITS[this.me.unit].FUEL_CAPACITY)
+            || (this.karboniteMine && this.me.karbonite < SPECS.UNITS[this.me.unit].KARBONITE_CAPACITY)) ) { //want to mine
             if(escapemove.length > 0 && !this.arrEq(escapemove[0],[this.me.x,this.me.y]) 
                 && this.fuel > (SPECS.UNITS[this.me.unit].FUEL_PER_MOVE * this.getSpeed())) { //must flee if optimal dodge is not stay still
                 return this.move(...[escapemove[0][0] - this.me.x, escapemove[0][1] - this.me.y]);
