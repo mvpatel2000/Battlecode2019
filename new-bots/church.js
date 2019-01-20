@@ -21,6 +21,35 @@ export function Church() {
 }
 
 function churchTurn() {
+    // EMERGENCY DEFENSE CODE
+    let visibleEnemies = this.getVisibleRobots().filter(i => i.team != this.me.team);
+    if(visibleEnemies.length > 0) { // rush defense
+        // assess the threat
+        let threats = visibleEnemies.filter(i => i.unit > 2);
+        if(threats.length > 0) { // attacking threat
+            if(this.karbonite >= 25 && this.fuel >= 50) {
+                let minDist = 7939;
+                let closestThreat = [0,0];
+                for(let k = 0; k < threats.length; k++) {
+                    let dist = this.distSquared([this.me.x, this.me.y], [threats[k].x, threats[k].y]);
+                    if(dist < minDist) {
+                        minDist = dist;
+                        closestThreat = [threats[k].x, threats[k].y];
+                    }
+                }
+                let choice = this.getSpawnLocation(-1*closestThreat[0], -1*closestThreat[1]);
+                if(choice != null) {
+                    if(this.defensePositions.length > 0) {
+                        let defenseTarget = this.defensePositions.shift();
+                        this.signal(this.encodeExactLocation(defenseTarget), 2);
+                    }
+                    return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
+                }
+            }
+        }
+    }
+
+    // SATURATION CODE
     this.homeSaturated = this.nearbyMines.length == 0;
     if (this.fuel >= 50 && this.karbonite >= 10 && !this.homeSaturated) {
         let target = this.nearbyMines.shift();
@@ -30,6 +59,8 @@ function churchTurn() {
             return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
         }
     }
+
+    // ARCHER TURTLE CODE
     if (this.fuel >= 200 && this.karbonite >= 200 && this.defensePositions.length > 0) {
         let target = [1,0];
         let choice = this.getSpawnLocation(target[0], target[1]);
