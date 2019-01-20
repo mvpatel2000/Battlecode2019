@@ -8,6 +8,7 @@ export function Church() {
         Math.pow(i.x - this.me.x,2) + Math.pow(i.y - this.me.y,2) <= 2 && i.signal>=0);
 
     this.nearbyMines = [];
+    this.defensePositions = [];
     if(broadcastingPilgrims.length > 0 && broadcastingPilgrims[0].signal > 0) { //it is a mission church!
         this.resourceClusters = this.clusterResourceTiles();
         this.myClusterIndex = this.findNearestClusterIndex([this.me.x, this.me.y], this.resourceClusters);
@@ -29,13 +30,12 @@ function churchTurn() {
             return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
         }
     }
-    if (this.fuel >= 200 && this.karbonite >= 200) {
+    if (this.fuel >= 200 && this.karbonite >= 200 && this.defensePositions.length > 0) {
         let target = [1,0];
         let choice = this.getSpawnLocation(target[0], target[1]);
         if (choice) {
-            let targ = this.defensePositions.shift();
-            this.log(targ+" "+this.encodeExactLocation(targ));
-            this.signal(this.encodeExactLocation(targ, 2));
+            let defenseTarget = this.defensePositions.shift();
+            this.signal(this.encodeExactLocation([defenseTarget[0], defenseTarget[1]]), 2);
             return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
         }
     }

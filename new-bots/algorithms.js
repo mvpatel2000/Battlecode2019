@@ -411,14 +411,15 @@ export const Algorithms = (function() {
         getDefensePositions: function(source) {
             let positions = []
             let dirs = [-1, 1];
-            let delta = [2, 0];
             for(let max = 2; max<10; max+=2) {
+                let delta = [max, 0];
                 for(let i=0; i<max/2*4+4; i++) {
                     //check if valid
                     if (!this.occupied(source[0] + delta[0], source[1] + delta[1])
                         && !this.karbonite_map[source[1] + delta[1]][source[0] + delta[0]]
-                        && !this.fuel_map[source[1] + delta[1]][source[0] + delta[0]])
-                        positions.push(delta);
+                        && !this.fuel_map[source[1] + delta[1]][source[0] + delta[0]]) {
+                        positions.push([source[0] + delta[0], source[1] + delta[1]]);
+                    }
 
                     delta[0] = delta[0] + dirs[0];
                     delta[1] = delta[1] + dirs[1];
