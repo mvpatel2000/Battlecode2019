@@ -104,6 +104,10 @@ function castleTurn() {
         // listen to others locations, add to list
         this.otherCastleZoneList.concat(talkingCastles.map(i => i.castle_talk));
         this.otherCastleIDs.concat(talkingCastles.map(i => i.id));
+        while(this.otherCastleZoneList.length < 2) {
+            this.otherCastleZoneList.push(this.myEncodedLocation);
+        }
+        this.otherCastleLocations = this.otherCastleZoneList[0] + (2**8)*this.otherCastleZoneList[1];
     }
     else if (this.step == 3) {
         // castletalk my mission
@@ -123,8 +127,8 @@ function castleTurn() {
         // listen to others clusters, mark their status
         let otherCastleClusters = talkingCastles.map(i => i.castle_talk);
         for(let i = 0; i < otherCastleClusters.length; i++) {
-            this.log("C");
-            this.log("I heard a friend at cluster "+(otherCastleClusters[i]-1));
+            // this.log("C");
+            // this.log("I heard a friend at cluster "+(otherCastleClusters[i]-1));
             this.clusterStatus[otherCastleClusters[i]-1] = CLUSTER.CONTROLLED;
             let oppositeClusterIndex = this.reflectClusterByIndex(otherCastleClusters[i]-1, this.resourceClusters);
             this.clusterStatus[oppositeClusterIndex] = CLUSTER.HOSTILE;
@@ -156,6 +160,7 @@ function castleTurn() {
     if(visibleEnemies.length > 0) { // rush defense
         // assess the threat
         let threats = visibleEnemies.filter(i => i.unit > 2);
+        let preacherThreats = threats.filter(i => i.unit == 5);
         if(threats.length > 0) { // attacking threat
             if(this.karbonite >= 25 && this.fuel >= 50) {  
                 let minDist = 7939;
@@ -167,13 +172,26 @@ function castleTurn() {
                         closestThreat = [threats[k].x, threats[k].y];
                     }
                 }
-                let choice = this.getSpawnLocation(-1*closestThreat[0], -1*closestThreat[1]);
-                if(choice != null) {
-                    if(this.defensePositions.length > 0) {
-                        let defenseTarget = this.defensePositions.shift();
-                        this.signal(this.encodeExactLocation(defenseTarget), 2);
+                if(preacherThreats.length > 0 && this.karbonite >= 30) {
+                    let choice = this.getSpawnLocation(closestThreat[0], closestThreat[1]);
+                    if(choice != null) {
+                        if(this.defensePositions.length > 0) {
+                            let defenseTarget = this.defensePositions.shift();
+                            this.signal(this.otherCastleLocations, 2);
+                            this.log(this.otherCastleLocations)
+                        }
+                        return this.buildUnit(SPECS.PREACHER, choice[0], choice[1]);
                     }
-                    return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
+                }
+                else {
+                    let choice = this.getSpawnLocation(-1*closestThreat[0], -1*closestThreat[1]);
+                    if(choice != null) {
+                        if(this.defensePositions.length > 0) {
+                            let defenseTarget = this.defensePositions.shift();
+                            this.signal(this.encodeExactLocation(defenseTarget), 2);
+                        }
+                        return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
+                    }
                 }
             }
         }

@@ -62,6 +62,7 @@ function prophetTurn() {
             return this.move(...route[0]);
         }
     }
+    return;
     
     /*
     while (this.me.x == this.target[0] && this.me.y == this.target[1]) { //reset target if meet it
