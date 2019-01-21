@@ -8,7 +8,7 @@ export function Prophet() {
     this.targetCtr = 0;
     this.target = this.enemyCastleLocations[this.targetCtr];
     this.step = 0;
-
+    this.harrass = 0;
     //determine spawn castle for grid
     this.spawnPoint = this.getVisibleRobots().filter(i => i.unit < 2 && this.distSquared([i.x, i.y], [this.me.x, this.me.y]) <= 2 && i.signal >= 0)[0];
     this.target = this.decodeExactLocation(this.spawnPoint.signal);
@@ -47,7 +47,7 @@ function prophetTurn() {
         } else {
             return this.move(...[finmove[0] - this.me.x, finmove[1] - this.me.y]);
         }
-    }  
+    }
 
     //get nearest grid square
     //move to it
@@ -62,7 +62,7 @@ function prophetTurn() {
             return this.move(...route[0]);
         }
     }
-    
+
     /*
     while (this.me.x == this.target[0] && this.me.y == this.target[1]) { //reset target if meet it
         if (this.targetCtr < this.enemyCastleLocations.length) {
