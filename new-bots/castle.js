@@ -97,13 +97,17 @@ function castleTurn() {
         this.castleTalk(this.myEncodedLocation);
 
         // listen to others locations, add to list
-        this.otherCastleZoneList.concat(talkingCastles.map(i => i.castle_talk));
-        this.otherCastleIDs.concat(talkingCastles.map(i => i.id));
+        for(let i=0; i<talkingCastles.length; i++) {
+            this.otherCastleZoneList.push(talkingCastles[i].castle_talk);
+            this.otherCastleIDs.push(talkingCastles[i].id);
+        }
     }
     else if (this.step == 2) {
         // listen to others locations, add to list
-        this.otherCastleZoneList.concat(talkingCastles.map(i => i.castle_talk));
-        this.otherCastleIDs.concat(talkingCastles.map(i => i.id));
+        for(let i=0; i<talkingCastles.length; i++) {
+            this.otherCastleZoneList.push(talkingCastles[i].castle_talk);
+            this.otherCastleIDs.push(talkingCastles[i].id);
+        }
         while(this.otherCastleZoneList.length < 2) {
             this.otherCastleZoneList.push(this.myEncodedLocation);
         }
@@ -127,7 +131,6 @@ function castleTurn() {
         // listen to others clusters, mark their status
         let otherCastleClusters = talkingCastles.map(i => i.castle_talk);
         for(let i = 0; i < otherCastleClusters.length; i++) {
-            // this.log("C");
             // this.log("I heard a friend at cluster "+(otherCastleClusters[i]-1));
             this.clusterStatus[otherCastleClusters[i]-1] = CLUSTER.CONTROLLED;
             let oppositeClusterIndex = this.reflectClusterByIndex(otherCastleClusters[i]-1, this.resourceClusters);
@@ -178,7 +181,6 @@ function castleTurn() {
                         if(this.defensePositions.length > 0) {
                             let defenseTarget = this.defensePositions.shift();
                             this.signal(this.otherCastleLocations, 2);
-                            this.log(this.otherCastleLocations)
                         }
                         return this.buildUnit(SPECS.PREACHER, choice[0], choice[1]);
                     }
