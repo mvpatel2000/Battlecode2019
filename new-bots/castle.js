@@ -173,7 +173,6 @@ function castleTurn() {
         if(this.karbonite >= 30 && this.fuel >= 50 && this.numPreachersSpawned < 3) {
             let choice = this.getSpawnLocation(this.reflectedLocation[0], this.reflectedLocation[1]);
             if(choice != null) {
-                this.log("build preacher "+this.numCastles)
                 this.signal(this.otherCastleLocations, 2);
                 this.numPreachersSpawned++;
                 return this.buildUnit(SPECS.PREACHER, choice[0], choice[1]);
