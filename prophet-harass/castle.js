@@ -146,10 +146,11 @@ function castleTurn() {
 
         let target = [1,0];
         let choice = this.getSpawnLocation(target[0], target[1]);
-
+        this.log(this.clusterStatus);
         for (let i = 0; i < this.clusterStatus.length; i++) {
             if (hostile<=2) { //max of 3 hostile locations
                 if (this.clusterStatus[i] == CLUSTER.HOSTILE) {
+                    this.log("I am hostile: " + i);
                     hostile += 1;
                     harassSignal += (i & 0x1f) << 5*hostile;
                 }
