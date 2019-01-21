@@ -4,9 +4,14 @@ export function Crusader() {
     this.turn = crusaderTurn;
     this.fuelpermove = SPECS.UNITS[this.me.unit].FUEL_PER_MOVE;
 
-    this.enemyCastleLocations = this.prepareTargets();
+    this.enemyCastleLocations = [[0,0], [1,0], [2,0]]; //this.prepareTargets();
     this.targetCtr = 0;
     this.target = this.enemyCastleLocations[this.targetCtr];
+    this.step = 0;
+
+    //determine spawn castle for grid
+    this.spawnPoint = this.getVisibleRobots().filter(i => i.unit < 2 && this.distSquared([i.x, i.y], [this.me.x, this.me.y]) <= 2 && i.signal >= 0)[0];
+    this.target = this.decodeExactLocation(this.spawnPoint.signal);
 }
 
 /**
@@ -43,7 +48,7 @@ function crusaderTurn() {
     }
 
     // non-combat mode
-    while (this.me.x == this.target[0] && this.me.y == this.target[1]) { //reset target if meet it
+   /* while (this.me.x == this.target[0] && this.me.y == this.target[1]) { //reset target if meet it
         if(this.targetCtr < this.enemyCastleLocations.length) {
             this.log("Prepping update: "+this.enemyCastleLocations+" "+this.targetCtr);
             this.targetCtr+=1;
@@ -58,7 +63,7 @@ function crusaderTurn() {
                 this.target = r();
             }
         }
-    }
+    } */
 
     let route = this.path(this.target); //path finding
     if (this.fuel > (SPECS.UNITS[this.me.unit].FUEL_PER_MOVE * this.getSpeed())) {
