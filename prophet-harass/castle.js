@@ -157,7 +157,7 @@ function castleTurn() {
         // assess the threat
         let threats = visibleEnemies.filter(i => i.unit > 2);
         if(threats.length > 0) { // attacking threat
-            if(this.karbonite >= 25 && this.fuel >= 50) {  
+            if(this.karbonite >= 25 && this.fuel >= 50) {
                 let minDist = 7939;
                 let closestThreat = [0,0];
                 for(let k = 0; k < threats.length; k++) {
