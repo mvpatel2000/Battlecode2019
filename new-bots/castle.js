@@ -39,7 +39,7 @@ export function Castle() {
 
     this.defensePositions = this.getDefensePositions([this.me.x, this.me.y]);
 
-    this.numCastles = 1;
+    this.numCastles = 3;
     this.numPreachersSpawned = 0;
 }
 
@@ -75,7 +75,7 @@ function getNextMissionTarget() {
 }
 
 function castleTurn() {
-    this.log(this.step);
+    // this.log(this.step);
     // this.log("Castle "+this.me.id+" at ("+this.me.x+","+this.me.y+") here, on step "+this.step+".  Here's what I know about cluster status:");
     // this.log(this.clusterStatus);
     // BEGIN OPENING CASTLETALK CODE
@@ -113,7 +113,7 @@ function castleTurn() {
             this.otherCastleIDs.push(talkingCastles[i].id);
         }
         this.numCastles = this.otherCastleZoneList.length + 1;
-        
+
         while(this.otherCastleZoneList.length < 2) {
             this.otherCastleZoneList.push(this.myEncodedLocation);
         }
@@ -172,6 +172,7 @@ function castleTurn() {
         if(this.karbonite >= 30 && this.fuel >= 50 && this.numPreachersSpawned < 3) {
             let choice = this.getSpawnLocation(this.reflectedLocation[0], this.reflectedLocation[1]);
             if(choice != null) {
+                this.log("build preacher "+this.numCastles)
                 this.signal(this.otherCastleLocations, 2);
                 this.numPreachersSpawned++;
                 return this.buildUnit(SPECS.PREACHER, choice[0], choice[1]);
