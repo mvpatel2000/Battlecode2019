@@ -15,21 +15,27 @@ export function Prophet() {
     if (sig >> 15) {
         this.log('raider');
         this.harasser = true;
-        this.avoid = [((1 << 5) - 1) & (sig >> 10),
-                        ((1 << 5) - 1) & (sig >> 5),
-                        ((1 << 5) - 1) & sig]
+        this.avoid = [0x1f & (sig >> 10),
+                        0x1f & (sig >> 5),
+                        (0x1f & sig)]
     }
 
     //harassers
     if (this.harasser) {
         this.resourceClusters = this.clusterResourceTiles();
         this.resourceCentroids = this.resourceClusters.map(x => this.centroid(x));
+        this.avoidTup = this.avoid.map(i => this.resourceCentroids[i]);
+        this.mineTup = this.avoidTup.map(i => this.reflectPoint(...i));
         this.avoid.forEach(i => {
-            let my = this.reflectPoint(this.resourceCentroids[i]);
+            this.log(i);
             this.resourceCentroids.splice(i, 1, null);
         });
+
         this.resourceCentroids = this.resourceCentroids.filter(i => i);
-        this.queue = this.resourceCentroids;
+        this.queue = this.resourceCentroids.filter(i =>
+            this.avoidTup.map(q => this.dist(q, i)).reduce((a, b) => a + b)
+            < this.mineTup.map(q => this.dist(q, i)).reduce((a, b) => a + b));
+        this.log(this.queue);
         this.turn = harassTurn;
     }
 
