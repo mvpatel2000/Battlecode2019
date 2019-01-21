@@ -8,7 +8,31 @@ export function Prophet() {
     this.targetCtr = 0;
     this.target = this.enemyCastleLocations[this.targetCtr];
     this.step = 0;
+<<<<<<< HEAD
     this.harrass = 0;
+=======
+
+    let sig = this.spawnPoint.signal;
+    if (sig >> 15) {
+        this.harasser = true;
+        this.avoid = [((1 << 5) - 1) & (sig >> 10),
+                        ((1 << 5) - 1) & (sig >> 5),
+                        ((1 << 5) - 1) & sig]
+    }
+
+    //harassers
+    if (this.harasser) {
+        this.resourceClusters = this.clusterResourceTiles();
+        this.resourceCentroids = this.resourceClusters.map(x => this.centroid(x));
+        this.avoid.forEach(i => {
+            this.resourceCentroids.splice(i, 1, null);
+        });
+        this.resourceCentroids = this.resourceCentroids.filter(i => i);
+        this.queue = this.resourceCentroids;
+        this.turn = harassTurn;
+    }
+
+>>>>>>> 662fa850c5be1123b74f517cda90c2cc95f86a7e
     //determine spawn castle for grid
     this.spawnPoint = this.getVisibleRobots().filter(i => i.unit < 2 && this.distSquared([i.x, i.y], [this.me.x, this.me.y]) <= 2 && i.signal >= 0)[0];
     this.target = this.decodeExactLocation(this.spawnPoint.signal);
@@ -91,4 +115,18 @@ function shouldRun() {
             .map(i => this.distSquared([this.me.x, this.me.y], [i.x, i.y]))
             .map(i => i < 18)
             .reduce((a, b) => a || b, false);
+}
+
+
+function harassTurn() {
+    let attackbot = this.getRobotToAttack();
+    if (attackbot && !shouldRun.call(this)) {
+        if (this.fuel > SPECS.UNITS[this.me.unit].ATTACK_FUEL_COST) {
+            return this.attack(attackbot.x - this.me.x, attackbot.y - this.me.y);
+        }
+    }
+    if (this.dist(this.queue[0], [this.me.x, this.me.y]) < 3) {
+        this.queue.push(this.queue.shift());
+    }
+    return this.go(this.queue[0]);
 }
