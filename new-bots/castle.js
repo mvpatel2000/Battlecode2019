@@ -38,6 +38,9 @@ export function Castle() {
     this.homeSaturated = false;
 
     this.defensePositions = this.getDefensePositions([this.me.x, this.me.y]);
+
+    this.numCastles = 1;
+    this.numPreachersSpawned = 0;
 }
 
 /**
@@ -72,6 +75,7 @@ function getNextMissionTarget() {
 }
 
 function castleTurn() {
+    this.log(this.step);
     // this.log("Castle "+this.me.id+" at ("+this.me.x+","+this.me.y+") here, on step "+this.step+".  Here's what I know about cluster status:");
     // this.log(this.clusterStatus);
     // BEGIN OPENING CASTLETALK CODE
@@ -108,6 +112,8 @@ function castleTurn() {
             this.otherCastleZoneList.push(talkingCastles[i].castle_talk);
             this.otherCastleIDs.push(talkingCastles[i].id);
         }
+        this.numCastles = this.otherCastleZoneList.length + 1;
+        
         while(this.otherCastleZoneList.length < 2) {
             this.otherCastleZoneList.push(this.myEncodedLocation);
         }
@@ -154,6 +160,21 @@ function castleTurn() {
             if(0 < talk && talk < 32) { // means it's a mission index
                 this.clusterStatus[talk-1] = CLUSTER.CONTROLLED;
                 this.log("Ah, I see that we are sending a mission to cluster "+(talk-1));
+            }
+            if(talk == 32) { // means harass is being sent out
+                this.sendHarasser = false;
+            }
+        }
+    }
+
+    // MAGE RUSH CODE
+    if(this.numCastles == 1) {
+        if(this.karbonite >= 30 && this.fuel >= 50 && this.numPreachersSpawned < 3) {
+            let choice = this.getSpawnLocation(this.reflectedLocation[0], this.reflectedLocation[1]);
+            if(choice != null) {
+                this.signal(this.otherCastleLocations, 2);
+                this.numPreachersSpawned++;
+                return this.buildUnit(SPECS.PREACHER, choice[0], choice[1]);
             }
         }
     }
@@ -253,13 +274,24 @@ function castleTurn() {
     }
 
     // PUMP PROPHETS CODE
-    if (this.fuel >= 200 && this.karbonite >= 200 && this.defensePositions.length > 0 && targetClusterIndex == -1) {
+    let coinflip = this.rand(2);
+    if (this.fuel >= 200 && this.karbonite >= 200 && this.defensePositions.length > 0 && targetClusterIndex == -1
+        && ((this.fuel >= 300 && this.karbonite >= 300) || coinflip == 1)) {
         let target = [1,0];
         let choice = this.getSpawnLocation(target[0], target[1]);
         if (choice) {
             let defenseTarget = this.defensePositions.shift();
             this.signal(this.encodeExactLocation(defenseTarget), 2);
-            return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
+            if(this.me.turn < 500) {
+                return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
+            }
+            else {
+                let decision = this.rand(4);
+                if(decision < 2)
+                    return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
+                else
+                    return this.buildUnit(SPECS.CRUSADER, choice[0], choice[1]);
+            }
         }
     }
 
