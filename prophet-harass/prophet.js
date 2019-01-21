@@ -11,7 +11,9 @@ export function Prophet() {
     this.spawnPoint = this.getVisibleRobots().filter(i => i.unit < 2 && this.distSquared([i.x, i.y], [this.me.x, this.me.y]) <= 2 && i.signal >= 0)[0];
 
     let sig = this.spawnPoint.signal;
+    this.log((sig << 0).toString(2));
     if (sig >> 15) {
+        this.log('raider');
         this.harasser = true;
         this.avoid = [((1 << 5) - 1) & (sig >> 10),
                         ((1 << 5) - 1) & (sig >> 5),
@@ -115,6 +117,7 @@ function shouldRun() {
 
 
 function harassTurn() {
+    this.log('harassing');
     let attackbot = this.getRobotToAttack();
     if (attackbot && !shouldRun.call(this)) {
         if (this.fuel > SPECS.UNITS[this.me.unit].ATTACK_FUEL_COST) {
