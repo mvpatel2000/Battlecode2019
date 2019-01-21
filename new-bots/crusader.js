@@ -60,5 +60,11 @@ function crusaderTurn() {
         }
     }
 
-    return this.go(this.target);
+    let route = this.path(this.target); //path finding
+    if (this.fuel > (SPECS.UNITS[this.me.unit].FUEL_PER_MOVE * this.getSpeed())) {
+        if (route.length > 0) { //A* towards target
+            return this.move(...route[0]);
+        }
+    }
+    return;
 }

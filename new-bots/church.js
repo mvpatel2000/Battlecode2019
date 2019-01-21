@@ -25,7 +25,7 @@ function churchTurn() {
     let visibleEnemies = this.getVisibleRobots().filter(i => i.team != this.me.team);
     if(visibleEnemies.length > 0) { // rush defense
         // assess the threat
-        let threats = visibleEnemies.filter(i => i.unit > 2);
+        let threats = visibleEnemies;
         if(threats.length > 0) { // attacking threat
             if(this.karbonite >= 25 && this.fuel >= 50) {
                 let minDist = 7939;
