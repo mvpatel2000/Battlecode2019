@@ -140,23 +140,28 @@ function castleTurn() {
     }
     // END OPENING CASTLETALK CODE
 
-    if (this.me.turn > 5 && this.sendHarasser==1 && this.fuel > 50 && this.karbonite > 25 && this.clusterStatus.length <=32) {
+    if (this.me.turn > 5 && this.sendHarasser == 1
+            && this.fuel > 50 && this.karbonite > 25
+            && this.clusterStatus.length <= 32) {
         let harassSignal = 1<<15;
         let hostile = 0;
 
         let target = [1,0];
         let choice = this.getSpawnLocation(target[0], target[1]);
-        this.log(this.clusterStatus);
         for (let i = 0; i < this.clusterStatus.length; i++) {
-            if (hostile<=2) { //max of 3 hostile locations
+            if (hostile < 3) { //max of 3 hostile locations
                 if (this.clusterStatus[i] == CLUSTER.HOSTILE) {
                     this.log("I am hostile: " + i);
+                    harassSignal += (i & 0x1f) << 5 * hostile;
                     hostile += 1;
-                    harassSignal += (i & 0x1f) << 5*hostile;
                 }
             }
         }
-        this.log("I am a castle, i am sending a harasser prophet");
+        while (hostile < 3) {
+            harassSignal += 0x1f << 5 * hostile;
+            hostile += 1;
+        }
+        this.log("I am a castle, I am sending a harasser prophet");
         this.signal(harassSignal, 2);
         this.sendHarasser = 0;
         return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);

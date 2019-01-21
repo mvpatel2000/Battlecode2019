@@ -9,11 +9,8 @@ export function Prophet() {
     this.target = this.enemyCastleLocations[this.targetCtr];
     this.step = 0;
     this.spawnPoint = this.getVisibleRobots().filter(i => i.unit < 2 && this.distSquared([i.x, i.y], [this.me.x, this.me.y]) <= 2 && i.signal >= 0)[0];
-
     let sig = this.spawnPoint.signal;
-    this.log((sig << 0).toString(2));
     if (sig >> 15) {
-        this.log('raider');
         this.harasser = true;
         this.avoid = [0x1f & (sig >> 10),
                         0x1f & (sig >> 5),
@@ -24,18 +21,18 @@ export function Prophet() {
     if (this.harasser) {
         this.resourceClusters = this.clusterResourceTiles();
         this.resourceCentroids = this.resourceClusters.map(x => this.centroid(x));
-        this.avoidTup = this.avoid.map(i => this.resourceCentroids[i]);
+        this.avoidTup = this.avoid.map(i => this.resourceCentroids[i]).filter(i => i);
         this.mineTup = this.avoidTup.map(i => this.reflectPoint(...i));
         this.avoid.forEach(i => {
-            this.log(i);
             this.resourceCentroids.splice(i, 1, null);
         });
 
         this.resourceCentroids = this.resourceCentroids.filter(i => i);
         this.queue = this.resourceCentroids.filter(i =>
             this.avoidTup.map(q => this.dist(q, i)).reduce((a, b) => a + b)
-            < this.mineTup.map(q => this.dist(q, i)).reduce((a, b) => a + b));
-        this.log(this.queue);
+            <= this.mineTup.map(q => this.dist(q, i)).reduce((a, b) => a + b) + 8);
+        const d = i => this.distSquared([this.me.x, this.me.y], i);
+        this.queue.sort((a, b) => d(a) - d(b));
         this.turn = harassTurn;
     }
 
@@ -123,6 +120,10 @@ function shouldRun() {
 
 
 function harassTurn() {
+    if (!this.queue.length) {
+        this.harasser = false;
+        this.turn = prophetTurn;
+    }
     let attackbot = this.getRobotToAttack();
     if (attackbot && !shouldRun.call(this)) {
         if (this.fuel > SPECS.UNITS[this.me.unit].ATTACK_FUEL_COST) {
@@ -132,5 +133,10 @@ function harassTurn() {
     if (this.dist(this.queue[0], [this.me.x, this.me.y]) < 3) {
         this.queue.push(this.queue.shift());
     }
-    return this.go(this.queue[0]);
+    let route = this.harasspath(this.queue[0], this.avoidTup);
+    if (route.length) {
+        return this.move(...route[0]);
+    } else {
+        this.queue.push(this.queue.shift());
+    }
 }
