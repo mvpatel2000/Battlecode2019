@@ -25,6 +25,7 @@ export function Castle() {
     // 3: fortified and ours; 4: enemy; can add other codes if necessary
 
     // this.log(this.resourceClusters);
+    this.sendHarasser = 1;
 
     // identify my cluster
     this.myClusterIndex = this.findNearestClusterIndex([this.me.x, this.me.y], this.resourceClusters);
@@ -139,6 +140,25 @@ function castleTurn() {
     }
     // END OPENING CASTLETALK CODE
 
+    if(this.sendHarasser==1 && this.fuel > 50 && this.karbonite > 25 && clusterStatus.length <=32) {
+        int harassSignal = 1<<15;
+        int hostile = 0;
+
+        let target = [1,0];
+        let choice = this.getSpawnLocation(target[0], target[1]);
+
+        for(let i = 0; i < clusterStatus.length; i++) {
+            if(hostile<=2) { //max of 3 hostile locations
+                if(clusterStatus[i] == CLUSTER.HOSTILE) {
+                    hostile += 1;
+                    harassSignal += (i & 0x1f) << 5*hostile;
+                }
+            }
+        }
+        this.signal(harassSignal, 2);
+        this.sendHarasser = 0;
+        return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
+    }
     // LISTENING CODE
     if(this.step > 4 && talkingCastles.length > 0) {
         for(let i = 0; i < talkingCastles.length; i++) {

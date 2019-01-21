@@ -8,7 +8,9 @@ export function Prophet() {
     this.targetCtr = 0;
     this.target = this.enemyCastleLocations[this.targetCtr];
     this.step = 0;
-    this.spawnPoint = this.getVisibleRobots().filter(i => i.unit < 2 && this.distSquared([i.x, i.y], [this.me.x, this.me.y]) <= 2 && i.signal >= 0)[0];
+<<<<<<< HEAD
+    this.harrass = 0;
+=======
 
     let sig = this.spawnPoint.signal;
     this.log((sig << 0).toString(2));
@@ -32,7 +34,9 @@ export function Prophet() {
         this.turn = harassTurn;
     }
 
+>>>>>>> 662fa850c5be1123b74f517cda90c2cc95f86a7e
     //determine spawn castle for grid
+    this.spawnPoint = this.getVisibleRobots().filter(i => i.unit < 2 && this.distSquared([i.x, i.y], [this.me.x, this.me.y]) <= 2 && i.signal >= 0)[0];
     this.target = this.decodeExactLocation(this.spawnPoint.signal);
 }
 
