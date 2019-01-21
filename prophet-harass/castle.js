@@ -140,7 +140,7 @@ function castleTurn() {
     }
     // END OPENING CASTLETALK CODE
 
-    if (this.sendHarasser==1 && this.fuel > 50 && this.karbonite > 25 && this.clusterStatus.length <=32) {
+    if (this.me.turn > 5 && this.sendHarasser==1 && this.fuel > 50 && this.karbonite > 25 && this.clusterStatus.length <=32) {
         let harassSignal = 1<<15;
         let hostile = 0;
 

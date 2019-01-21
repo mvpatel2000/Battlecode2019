@@ -39,7 +39,7 @@ export function Castle() {
 
     this.defensePositions = this.getDefensePositions([this.me.x, this.me.y]);
 
-    this.numCastles = 1;
+    this.numCastles = 3;
     this.numPreachersSpawned = 0;
     this.sendHarasser = true;
 }
@@ -114,7 +114,7 @@ function castleTurn() {
             this.otherCastleIDs.push(talkingCastles[i].id);
         }
         this.numCastles = this.otherCastleZoneList.length + 1;
-        
+
         while(this.otherCastleZoneList.length < 2) {
             this.otherCastleZoneList.push(this.myEncodedLocation);
         }
@@ -173,6 +173,7 @@ function castleTurn() {
         if(this.karbonite >= 30 && this.fuel >= 50 && this.numPreachersSpawned < 3) {
             let choice = this.getSpawnLocation(this.reflectedLocation[0], this.reflectedLocation[1]);
             if(choice != null) {
+                this.log("build preacher "+this.numCastles)
                 this.signal(this.otherCastleLocations, 2);
                 this.numPreachersSpawned++;
                 return this.buildUnit(SPECS.PREACHER, choice[0], choice[1]);
