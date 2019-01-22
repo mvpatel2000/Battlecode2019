@@ -29,8 +29,12 @@ export function Unit() {
         this.queue = this.resourceCentroids.filter(i =>
             this.avoidTup.map(q => this.dist(q, i)).reduce((a, b) => a + b)
             <= this.mineTup.map(q => this.dist(q, i)).reduce((a, b) => a + b) + 8);
+        this.queue = this.queue.filter(i => this.avoidTup.every(l => this.dist(l, i) > 10));
         const d = i => this.distSquared([this.me.x, this.me.y], i);
-        this.queue.sort((a, b) => this.rand(3) - 1);
+        let map = {};
+        this.queue.forEach(i => {map[i] = this.rand(3) - 1});
+        this.queue.sort((a, b) => map[a] - map[b]);
+        this.log(this.queue);
         this.harassTurn = harassTurn;
     }
 
