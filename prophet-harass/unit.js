@@ -30,7 +30,7 @@ export function Unit() {
             this.avoidTup.map(q => this.dist(q, i)).reduce((a, b) => a + b)
             <= this.mineTup.map(q => this.dist(q, i)).reduce((a, b) => a + b) + 8);
         const d = i => this.distSquared([this.me.x, this.me.y], i);
-        this.queue.sort((a, b) => d(a) - d(b));
+        this.queue.sort((a, b) => this.rand(3) - 1);
         this.harassTurn = harassTurn;
     }
 
@@ -44,8 +44,9 @@ export function Unit() {
         if (!this.queue.length) {
             return;
         }
-        if (this.dist(this.queue[0], [this.me.x, this.me.y]) < 3) {
-            this.queue.push(this.queue.shift());
+        if (this.dist(this.queue[0], [this.me.x, this.me.y]) < 2) {
+            return;
+            //this.queue.push(this.queue.shift());
         }
         let route = this.harasspath(this.queue[0], this.avoidTup);
         if (route.length) {

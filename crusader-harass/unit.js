@@ -30,7 +30,7 @@ export function Unit() {
             this.avoidTup.map(q => this.dist(q, i)).reduce((a, b) => a + b)
             <= this.mineTup.map(q => this.dist(q, i)).reduce((a, b) => a + b) + 8);
         const d = i => this.distSquared([this.me.x, this.me.y], i);
-        this.queue.sort((a, b) => d(a) - d(b));
+        this.queue.sort((a, b) => this.rand(3) - 1);
         this.harassTurn = harassTurn;
     }
 
