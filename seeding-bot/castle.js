@@ -38,10 +38,6 @@ export function Castle() {
     this.homeSaturated = false;
 
     this.defensePositions = this.getDefensePositions([this.me.x, this.me.y]);
-
-    this.numCastles = 3;
-    this.numPreachersSpawned = 0;
-    this.sendHarasser = true;
 }
 
 /**
@@ -159,7 +155,7 @@ function castleTurn() {
             //this.log("I hear "+talk);
             if(0 < talk && talk < 32) { // means it's a mission index
                 this.clusterStatus[talk-1] = CLUSTER.CONTROLLED;
-                // this.log("Ah, I see that we are sending a mission to cluster "+(talk-1));
+                this.log("Ah, I see that we are sending a mission to cluster "+(talk-1));
             }
             if(talk == 32) { // means harass is being sent out
                 this.sendHarasser = false;
@@ -254,7 +250,7 @@ function castleTurn() {
         if (choice != null) {
             this.clusterStatus[targetClusterIndex] = CLUSTER.CONTROLLED;
             this.castleTalk(targetClusterIndex+1);
-            // this.log("I'm sending a mission to cluster "+targetClusterIndex+" and broadcasting it.");
+            this.log("I'm sending a mission to cluster "+targetClusterIndex+" and broadcasting it.");
             //this.log("Spawning pilgrim in direction " + choice + " towards " + target);
             this.signal(this.encodeExactLocation(target), 2);
             return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);

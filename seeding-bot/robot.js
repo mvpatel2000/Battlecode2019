@@ -6,7 +6,6 @@ import {Church} from './church';
 import {Preacher} from './preacher';
 import {Prophet} from './prophet';
 import {Algorithms} from './algorithms';
-import {Unit} from './unit';
 
 'use strict';
 
@@ -15,7 +14,6 @@ class MyRobot extends BCAbstractRobot {
         for (let i in Algorithms) {
             this[i] = Algorithms[i];
         }
-        Unit.call(this);
         if (this.me.unit === SPECS.CRUSADER) {
             Crusader.call(this);
         } else if (this.me.unit === SPECS.CASTLE) {

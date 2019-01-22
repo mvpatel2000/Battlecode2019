@@ -25,6 +25,7 @@ export function Castle() {
     // 3: fortified and ours; 4: enemy; can add other codes if necessary
 
     // this.log(this.resourceClusters);
+    this.sendHarasser = 1;
 
     // identify my cluster
     this.myClusterIndex = this.findNearestClusterIndex([this.me.x, this.me.y], this.resourceClusters);
@@ -38,10 +39,6 @@ export function Castle() {
     this.homeSaturated = false;
 
     this.defensePositions = this.getDefensePositions([this.me.x, this.me.y]);
-
-    this.numCastles = 3;
-    this.numPreachersSpawned = 0;
-    this.sendHarasser = true;
 }
 
 /**
@@ -76,7 +73,6 @@ function getNextMissionTarget() {
 }
 
 function castleTurn() {
-    // this.log(this.step);
     // this.log("Castle "+this.me.id+" at ("+this.me.x+","+this.me.y+") here, on step "+this.step+".  Here's what I know about cluster status:");
     // this.log(this.clusterStatus);
     // BEGIN OPENING CASTLETALK CODE
@@ -102,22 +98,13 @@ function castleTurn() {
         this.castleTalk(this.myEncodedLocation);
 
         // listen to others locations, add to list
-        for(let i=0; i<talkingCastles.length; i++) {
-            this.otherCastleZoneList.push(talkingCastles[i].castle_talk);
-            this.otherCastleIDs.push(talkingCastles[i].id);
-        }
+        this.otherCastleZoneList.concat(talkingCastles.map(i => i.castle_talk));
+        this.otherCastleIDs.concat(talkingCastles.map(i => i.id));
     }
     else if (this.step == 2) {
         // listen to others locations, add to list
-        for(let i=0; i<talkingCastles.length; i++) {
-            this.otherCastleZoneList.push(talkingCastles[i].castle_talk);
-            this.otherCastleIDs.push(talkingCastles[i].id);
-        }
-
-        while(this.otherCastleZoneList.length < 2) {
-            this.otherCastleZoneList.push(this.myEncodedLocation);
-        }
-        this.otherCastleLocations = this.otherCastleZoneList[0] + (2**8)*this.otherCastleZoneList[1];
+        this.otherCastleZoneList.concat(talkingCastles.map(i => i.castle_talk));
+        this.otherCastleIDs.concat(talkingCastles.map(i => i.id));
     }
     else if (this.step == 3) {
         // castletalk my mission
@@ -137,7 +124,8 @@ function castleTurn() {
         // listen to others clusters, mark their status
         let otherCastleClusters = talkingCastles.map(i => i.castle_talk);
         for(let i = 0; i < otherCastleClusters.length; i++) {
-            // this.log("I heard a friend at cluster "+(otherCastleClusters[i]-1));
+            this.log("C");
+            this.log("I heard a friend at cluster "+(otherCastleClusters[i]-1));
             this.clusterStatus[otherCastleClusters[i]-1] = CLUSTER.CONTROLLED;
             let oppositeClusterIndex = this.reflectClusterByIndex(otherCastleClusters[i]-1, this.resourceClusters);
             this.clusterStatus[oppositeClusterIndex] = CLUSTER.HOSTILE;
@@ -152,6 +140,32 @@ function castleTurn() {
     }
     // END OPENING CASTLETALK CODE
 
+    if (this.me.turn > 5 && this.sendHarasser == 1
+            && this.fuel > 50 && this.karbonite > 25
+            && this.clusterStatus.length <= 32) {
+        let harassSignal = 1<<15;
+        let hostile = 0;
+
+        let target = [1,0];
+        let choice = this.getSpawnLocation(target[0], target[1]);
+        for (let i = 0; i < this.clusterStatus.length; i++) {
+            if (hostile < 3) { //max of 3 hostile locations
+                if (this.clusterStatus[i] == CLUSTER.HOSTILE) {
+                    this.log("I am hostile: " + i);
+                    harassSignal += (i & 0x1f) << 5 * hostile;
+                    hostile += 1;
+                }
+            }
+        }
+        while (hostile < 3) {
+            harassSignal += 0x1f << 5 * hostile;
+            hostile += 1;
+        }
+        this.log("I am a castle, I am sending a harasser crusader");
+        this.signal(harassSignal, 2);
+        this.sendHarasser = 0;
+        return this.buildUnit(SPECS.CRUSADER, choice[0], choice[1]);
+    }
     // LISTENING CODE
     if(this.step > 4 && talkingCastles.length > 0) {
         for(let i = 0; i < talkingCastles.length; i++) {
@@ -159,10 +173,7 @@ function castleTurn() {
             //this.log("I hear "+talk);
             if(0 < talk && talk < 32) { // means it's a mission index
                 this.clusterStatus[talk-1] = CLUSTER.CONTROLLED;
-                // this.log("Ah, I see that we are sending a mission to cluster "+(talk-1));
-            }
-            if(talk == 32) { // means harass is being sent out
-                this.sendHarasser = false;
+                this.log("Ah, I see that we are sending a mission to cluster "+(talk-1));
             }
         }
     }
@@ -172,9 +183,8 @@ function castleTurn() {
     if(visibleEnemies.length > 0) { // rush defense
         // assess the threat
         let threats = visibleEnemies.filter(i => i.unit > 2);
-        let preacherThreats = threats.filter(i => i.unit == 5);
         if(threats.length > 0) { // attacking threat
-            if(this.karbonite >= 25 && this.fuel >= 50) {  
+            if(this.karbonite >= 25 && this.fuel >= 50) {
                 let minDist = 7939;
                 let closestThreat = [0,0];
                 for(let k = 0; k < threats.length; k++) {
@@ -184,25 +194,13 @@ function castleTurn() {
                         closestThreat = [threats[k].x, threats[k].y];
                     }
                 }
-                if(preacherThreats.length > 0 && this.karbonite >= 30) {
-                    let choice = this.getSpawnLocation(closestThreat[0], closestThreat[1]);
-                    if(choice != null) {
-                        if(this.defensePositions.length > 0) {
-                            let defenseTarget = this.defensePositions.shift();
-                            this.signal(this.otherCastleLocations, 2);
-                        }
-                        return this.buildUnit(SPECS.PREACHER, choice[0], choice[1]);
+                let choice = this.getSpawnLocation(-1*closestThreat[0], -1*closestThreat[1]);
+                if(choice != null) {
+                    if(this.defensePositions.length > 0) {
+                        let defenseTarget = this.defensePositions.shift();
+                        this.signal(this.encodeExactLocation(defenseTarget), 2);
                     }
-                }
-                else {
-                    let choice = this.getSpawnLocation(-1*closestThreat[0], -1*closestThreat[1]);
-                    if(choice != null) {
-                        if(this.defensePositions.length > 0) {
-                            let defenseTarget = this.defensePositions.shift();
-                            this.signal(this.encodeExactLocation(defenseTarget), 2);
-                        }
-                        return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
-                    }
+                    return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
                 }
             }
         }
@@ -254,7 +252,7 @@ function castleTurn() {
         if (choice != null) {
             this.clusterStatus[targetClusterIndex] = CLUSTER.CONTROLLED;
             this.castleTalk(targetClusterIndex+1);
-            // this.log("I'm sending a mission to cluster "+targetClusterIndex+" and broadcasting it.");
+            this.log("I'm sending a mission to cluster "+targetClusterIndex+" and broadcasting it.");
             //this.log("Spawning pilgrim in direction " + choice + " towards " + target);
             this.signal(this.encodeExactLocation(target), 2);
             return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
@@ -262,24 +260,13 @@ function castleTurn() {
     }
 
     // PUMP PROPHETS CODE
-    let coinflip = this.rand(2);
-    if (this.fuel >= 200 && this.karbonite >= 200 && this.defensePositions.length > 0 && targetClusterIndex == -1
-        && ((this.fuel >= 300 && this.karbonite >= 300) || coinflip == 1)) {
+    if (this.fuel >= 200 && this.karbonite >= 200 && this.defensePositions.length > 0 && targetClusterIndex == -1) {
         let target = [1,0];
         let choice = this.getSpawnLocation(target[0], target[1]);
         if (choice) {
             let defenseTarget = this.defensePositions.shift();
             this.signal(this.encodeExactLocation(defenseTarget), 2);
-            if(this.me.turn < 500) {
-                return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
-            }
-            else {
-                let decision = this.rand(4);
-                if(decision < 2)
-                    return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
-                else
-                    return this.buildUnit(SPECS.CRUSADER, choice[0], choice[1]);
-            }
+            return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
         }
     }
 

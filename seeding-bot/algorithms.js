@@ -428,7 +428,7 @@ export const Algorithms = (function() {
                         //this.log((this.getVisibleRobotMap()[y][x] <= 0))
                         //this.log((!this.karbonite_map[y][x] && !this.fuel_map[y][x]))
                     }
-
+                    
                     delta[0] = delta[0] + dirs[0];
                     delta[1] = delta[1] + dirs[1];
                     if(delta[0] == max || delta[0] == -max)
@@ -829,76 +829,6 @@ export const Algorithms = (function() {
                             || occupied[neighbor[1]][neighbor[0]] > 0
                             || openHash[hash(neighbor)]
                             || g[neighbor] != undefined) //filters invalid moves or already taken moves
-                        continue;
-                    queue.push(neighbor); //push
-                    openHash[hash(neighbor)] = true;
-                    prev[neighbor] = current; //sets current path for backtrace
-                    g[neighbor] = g[current] + 1;
-                    f[neighbor] = g[neighbor] + h(neighbor);
-                }
-            }
-            return [];
-        },
-
-        /**
-         * Takes in destination [x, y].
-         * Return a list of [dx, dy] instructions to get from current location to destination.
-         */
-        harasspath: function(dest, avoid) {
-            let start = [this.me.x, this.me.y];
-            let map = this.map;
-            let occupied = this.getVisibleRobotMap();
-            if (dest[1] >= map.length
-                || dest[0] >= map[0].length
-                || dest[1] < 0
-                || dest[0] < 0
-                || !map[dest[1]][dest[0]]
-                || occupied[dest[1]][dest[0]] > 0) {
-                return [];
-            }
-            let openHash = {};
-            let done = new PriorityQueue((a, b) => h(a) < h(b));
-            let prev = {}; //used to reconstruct map
-            let h = x => (Math.abs(dest[0] - x[0]) + Math.abs(dest[1] - x[1])) / getSpeed.call(this); //~steps away from destination
-            let hash = p => p[0] * 67 * 73 + p[1];
-            let g = {}; //distance from origin in terms of steps taken
-            g[start] = 0;
-            let f = {}; //g + heuristic (dist to destination)
-            f[start] = h(start);
-
-            const queue = new PriorityQueue((a, b) => f[a] < f[b]);
-            queue.push(start);
-            let i = 128;
-            while (!queue.isEmpty()) {
-                let current = queue.pop(); //pop from priority queue instead of magic symbols
-                done.push(current)
-                if (i-- < 0 || arrEq(current, dest)) { //found destination
-                    if (i < 0)
-                        current = done.pop();
-                    let totalPath = [current];
-                    while (current in prev) { //reconstruct path
-                        current = prev[current];
-                        totalPath.push(current);
-                    }
-                    let path = [];
-                    for (let i = 1; i < totalPath.length; i++) { //reformat path
-                        let [a, b] = totalPath[i];
-                        let [c, d] = totalPath[i - 1];
-                        path.push([c - a, d - b]);
-                    }
-                    path.reverse();
-                    return path;
-                }
-                for (let neighbor of absoluteMoves(getSpeed.call(this), current[0], current[1])) { //loops over all moves
-                    if (neighbor[1] >= map.length
-                            || neighbor[0] >= map[0].length
-                            || neighbor[1] < 0
-                            || neighbor[0] < 0
-                            || !map[neighbor[1]][neighbor[0]]
-                            || occupied[neighbor[1]][neighbor[0]] > 0
-                            || openHash[hash(neighbor)]
-                            || g[neighbor] != undefined //filters invalid moves or already taken moves
-                            || avoid.map(i => this.distSquared(i, neighbor) <= 100).reduce((a, b) => a || b))
                         continue;
                     queue.push(neighbor); //push
                     openHash[hash(neighbor)] = true;
