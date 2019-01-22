@@ -45,8 +45,11 @@ export function Unit() {
             return;
         }
         if (this.dist(this.queue[0], [this.me.x, this.me.y]) < 2) {
-            return;
-            //this.queue.push(this.queue.shift());
+            if (this.fuel_map[this.me.y][this.me.x] || this.karbonite_map[this.me.y][this.me.x]) {
+               return this.move(...this.randomMove());
+            } else {
+                return;
+            }
         }
         let route = this.harasspath(this.queue[0], this.avoidTup);
         if (route.length) {
