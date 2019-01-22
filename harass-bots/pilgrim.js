@@ -46,7 +46,7 @@ function pilgrimTurn() {
             if(choice != null) {
                 this.signal(this.encodeExactLocation(this.mineLocation), 2);
                 this.baseLocation = [this.me.x + choice[0], this.me.y + choice[1]];
-                this.log("Pilgrim "+this.me.id+" starting a mission church at "+this.baseLocation);
+                // this.log("Pilgrim "+this.me.id+" starting a mission church at "+this.baseLocation);
                 return this.buildUnit(SPECS.CHURCH, choice[0], choice[1]);
             }
         }

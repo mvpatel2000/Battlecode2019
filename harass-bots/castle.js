@@ -39,6 +39,10 @@ export function Castle() {
     this.homeSaturated = false;
 
     this.defensePositions = this.getDefensePositions([this.me.x, this.me.y]);
+
+    this.numCastles = 3;
+    this.numPreachersSpawned = 0;
+    this.sendHarasser = true;
 }
 
 /**
