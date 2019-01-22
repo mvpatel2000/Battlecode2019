@@ -27,7 +27,6 @@ class MyRobot extends BCAbstractRobot {
         } else if (this.me.unit === SPECS.PROPHET) {
             Prophet.call(this);
         }
-        this.turn();
+        return this.turn();
     }
 }
-
