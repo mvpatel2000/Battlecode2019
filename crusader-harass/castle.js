@@ -161,10 +161,10 @@ function castleTurn() {
             harassSignal += 0x1f << 5 * hostile;
             hostile += 1;
         }
-        this.log("I am a castle, I am sending a harasser prophet");
+        this.log("I am a castle, I am sending a harasser crusader");
         this.signal(harassSignal, 2);
         this.sendHarasser = 0;
-        return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
+        return this.buildUnit(SPECS.CRUSADER, choice[0], choice[1]);
     }
     // LISTENING CODE
     if(this.step > 4 && talkingCastles.length > 0) {
