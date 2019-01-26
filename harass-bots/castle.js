@@ -159,7 +159,9 @@ function castleTurn() {
         let target = [1,0];
         let optimalCluster = -1;
         let choice = this.getSpawnLocation(target[0], target[1]);
-        this.log("I am considering harassing...");
+
+        //this.log("I am considering harassing...");
+
         //get enemy castle and friendly castle [x,y] locations
         let enemyCastleLocations = [];
         let friendlyCastleLocations = [];
@@ -169,8 +171,10 @@ function castleTurn() {
             enemyCastleLocations.push(enemyloc);
             friendlyCastleLocations.push(myloc);
         }
-        this.log("Castle Zone List: " + this.otherCastleZoneList)
-        this.log("The total number of castles on my team is " + friendlyCastleLocations.length);
+
+        //this.log("Castle Zone List: " + this.otherCastleZoneList)
+        //this.log("The total number of castles on my team is " + friendlyCastleLocations.length);
+
         //filter out all all of my clusters, keep enemy ones
         let queue = this.resourceCentroids.filter(i =>
             enemyCastleLocations.map(q => this.distSquared(q, i)).reduce((a, b) => a + b)
@@ -230,8 +234,10 @@ function castleTurn() {
         }
 
         if(optimalCluster == -1) {
+
             //i am not the closest castle to the nearest enemy cluster
-            this.log("I have decided not to harass :(");
+            //this.log("I have decided not to harass :(");
+
             this.sendHarasser = 0;
             return;
         } else {
@@ -242,7 +248,7 @@ function castleTurn() {
             if(hostile==2) {
                 this.log("I am a castle at: " + this.me.x + " " + this.me.y + " and I am the closest to the enemy cluster: " + this.resourceCentroids[optimalCluster]);
                 harassSignal += (optimalCluster & 0x1f) << 5 * hostile;
-                this.log("I am a castle, I am sending a harasser prophet");
+                this.log("I am a castle, I am sending a harasser prophet to this location.");
                 this.signal(harassSignal, 2);
                 this.sendHarasser = 0;
                 return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
