@@ -123,16 +123,19 @@ export const Algorithms = (function() {
          * Returns 1 for a location with enemy robots. Returns -1 for location with teammate.
          */
         getDamageMap: function(rbotmap, len, len0, j, i) {
-            if(j>=len || j<0 || i>=len0 || i<0) {
+            if (j >= len || j < 0 || i >= len0 || i < 0) {
                 return 0;
             } else {
                 let id = rbotmap[j][i];
-                if(id>0) {
+                if (id > 0) {
                     if(this.getRobot(id).team == this.me.team) {
-                        return -1;
+                        return -10;
                     } else {
-                        return 1;
+                        return 10;
                     }
+                } else if (id < 0) {
+                    //slight positive for squares outside of vision
+                    return 1;
                 } else {
                     return 0;
                 }
@@ -161,17 +164,17 @@ export const Algorithms = (function() {
              let minx = Math.max(0, this.me.x-rad);
              let maxx = Math.min(rbotmaplen0-1, this.me.x+rad);
 
-             for (let j=miny; j<=maxy; j++) {
-                 for (let i=minx; i<=maxx; i++) {
-                     let rely = this.me.y-j;
-                     let relx = this.me.x-i;
-                     if ((rely*rely + relx*relx) <= rad2) {
+             for (let j = miny; j <= maxy; j++) {
+                 for (let i = minx; i <= maxx; i++) {
+                     let rely = this.me.y - j;
+                     let relx = this.me.x - i;
+                     if ((rely * rely + relx * relx) <= rad2) {
                          if((i == this.me.x && j == this.me.y) || rbotmap[j][i]==-1) {
                              continue;
                          }
                          let hpdamage = 0;
-                         for (let k=j-1; k<=j+1; k++) {
-                             for (let l=i-1; l<=i+1; l++) {
+                         for (let k = j - 1; k <= j + 1; k++) {
+                             for (let l = i - 1; l <= i + 1; l++) {
                                  hpdamage += this.getDamageMap(rbotmap, rbotmaplen, rbotmaplen0, k, l);
                              }
                          }
@@ -428,7 +431,7 @@ export const Algorithms = (function() {
                         //this.log((this.getVisibleRobotMap()[y][x] <= 0))
                         //this.log((!this.karbonite_map[y][x] && !this.fuel_map[y][x]))
                     }
-                    
+
                     delta[0] = delta[0] + dirs[0];
                     delta[1] = delta[1] + dirs[1];
                     if(delta[0] == max || delta[0] == -max)
