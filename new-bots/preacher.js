@@ -52,7 +52,7 @@ function preacherTurn() {
         }
     }
 
-    if(this.moves > 0 && this.defend == true)
+    if(this.defend == true)
         return;
 
     let route = this.path(this.target); //path finding

@@ -35,6 +35,13 @@ export function Castle() {
     this.clusterStatus[oppositeClusterIndex] = CLUSTER.HOSTILE;
 
     this.nearbyMines = this.resourceClusters[this.myClusterIndex];
+    let karbMines = this.nearbyMines.filter(i => this.karbonite_map[i[1]][i[0]] == true);
+    let fuelMines = this.nearbyMines.filter(i => this.fuel_map[i[1]][i[0]] == true);
+    this.nearbyMines = karbMines;
+    for(let fuelctr = 0; fuelctr < fuelMines.length; fuelctr++)
+        this.nearbyMines.push(fuelMines[fuelctr]);
+
+    this.nearbyMineCounts = this.nearbyMines.map(i => 100);
     this.homeSaturated = false;
 
     this.defensePositions = this.getDefensePositions([this.me.x, this.me.y]);
@@ -154,6 +161,25 @@ function castleTurn() {
     }
     // END OPENING CASTLETALK CODE
 
+    // MINING UPDATE CODE
+    this.nearbyMineCounts = this.nearbyMineCounts.map(i => i+1);
+    let signalPilgrims = this.getVisibleRobots().filter(i => i.unit == 2 && i.signal >=0);
+    for(let pilgrimCtr = 0; pilgrimCtr<signalPilgrims.length; pilgrimCtr++) {
+        let pilgrimLocation = this.decodeExactLocation(signalPilgrims[pilgrimCtr].signal);
+        for(let mineCtr = 0; mineCtr < this.nearbyMines.length; mineCtr++) {
+            if(this.arrEq(pilgrimLocation, this.nearbyMines[mineCtr])) {
+                //this.log((signalPilgrims[pilgrimCtr].signal / 64 /64))
+                if(Math.floor(signalPilgrims[pilgrimCtr].signal / 64 / 64) % 2 == 1) {
+                    this.nearbyMineCounts[mineCtr] = -999; //stop tracking it, it reports to new base
+                }
+                else if(Math.abs(signalPilgrims[pilgrimCtr].x - this.me.x) <= 1 && Math.abs(signalPilgrims[pilgrimCtr].y - this.me.y) <= 1) {
+                    this.nearbyMineCounts[mineCtr] = 0;
+                }
+                break;
+            }
+        }
+    }
+
     // LISTENING CODE
     if(this.step > 4 && talkingCastles.length > 0) {
         for(let i = 0; i < talkingCastles.length; i++) {
@@ -218,9 +244,16 @@ function castleTurn() {
     }
 
     // SATURATE CODE: saturate my nearby mines
-    this.homeSaturated = (this.nearbyMines.length == 0);
+    this.homeSaturated = this.nearbyMineCounts.filter(i => i>=20).length == 0;
     if (this.fuel >= 50 && this.karbonite >= 10 && !this.homeSaturated) {
-        let target = this.nearbyMines.shift();
+        let target = [this.me.x, this.me.y];
+        for (let mineCtr = 0; mineCtr < this.nearbyMines.length; mineCtr++) { //finds empty mining location
+            if(this.nearbyMineCounts[mineCtr] >= 20) {
+                target = this.nearbyMines[mineCtr];
+                this.nearbyMineCounts[mineCtr] = 0;
+                break;
+            }
+        }
         let choice = this.getSpawnLocation(target[0], target[1]);
         if (choice != null) {
             //this.log("Spawning pilgrim in direction " + choice + " towards " + target);
