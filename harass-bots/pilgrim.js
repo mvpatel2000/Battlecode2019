@@ -10,6 +10,7 @@ export function Pilgrim() {
     this.adjacentDestinations = this.distSquared(this.baseLocation, this.mineLocation) <= 2;
 
     this.resourceClusters = this.clusterResourceTiles();
+    this.avoid = [this.reflectPoint(...this.pos())];
 
     this.destination = this.mineLocation;
     this.karboniteMine = this.karbonite_map[this.mineLocation[1]][this.mineLocation[0]];
@@ -90,7 +91,7 @@ function pilgrimTurn() {
 
     let route;
     if( this.arrEq(this.destination, this.mineLocation) ) { //moving to mine
-        route = this.path(this.destination);
+        route = this.harasspath(this.destination, this.avoid);
         
     }
     else { //( this.arrEq(this.destination, this.baseLocation) ) //moving to base
