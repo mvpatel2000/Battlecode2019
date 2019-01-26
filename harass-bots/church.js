@@ -25,7 +25,7 @@ function churchTurn() {
     let visibleEnemies = this.getVisibleRobots().filter(i => i.team != this.me.team);
     if(visibleEnemies.length > 0) { // rush defense
         // assess the threat
-        let threats = visibleEnemies.filter(i => i.unit > 2);
+        let threats = visibleEnemies;
         if(threats.length > 0) { // attacking threat
             if(this.karbonite >= 25 && this.fuel >= 50) {
                 let minDist = 7939;
@@ -60,14 +60,25 @@ function churchTurn() {
         }
     }
 
-    // ARCHER TURTLE CODE
-    if (this.fuel >= 200 && this.karbonite >= 200 && this.defensePositions.length > 0) {
+    // TURTLE CODE
+    let coinflip = this.rand(2);
+    if (this.fuel >= 200 && this.karbonite >= 200 && this.defensePositions.length > 0 && this.defensePositions &&
+        ((this.fuel >= 300 && this.karbonite >= 300) || coinflip == 1)) {
         let target = [1,0];
         let choice = this.getSpawnLocation(target[0], target[1]);
         if (choice) {
             let defenseTarget = this.defensePositions.shift();
             this.signal(this.encodeExactLocation(defenseTarget), 2);
-            return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
+            if(this.me.turn < 500) {
+                return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
+            }
+            else {
+                let decision = this.rand(4);
+                if(decision < 2)
+                    return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
+                else
+                    return this.buildUnit(SPECS.CRUSADER, choice[0], choice[1]);
+            }
         }
     }
     return;

@@ -515,6 +515,16 @@ export const Algorithms = (function() {
         },
 
         /**
+         * Returns orientation (horizontal = false, vertical = true)
+         */
+        orientation: function() {
+             let vertical = this.fuel_map.every(
+                                 r => r.slice(0, r.length / 2)
+                                 .map((v, i) => r[r.length - i - 1] == v)
+                                 .reduce((a, b) => a && b));
+            return vertical;
+        },
+        /**
          * Returns the reflected position of castles across the map.
          */
         reflection: function() {

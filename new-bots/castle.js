@@ -38,6 +38,10 @@ export function Castle() {
     this.homeSaturated = false;
 
     this.defensePositions = this.getDefensePositions([this.me.x, this.me.y]);
+
+    this.numCastles = 3;
+    this.numPreachersSpawned = 0;
+    this.sendHarasser = true;
 }
 
 /**
@@ -53,14 +57,16 @@ function getNextMissionTarget() {
     let shouldSendOverride = false;
     for (let i = 0; i < this.resourceClusters.length; i++) {
         let d = this.distSquared(this.resourceCentroids[i], [this.me.x, this.me.y]);
+        if (this.clusterStatus[i] == CLUSTER.OPEN && d < minScore) {
             let karbThresh = 20 + 10*this.clusterStatus.filter(i => i == CLUSTER.CONTROLLED).length + Math.floor(Math.sqrt(d));
             let fuelThresh = 20 + 10*this.clusterStatus.filter(i => i == CLUSTER.CONTROLLED).length + Math.floor(Math.sqrt(d));
-        if (this.clusterStatus[i] == CLUSTER.OPEN && d < minScore) {
             shouldSend = (this.fuel >= fuelThresh) && (this.karbonite >= karbThresh);
             minScore = d;
             target = i;
         }
         if (this.clusterStatus[i] == CLUSTER.OPEN && this.resourceClusters[i].length >= maxSize) { // override the shortest distance if we have big cluster
+            let karbThresh = 10 + Math.floor(Math.sqrt(d));
+            let fuelThresh = 10 + Math.floor(Math.sqrt(d));
             shouldSendOverride = (this.fuel >= fuelThresh) && (this.karbonite >= karbThresh);
             maxSize = this.resourceClusters[i].length;
             overrideTarget = i;
@@ -155,7 +161,7 @@ function castleTurn() {
             //this.log("I hear "+talk);
             if(0 < talk && talk < 32) { // means it's a mission index
                 this.clusterStatus[talk-1] = CLUSTER.CONTROLLED;
-                this.log("Ah, I see that we are sending a mission to cluster "+(talk-1));
+                // this.log("Ah, I see that we are sending a mission to cluster "+(talk-1));
             }
             if(talk == 32) { // means harass is being sent out
                 this.sendHarasser = false;
@@ -250,7 +256,7 @@ function castleTurn() {
         if (choice != null) {
             this.clusterStatus[targetClusterIndex] = CLUSTER.CONTROLLED;
             this.castleTalk(targetClusterIndex+1);
-            this.log("I'm sending a mission to cluster "+targetClusterIndex+" and broadcasting it.");
+            // this.log("I'm sending a mission to cluster "+targetClusterIndex+" and broadcasting it.");
             //this.log("Spawning pilgrim in direction " + choice + " towards " + target);
             this.signal(this.encodeExactLocation(target), 2);
             return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);

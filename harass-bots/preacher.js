@@ -7,6 +7,9 @@ export function Preacher() {
     this.enemyCastleLocations = this.prepareTargets();
     this.targetCtr = 0;
     this.target = this.enemyCastleLocations[this.targetCtr];
+
+    this.defend = true;
+    this.movesTaken = 0;
 }
 
 /**
@@ -21,9 +24,11 @@ function preacherTurn() {
     let attackbot = this.aoeAnalysis();
     if (attackbot) {
         if (this.fuel > SPECS.UNITS[this.me.unit].ATTACK_FUEL_COST) {
+            this.defend = false;
             return this.attack(attackbot[0] - this.me.x, attackbot[1] - this.me.y);
         }
     }
+
     // If there are robots that can attack me,
     // move to location that minimizes the sum of the hp damage.
     // Tiebreaker: location closest (euclidean distance) from the original path move to target
@@ -42,6 +47,8 @@ function preacherTurn() {
         }
     }
 
+    if(this.moves > 0 && this.defend == true)
+        return;
 
     // non-combat mode
     while (this.me.x == this.target[0] && this.me.y == this.target[1]) { //reset target if meet it
@@ -62,6 +69,12 @@ function preacherTurn() {
     }
 
 
-    // movement code
-    return this.go(this.target);
+    let route = this.path(this.target); //path finding
+    if (this.fuel > (SPECS.UNITS[this.me.unit].FUEL_PER_MOVE * this.getSpeed())) {
+        if (route.length > 0) { //A* towards target
+            this.movesTaken++;
+            return this.move(...route[0]);
+        }
+    }
+    return;
 }
