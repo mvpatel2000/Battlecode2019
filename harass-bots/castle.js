@@ -290,7 +290,7 @@ function castleTurn() {
     let visibleEnemies = this.getVisibleRobots().filter(i => i.team != this.me.team);
     if(visibleEnemies.length > 0) { // rush defense
         // assess the threat
-        let threats = visibleEnemies.filter(i => i.unit > 2);
+        let threats = visibleEnemies.filter(i => i.unit > 2 || i.unit < 2);
         let prophetThreats = threats.filter(i => i.unit == 4); //counts number of prophetss
         if(threats.length > 0) { // attacking threat
             if(this.karbonite >= 30 && this.fuel >= 50) {  
