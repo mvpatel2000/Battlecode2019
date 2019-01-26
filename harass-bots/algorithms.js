@@ -908,7 +908,7 @@ export const Algorithms = (function() {
                             || occupied[neighbor[1]][neighbor[0]] > 0
                             || openHash[hash(neighbor)]
                             || g[neighbor] != undefined //filters invalid moves or already taken moves
-                            || avoid.map(i => this.distSquared(i, neighbor) <= 100).reduce((a, b) => a || b))
+                            || avoid.map(i => this.distSquared(i, neighbor) <= 100).reduce((a, b) => a || b, false))
                         continue;
                     queue.push(neighbor); //push
                     openHash[hash(neighbor)] = true;

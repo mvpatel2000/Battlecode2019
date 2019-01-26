@@ -10,7 +10,7 @@ export function Pilgrim() {
     this.adjacentDestinations = this.distSquared(this.baseLocation, this.mineLocation) <= 2;
 
     this.resourceClusters = this.clusterResourceTiles();
-    this.avoid = [this.reflectPoint(...this.pos())];
+    this.avoid = this.spawnPoint.unit == SPECS.CASTLE ? [this.reflectPoint(...this.pos())] : [];
 
     this.destination = this.mineLocation;
     this.karboniteMine = this.karbonite_map[this.mineLocation[1]][this.mineLocation[0]];
