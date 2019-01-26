@@ -11,7 +11,8 @@ export function Prophet() {
 
     //determine spawn castle for grid
     this.spawnPoint = this.getVisibleRobots().filter(i => i.unit < 2 && this.distSquared([i.x, i.y], [this.me.x, this.me.y]) <= 2 && i.signal >= 0)[0];
-    this.target = this.decodeExactLocation(this.spawnPoint.signal);
+    if (this.spawnPoint)
+        this.target = this.decodeExactLocation(this.spawnPoint.signal);
 }
 
 /**

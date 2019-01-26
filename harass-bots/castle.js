@@ -239,8 +239,8 @@ function castleTurn() {
         }
 
         if(optimalCluster == -1) {
-            //i am not the closest castle to the nearest enemy cluster
 
+            //i am not the closest castle to the nearest enemy cluster
             //this.log("I have decided not to harass :(");
 
             this.sendHarasser = 0;
@@ -255,9 +255,7 @@ function castleTurn() {
             if(hostile==2) {
                 this.log("I am a castle at: " + this.me.x + " " + this.me.y + " and I am the closest to the enemy cluster: " + this.resourceCentroids[optimalCluster]);
                 harassSignal += (optimalCluster & 0x1f) << 5 * hostile;
-                //this.log("I am a castle, I am sending a harasser prophet to this location.");
-                //this.log(this.resourceCentroids);
-                //this.log(harassSignal.toString(2));
+                this.log("I am a castle, I am sending a harasser prophet to this location.");
                 this.signal(harassSignal, 2);
                 this.sendHarasser = 0;
                 return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);

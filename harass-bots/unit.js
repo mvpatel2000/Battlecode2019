@@ -9,10 +9,15 @@ export function Unit() {
     if (!this.spawnPoint) return;
     let sig = this.spawnPoint.signal;
     if (sig >> 15) {
+        this.log(`harass signal = ${sig.toString(2)}`);
         this.harasser = true;
-        this.avoid = [0x1f & (sig >> 10),
-                        0x1f & (sig >> 5),
-                        (0x1f & sig)]
+        this.avoid = [0x1f & (sig >> 5),
+                        0x1f & (sig)]
+        this.target = 0x1f & (sig >> 10);
+    }
+
+    this.pos = function() {
+        return [this.me.x, this.me.y];
     }
 
     //harassers
@@ -20,6 +25,8 @@ export function Unit() {
         this.resourceClusters = this.clusterResourceTiles();
         this.resourceCentroids = this.resourceClusters.map(x => this.centroid(x));
         this.avoidTup = this.avoid.map(i => this.resourceCentroids[i]).filter(i => i);
+        this.avoidTup.push(this.reflectPoint(...this.pos()));
+        this.targetTup = this.resourceCentroids[this.target];
         this.mineTup = this.avoidTup.map(i => this.reflectPoint(...i));
         this.avoid.forEach(i => {
             this.resourceCentroids.splice(i, 1, null);
@@ -34,6 +41,8 @@ export function Unit() {
         //let map = {};
         //this.queue.forEach(i => {map[i] = this.rand(3) - 1});
         this.queue.sort((a, b) => d(a) - d(b));
+        this.log(this.avoidTup);
+        this.queue.splice(0, 0, this.targetTup);
         this.log(this.queue);
         this.harassTurn = harassTurn;
     }
