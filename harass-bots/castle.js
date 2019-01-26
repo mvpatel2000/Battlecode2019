@@ -16,6 +16,7 @@ export function Castle() {
     this.myEncodedLocation = this.encodeLocation(this.reflectedLocation[0], this.reflectedLocation[1]);
     this.otherCastleLocations = 0;
     this.otherCastleZoneList = [];
+    this.enemyCastleZoneList = []; //only used for harassers
     this.otherCastleIDs = [];
 
     this.resourceClusters = this.clusterResourceTiles();
@@ -113,8 +114,12 @@ function castleTurn() {
             this.otherCastleZoneList.push(talkingCastles[i].castle_talk);
             this.otherCastleIDs.push(talkingCastles[i].id);
         }
+        //for harrasers
+        this.enemyCastleZoneList = this.otherCastleZoneList.map(i => i);
+        this.enemyCastleZoneList.push(this.myEncodedLocation);
+        //end for harassers
 
-        while(this.otherCastleZoneList.length <= 2) {
+        while(this.otherCastleZoneList.length < 2) {
             this.otherCastleZoneList.push(this.myEncodedLocation);
         }
         this.otherCastleLocations = this.otherCastleZoneList[0] + (2**8)*this.otherCastleZoneList[1];
@@ -165,14 +170,14 @@ function castleTurn() {
         //get enemy castle and friendly castle [x,y] locations
         let enemyCastleLocations = [];
         let friendlyCastleLocations = [];
-        for (let c = 0; c < this.otherCastleZoneList.length; c++) {
-            let enemyloc = this.decodeLocation(this.otherCastleZoneList[c]);
+        for (let c = 0; c < this.enemyCastleZoneList.length; c++) {
+            let enemyloc = this.decodeLocation(this.enemyCastleZoneList[c]);
             let myloc = this.reflectPoint(enemyloc[0], enemyloc[1]);
             enemyCastleLocations.push(enemyloc);
             friendlyCastleLocations.push(myloc);
         }
 
-        //this.log("Castle Zone List: " + this.otherCastleZoneList)
+        //this.log("Castle Zone List: " + this.enemyCastleZoneList)
         //this.log("The total number of castles on my team is " + friendlyCastleLocations.length);
 
         //filter out all all of my clusters, keep enemy ones
@@ -241,7 +246,9 @@ function castleTurn() {
             this.sendHarasser = 0;
             return;
         } else {
+            //this.log("I think there are: " + hostile + " hostile clusters.")
             while (hostile < 2) {
+                //this.log("adding all 1s");
                 harassSignal += 0x1f << 5 * hostile;
                 hostile += 1;
             }
