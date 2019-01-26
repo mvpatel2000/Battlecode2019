@@ -89,22 +89,23 @@ export function Unit() {
                 let defenseTarget = this.defensePositions.shift();
                 let vertical = this.orientation();
                 let crusader = false;
-                if (vertical && this.me.x > this.map.length / 2) {
+                let adj = this.me.unit == SPECS.CASTLE ? 0 : 8;
+                if (vertical && this.me.x > adj + this.map.length / 2) {
                     if (defenseTarget[0] > this.me.x) {
                         crusader = true;
                     }
                 }
-                if (vertical && this.me.x < this.map.length / 2) {
+                if (vertical && this.me.x < this.map.length / 2 - adj) {
                     if (defenseTarget[0] < this.me.x) {
                         crusader = true;
                     }
                 }
-                if (!vertical && this.me.y > this.map[0].length / 2) {
+                if (!vertical && this.me.y > adj + this.map[0].length / 2) {
                     if (defenseTarget[1] > this.me.y) {
                         crusader = true;
                     }
                 }
-                if (!vertical && this.me.y < this.map[0].length / 2) {
+                if (!vertical && this.me.y < this.map[0].length / 2 - adj) {
                     if (defenseTarget[1] < this.me.y) {
                         crusader = true;
                     }
