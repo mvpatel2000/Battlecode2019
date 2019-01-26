@@ -25,7 +25,6 @@ export function Castle() {
     // 3: fortified and ours; 4: enemy; can add other codes if necessary
 
     // this.log(this.resourceClusters);
-    this.sendHarasser = 1;
 
     // identify my cluster
     this.myClusterIndex = this.findNearestClusterIndex([this.me.x, this.me.y], this.resourceClusters);
@@ -42,7 +41,7 @@ export function Castle() {
 
     this.numCastles = 3;
     this.numPreachersSpawned = 0;
-    this.sendHarasser = true;
+    this.sendHarasser = 1;
 }
 
 /**
@@ -115,7 +114,7 @@ function castleTurn() {
             this.otherCastleIDs.push(talkingCastles[i].id);
         }
 
-        while(this.otherCastleZoneList.length < 2) {
+        while(this.otherCastleZoneList.length <= 2) {
             this.otherCastleZoneList.push(this.myEncodedLocation);
         }
         this.otherCastleLocations = this.otherCastleZoneList[0] + (2**8)*this.otherCastleZoneList[1];
@@ -152,33 +151,105 @@ function castleTurn() {
         //this.log(this.resourceClusters[nextMissionTarget]);
     }
     // END OPENING CASTLETALK CODE
-    
+
     // HARASS CODE
-    if (this.me.turn > 5 && this.sendHarasser == 1
-            && this.fuel > 50 && this.karbonite > 25
-            && this.clusterStatus.length <= 32) {
+    if (this.step > 2 && this.sendHarasser == 1 && this.fuel > 50 && this.karbonite > 25 && this.clusterStatus.length <= 32) {
         let harassSignal = 1<<15;
         let hostile = 0;
-
         let target = [1,0];
+        let optimalCluster = -1;
         let choice = this.getSpawnLocation(target[0], target[1]);
-        for (let i = 0; i < this.clusterStatus.length; i++) {
-            if (hostile < 3) { //max of 3 hostile locations
-                if (this.clusterStatus[i] == CLUSTER.HOSTILE) {
-                    this.log("I am hostile: " + i);
-                    harassSignal += (i & 0x1f) << 5 * hostile;
-                    hostile += 1;
+        this.log("I am considering harassing...");
+        //get enemy castle and friendly castle [x,y] locations
+        let enemyCastleLocations = [];
+        let friendlyCastleLocations = [];
+        for (let c = 0; c < this.otherCastleZoneList.length; c++) {
+            let enemyloc = this.decodeLocation(this.otherCastleZoneList[c]);
+            let myloc = this.reflectPoint(enemyloc[0], enemyloc[1]);
+            enemyCastleLocations.push(enemyloc);
+            friendlyCastleLocations.push(myloc);
+        }
+        this.log("Castle Zone List: " + this.otherCastleZoneList)
+        this.log("The total number of castles on my team is " + friendlyCastleLocations.length);
+        //filter out all all of my clusters, keep enemy ones
+        let queue = this.resourceCentroids.filter(i =>
+            enemyCastleLocations.map(q => this.distSquared(q, i)).reduce((a, b) => a + b)
+            <= friendlyCastleLocations.map(q => this.distSquared(q, i)).reduce((a, b) => a + b) + 8);
+        queue = queue.filter(i => enemyCastleLocations.every(l => this.distSquared(l, i) > 100));
+
+        //figure out which castle is me
+        let mincastledist = Infinity;
+        let mycastle = Infinity;
+        for (let fc = 0; fc < friendlyCastleLocations.length; fc++) {
+            let m = this.distSquared([this.me.x, this.me.y], friendlyCastleLocations[fc])
+            if(m < mincastledist) {
+                mincastledist = m;
+                mycastle = fc;
+            }
+        }
+        //write the hostile enemy clusters that cannot be inferred
+        //by a unit i send out.
+        //that is, they are not nearest to the enemy reflection of this castle
+        for (let e = 0; e < enemyCastleLocations.length; e++) {
+            if(e == mycastle) {
+                continue;
+            }
+            let host = this.findNearestClusterIndex(enemyCastleLocations[e], this.resourceClusters);
+            harassSignal += (host & 0x1f) << 5 * hostile;
+            hostile += 1;
+        }
+
+        //find the castle with the nearest enemy cluster.
+        let mincluster = -1;
+        let minclusterdistance = Infinity;
+        let minclustercastle = -1;
+        for (let i=0; i < friendlyCastleLocations.length; i++) {
+            let mymindist = Infinity;
+            let myminclust = -1;
+            for (let j=0; j < queue.length; j++) {
+                let dd = this.distSquared(queue[j], friendlyCastleLocations[i]);
+                if (dd < mymindist) {
+                    mymindist = dd;
+                    myminclust = j;
+                }
+            }
+            if (mymindist < minclusterdistance) {
+                minclusterdistance = mymindist;
+                mincluster = myminclust;
+                minclustercastle = i;
+            }
+        }
+
+        //if this castle is the one closest to the nearest enemy cluster
+        if(minclustercastle == mycastle) {
+            for (let i=0; i < this.resourceCentroids.length; i++) {
+                if(this.resourceCentroids[i][0] == queue[mincluster][0] && this.resourceCentroids[i][1] == queue[mincluster][1]) {
+                    optimalCluster = i; //convert between queue index and resourceCentroid / resourceClusters index
                 }
             }
         }
-        while (hostile < 3) {
-            harassSignal += 0x1f << 5 * hostile;
-            hostile += 1;
+
+        if(optimalCluster == -1) {
+            //i am not the closest castle to the nearest enemy cluster
+            this.log("I have decided not to harass :(");
+            this.sendHarasser = 0;
+            return;
+        } else {
+            while (hostile < 2) {
+                harassSignal += 0x1f << 5 * hostile;
+                hostile += 1;
+            }
+            if(hostile==2) {
+                this.log("I am a castle at: " + this.me.x + " " + this.me.y + " and I am the closest to the enemy cluster: " + this.resourceCentroids[optimalCluster]);
+                harassSignal += (optimalCluster & 0x1f) << 5 * hostile;
+                this.log("I am a castle, I am sending a harasser prophet");
+                this.signal(harassSignal, 2);
+                this.sendHarasser = 0;
+                return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
+            } else {
+                this.log("Whoops there was an error. Too many hostile clusters detected. Something went wrong.");
+            }
         }
-        this.log("I am a castle, I am sending a harasser prophet");
-        this.signal(harassSignal, 2);
-        this.sendHarasser = 0;
-        return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
     }
     // LISTENING CODE
     if(this.step > 4 && talkingCastles.length > 0) {
@@ -199,7 +270,7 @@ function castleTurn() {
         let threats = visibleEnemies.filter(i => i.unit > 2);
         let preacherThreats = threats.filter(i => i.unit == 5);
         if(threats.length > 0) { // attacking threat
-            if(this.karbonite >= 25 && this.fuel >= 50) {  
+            if(this.karbonite >= 25 && this.fuel >= 50) {
                 let minDist = 7939;
                 let closestThreat = [0,0];
                 for(let k = 0; k < threats.length; k++) {
