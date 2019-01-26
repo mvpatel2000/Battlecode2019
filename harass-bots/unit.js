@@ -38,12 +38,8 @@ export function Unit() {
             <= this.mineTup.map(q => this.dist(q, i)).reduce((a, b) => a + b) + 8);
         this.queue = this.queue.filter(i => this.avoidTup.every(l => this.dist(l, i) > 10));
         const d = i => this.distSquared([this.me.x, this.me.y], i);
-        //let map = {};
-        //this.queue.forEach(i => {map[i] = this.rand(3) - 1});
         this.queue.sort((a, b) => d(a) - d(b));
-        this.log(this.avoidTup);
         this.queue.splice(0, 0, this.targetTup);
-        this.log(this.queue);
         this.harassTurn = harassTurn;
     }
 
