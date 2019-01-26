@@ -41,6 +41,7 @@ export function Unit() {
         const d = i => this.distSquared([this.me.x, this.me.y], i);
         this.queue.sort((a, b) => d(a) - d(b));
         this.queue.splice(0, 0, this.targetTup);
+        this.log(this.queue);
         this.harassTurn = harassTurn;
     }
 

@@ -428,7 +428,7 @@ export const Algorithms = (function() {
                         //this.log((this.getVisibleRobotMap()[y][x] <= 0))
                         //this.log((!this.karbonite_map[y][x] && !this.fuel_map[y][x]))
                     }
-
+                    
                     delta[0] = delta[0] + dirs[0];
                     delta[1] = delta[1] + dirs[1];
                     if(delta[0] == max || delta[0] == -max)

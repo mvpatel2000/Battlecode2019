@@ -36,6 +36,13 @@ export function Castle() {
     this.clusterStatus[oppositeClusterIndex] = CLUSTER.HOSTILE;
 
     this.nearbyMines = this.resourceClusters[this.myClusterIndex];
+    let karbMines = this.nearbyMines.filter(i => this.karbonite_map[i[1]][i[0]] == true);
+    let fuelMines = this.nearbyMines.filter(i => this.fuel_map[i[1]][i[0]] == true);
+    this.nearbyMines = karbMines;
+    for(let fuelctr = 0; fuelctr < fuelMines.length; fuelctr++)
+        this.nearbyMines.push(fuelMines[fuelctr]);
+
+    this.nearbyMineCounts = this.nearbyMines.map(i => 100);
     this.homeSaturated = false;
 
     this.defensePositions = this.getDefensePositions([this.me.x, this.me.y]);
@@ -58,14 +65,16 @@ function getNextMissionTarget() {
     let shouldSendOverride = false;
     for (let i = 0; i < this.resourceClusters.length; i++) {
         let d = this.distSquared(this.resourceCentroids[i], [this.me.x, this.me.y]);
+        if (this.clusterStatus[i] == CLUSTER.OPEN && d < minScore) {
             let karbThresh = 20 + 10*this.clusterStatus.filter(i => i == CLUSTER.CONTROLLED).length + Math.floor(Math.sqrt(d));
             let fuelThresh = 20 + 10*this.clusterStatus.filter(i => i == CLUSTER.CONTROLLED).length + Math.floor(Math.sqrt(d));
-        if (this.clusterStatus[i] == CLUSTER.OPEN && d < minScore) {
             shouldSend = (this.fuel >= fuelThresh) && (this.karbonite >= karbThresh);
             minScore = d;
             target = i;
         }
         if (this.clusterStatus[i] == CLUSTER.OPEN && this.resourceClusters[i].length >= maxSize) { // override the shortest distance if we have big cluster
+            let karbThresh = 10 + Math.floor(Math.sqrt(d));
+            let fuelThresh = 10 + Math.floor(Math.sqrt(d));
             shouldSendOverride = (this.fuel >= fuelThresh) && (this.karbonite >= karbThresh);
             maxSize = this.resourceClusters[i].length;
             overrideTarget = i;
@@ -253,17 +262,18 @@ function castleTurn() {
                 hostile += 1;
             }
             if(hostile==2) {
-                this.log("I am a castle at: " + this.me.x + " " + this.me.y + " and I am the closest to the enemy cluster: " + this.resourceCentroids[optimalCluster]);
+                //this.log("I am a castle at: " + this.me.x + " " + this.me.y + " and I am the closest to the enemy cluster: " + this.resourceCentroids[optimalCluster]);
                 harassSignal += (optimalCluster & 0x1f) << 5 * hostile;
-                this.log("I am a castle, I am sending a harasser prophet to this location.");
+                //this.log("I am a castle, I am sending a harasser prophet to this location.");
                 this.signal(harassSignal, 2);
                 this.sendHarasser = 0;
                 return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
             } else {
-                this.log("Whoops there was an error. Too many hostile clusters detected. Something went wrong.");
+                //this.log("Whoops there was an error. Too many hostile clusters detected. Something went wrong.");
             }
         }
     }
+
     // LISTENING CODE
     if(this.step > 4 && talkingCastles.length > 0) {
         for(let i = 0; i < talkingCastles.length; i++) {
@@ -271,7 +281,7 @@ function castleTurn() {
             //this.log("I hear "+talk);
             if(0 < talk && talk < 32) { // means it's a mission index
                 this.clusterStatus[talk-1] = CLUSTER.CONTROLLED;
-                this.log("Ah, I see that we are sending a mission to cluster "+(talk-1));
+                //this.log("Ah, I see that we are sending a mission to cluster "+(talk-1));
             }
         }
     }
@@ -281,9 +291,9 @@ function castleTurn() {
     if(visibleEnemies.length > 0) { // rush defense
         // assess the threat
         let threats = visibleEnemies.filter(i => i.unit > 2);
-        let preacherThreats = threats.filter(i => i.unit == 5);
+        let prophetThreats = threats.filter(i => i.unit == 4); //counts number of prophetss
         if(threats.length > 0) { // attacking threat
-            if(this.karbonite >= 25 && this.fuel >= 50) {
+            if(this.karbonite >= 30 && this.fuel >= 50) {  
                 let minDist = 7939;
                 let closestThreat = [0,0];
                 for(let k = 0; k < threats.length; k++) {
@@ -293,12 +303,12 @@ function castleTurn() {
                         closestThreat = [threats[k].x, threats[k].y];
                     }
                 }
-                if(preacherThreats.length > 0 && this.karbonite >= 30) {
+                if(prophetThreats.length == 0) { //build preachers unless you see 2 prophets
                     let choice = this.getSpawnLocation(closestThreat[0], closestThreat[1]);
                     if(choice != null) {
                         if(this.defensePositions.length > 0) {
                             let defenseTarget = this.defensePositions.shift();
-                            this.signal(this.otherCastleLocations, 2);
+                            this.signal(this.encodeExactLocation(defenseTarget), 2); 
                         }
                         return this.buildUnit(SPECS.PREACHER, choice[0], choice[1]);
                     }
@@ -325,9 +335,16 @@ function castleTurn() {
     }
 
     // SATURATE CODE: saturate my nearby mines
-    this.homeSaturated = (this.nearbyMines.length == 0);
+    this.homeSaturated = this.nearbyMineCounts.filter(i => i>=20).length == 0;
     if (this.fuel >= 50 && this.karbonite >= 10 && !this.homeSaturated) {
-        let target = this.nearbyMines.shift();
+        let target = [this.me.x, this.me.y];
+        for (let mineCtr = 0; mineCtr < this.nearbyMines.length; mineCtr++) { //finds empty mining location
+            if(this.nearbyMineCounts[mineCtr] >= 20) {
+                target = this.nearbyMines[mineCtr];
+                this.nearbyMineCounts[mineCtr] = 0;
+                break;
+            }
+        }
         let choice = this.getSpawnLocation(target[0], target[1]);
         if (choice != null) {
             //this.log("Spawning pilgrim in direction " + choice + " towards " + target);
@@ -363,7 +380,7 @@ function castleTurn() {
         if (choice != null) {
             this.clusterStatus[targetClusterIndex] = CLUSTER.CONTROLLED;
             this.castleTalk(targetClusterIndex+1);
-            this.log("I'm sending a mission to cluster "+targetClusterIndex+" and broadcasting it.");
+            // this.log("I'm sending a mission to cluster "+targetClusterIndex+" and broadcasting it.");
             //this.log("Spawning pilgrim in direction " + choice + " towards " + target);
             this.signal(this.encodeExactLocation(target), 2);
             return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);

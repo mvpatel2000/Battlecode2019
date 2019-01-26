@@ -6,6 +6,7 @@ export function Pilgrim() {
         Math.pow(i.x - this.me.x,2) + Math.pow(i.y - this.me.y,2) <= 2 && i.signal>=0)[0];
 
     this.baseLocation = [this.spawnPoint.x, this.spawnPoint.y];
+    this.originalBaseLocation = this.baseLocation;
     this.mineLocation = this.decodeExactLocation(this.spawnPoint.signal);
     this.adjacentDestinations = this.distSquared(this.baseLocation, this.mineLocation) <= 2;
 
@@ -21,14 +22,15 @@ function pilgrimTurn() {
     let [x, y] = [this.me.x, this.me.y];
 
     //TODO: Add mission code to determine what type of cluster we're in / heading to
-    //TODO: Add code to report status so church can replace if dead
-    //TODO: Kiting is performing suboptimally. Fix this
 
-    if(!this.adjacentDestinations) {
+    if(!this.adjacentDestinations) { //switch mining base
         let adjacentBases = this.getVisibleRobots().filter(i => i.unit < 2 && this.distSquared([i.x,i.y], this.mineLocation)<=2)
-        if(adjacentBases.length > 0) {
+        if(adjacentBases.length > 0) { //signal to original base
+            this.signal(1*64*64+this.encodeExactLocation(this.mineLocation), this.distSquared([this.me.x, this.me.y], this.originalBaseLocation) );
+                //this.log("Me: "+this.me.x+" "+this.me.y+" Mine: "+this.mineLocation+" Old Base: "+this.originalBaseLocation+" Signal: "+this.distSquared([this.me.x, this.me.y], this.originalBaseLocation) );
             this.baseLocation = [adjacentBases[0].x, adjacentBases[0].y];
             this.adjacentDestinations = true;
+            return; 
         }
     }
 
@@ -47,20 +49,27 @@ function pilgrimTurn() {
             if(choice != null) {
                 this.signal(this.encodeExactLocation(this.mineLocation), 2);
                 this.baseLocation = [this.me.x + choice[0], this.me.y + choice[1]];
+                this.adjacentDestinations = true;
                 // this.log("Pilgrim "+this.me.id+" starting a mission church at "+this.baseLocation);
                 return this.buildUnit(SPECS.CHURCH, choice[0], choice[1]);
             }
         }
-        if(this.karbonite > 400 && this.fuel > 400 && this.getVisibleRobots().filter(i => i.unit < 2 
+        if(this.karbonite > 200 && this.fuel > 400 && this.getVisibleRobots().filter(i => i.unit < 2 
             && i.team == this.me.team && this.distSquared([i.x, i.y], [this.me.x, this.me.y])<=2).length==0) { //church because floating cash
-            let nearbyPilgrims = this.getVisibleRobots().filter(i => i.unit == SPECS.PILGRIM && this.distSquared([i.x, i.y], [this.me.x, this.me.y])<=4);
-            let target = [1,0];
-            if(nearbyPilgrims.length > 0)
-                target = [ Math.min(Math.max(nearbyPilgrims[0].x - this.me.x,1),-1), Math.min(Math.max(nearbyPilgrims[0].y - this.me.y,1),-1)]
+            let nearbyPilgrims = this.getVisibleRobots().filter(i => i.unit == SPECS.PILGRIM && Math.abs(i.x - this.me.x)<=2 && Math.abs(i.y - this.me.y)<=2);
+            let target = [this.me.x,this.me.y];
+            if(nearbyPilgrims.length > 0) {
+                for(let nearbyCtr = 0; nearbyCtr<nearbyPilgrims.length; nearbyCtr++) {
+                    target[0] += nearbyPilgrims[nearbyCtr].x;
+                    target[1] += nearbyPilgrims[nearbyCtr].y;
+                }
+                target[0] = Math.round(target[0] / (1+nearbyPilgrims.length));
+                target[1] = Math.round(target[1] / (1+nearbyPilgrims.length));
+            }
             let choice = this.getChurchSpawnLocation(target[0], target[1]);
             if(choice != null) {
                 this.signal(0, 2);
-                this.baseLocation = [this.me.x + choice[0], this.me.y + choice[1]];
+                //this.baseLocation = [this.me.x + choice[0], this.me.y + choice[1]];
                 return this.buildUnit(SPECS.CHURCH, choice[0], choice[1]);
             }
         }
@@ -83,15 +92,16 @@ function pilgrimTurn() {
         }
         let base = this.getVisibleRobots().filter(i => (i.unit == SPECS.CHURCH || i.unit == SPECS.CASTLE) &&
             Math.pow(i.x - this.me.x,2) + Math.pow(i.y - this.me.y,2) <= 2);
-        if(base.length>0) { //we don't flee here! better to return resources then to flee
+        if(base.length>0) {
             this.destination = this.mineLocation;
+            this.signal(this.encodeExactLocation(this.mineLocation), 2);
             return this.give(base[0].x - x, base[0].y -y, this.me.karbonite, this.me.fuel);
         }
     }
 
     let route;
     if( this.arrEq(this.destination, this.mineLocation) ) { //moving to mine
-        route = this.path(this.destination, this.avoid);
+        route = this.path(this.destination);
         
     }
     else { //( this.arrEq(this.destination, this.baseLocation) ) //moving to base
