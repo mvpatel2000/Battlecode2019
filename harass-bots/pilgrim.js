@@ -91,7 +91,7 @@ function pilgrimTurn() {
 
     let route;
     if( this.arrEq(this.destination, this.mineLocation) ) { //moving to mine
-        route = this.harasspath(this.destination, this.avoid);
+        route = this.path(this.destination, this.avoid);
         
     }
     else { //( this.arrEq(this.destination, this.baseLocation) ) //moving to base
