@@ -11,6 +11,7 @@ export function Church() {
     this.nearbyMines = [];
     this.nearbyMineCounts = [];
     this.defensePositions = [];
+    this.lateGameChurch = true;
     if(broadcastingPilgrims.length > 0 && zeroBroadcast.length == 0) { //it is a mission church!
         this.resourceClusters = this.clusterResourceTiles();
         this.myClusterIndex = this.findNearestClusterIndex([this.me.x, this.me.y], this.resourceClusters);
@@ -32,10 +33,13 @@ export function Church() {
         this.homeSaturated = false;
 
         this.defensePositions = this.getDefensePositions([this.me.x, this.me.y]);
+        this.lateGameChurch = false;
     }
 }
 
 function churchTurn() {
+    if(this.lateGameChurch)
+        return;
 
     // MINING UPDATE CODE
     this.nearbyMineCounts = this.nearbyMineCounts.map(i => i+1);
