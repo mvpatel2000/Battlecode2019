@@ -4,6 +4,7 @@ import {SPECS} from 'battlecode';
  * Universal constructor called for all units.
  */
 export function Unit() {
+    this.streak = false;
     this.spawnPoint = this.getVisibleRobots().filter(i => i.unit < 2
                         && this.distSquared([i.x, i.y], [this.me.x, this.me.y]) <= 2 && i.signal >= 0)[0];
     if (!this.spawnPoint) return;
@@ -43,6 +44,10 @@ export function Unit() {
         this.harassTurn = harassTurn;
     }
 
+
+    /**
+     * Turn for harass bots.
+     */
     function harassTurn() {
         let attackbot = this.getRobotToAttack();
         if (attackbot && (!this.shouldRun || !this.shouldRun())) {
@@ -65,6 +70,63 @@ export function Unit() {
             return this.move(...route[0]);
         } else {
             this.queue.push(this.queue.shift());
+        }
+    }
+
+    /**
+     * Makes prophets + crusaders (lategame)
+     */
+    this.pumpProphets = function() {
+        let coinflip = this.rand(4);
+        coinflip = this.streak ? coinflip : 1;
+        if (this.fuel >= 200 && this.karbonite >= 200 && this.defensePositions.length > 0
+            && (!this.targetClusterIndex || this.targetClusterIndex == -1)
+            && ((this.fuel >= 300 && this.karbonite >= 300) || coinflip == 1)) {
+            this.streak = true;
+            let target = [1,0];
+            let choice = this.getSpawnLocation(target[0], target[1]);
+            if (choice) {
+                let defenseTarget = this.defensePositions.shift();
+                let vertical = this.orientation();
+                let crusader = false;
+                let adj = this.me.unit == SPECS.CASTLE ? 0 : 8;
+                if (vertical && this.me.x > adj + this.map.length / 2) {
+                    if (defenseTarget[0] > this.me.x) {
+                        crusader = true;
+                    }
+                }
+                if (vertical && this.me.x < this.map.length / 2 - adj) {
+                    if (defenseTarget[0] < this.me.x) {
+                        crusader = true;
+                    }
+                }
+                if (!vertical && this.me.y > adj + this.map[0].length / 2) {
+                    if (defenseTarget[1] > this.me.y) {
+                        crusader = true;
+                    }
+                }
+                if (!vertical && this.me.y < this.map[0].length / 2 - adj) {
+                    if (defenseTarget[1] < this.me.y) {
+                        crusader = true;
+                    }
+                }
+                this.signal(this.encodeExactLocation(defenseTarget), 2);
+                if (crusader) {
+                    return this.buildUnit(SPECS.CRUSADER, choice[0], choice[1]);
+                }
+                if (this.me.turn < 500) {
+                    return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
+                }
+                else {
+                    let decision = this.rand(4);
+                    if (decision < 2)
+                        return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
+                    else
+                        return this.buildUnit(SPECS.CRUSADER, choice[0], choice[1]);
+                }
+            }
+        } else if (coinflip == 1) {
+            this.streak = false;
         }
     }
 }
