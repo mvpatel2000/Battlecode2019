@@ -21,13 +21,14 @@ export function Church() {
 }
 
 function churchTurn() {
-    // EMERGENCY DEFENSE CODE
+    // EMERGENCY DEFENSE CODE: always attack if enemy is in range
     let visibleEnemies = this.getVisibleRobots().filter(i => i.team != this.me.team);
     if(visibleEnemies.length > 0) { // rush defense
         // assess the threat
-        let threats = visibleEnemies;
+        let threats = visibleEnemies.filter(i => i.unit > 2);
+        let prophetThreats = threats.filter(i => i.unit == 4); //counts number of prophetss
         if(threats.length > 0) { // attacking threat
-            if(this.karbonite >= 25 && this.fuel >= 50) {
+            if(this.karbonite >= 30 && this.fuel >= 50) {  
                 let minDist = 7939;
                 let closestThreat = [0,0];
                 for(let k = 0; k < threats.length; k++) {
@@ -37,13 +38,25 @@ function churchTurn() {
                         closestThreat = [threats[k].x, threats[k].y];
                     }
                 }
-                let choice = this.getSpawnLocation(-1*closestThreat[0], -1*closestThreat[1]);
-                if(choice != null) {
-                    if(this.defensePositions.length > 0) {
-                        let defenseTarget = this.defensePositions.shift();
-                        this.signal(this.encodeExactLocation(defenseTarget), 2);
+                if(prophetThreats.length == 0) { //build preachers unless you see 2 prophets
+                    let choice = this.getSpawnLocation(closestThreat[0], closestThreat[1]);
+                    if(choice != null) {
+                        if(this.defensePositions.length > 0) {
+                            let defenseTarget = this.defensePositions.shift();
+                            this.signal(this.encodeExactLocation(defenseTarget), 2); 
+                        }
+                        return this.buildUnit(SPECS.PREACHER, choice[0], choice[1]);
                     }
-                    return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
+                }
+                else {
+                    let choice = this.getSpawnLocation(-1*closestThreat[0], -1*closestThreat[1]);
+                    if(choice != null) {
+                        if(this.defensePositions.length > 0) {
+                            let defenseTarget = this.defensePositions.shift();
+                            this.signal(this.encodeExactLocation(defenseTarget), 2);
+                        }
+                        return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
+                    }
                 }
             }
         }

@@ -50,12 +50,18 @@ function pilgrimTurn() {
                 return this.buildUnit(SPECS.CHURCH, choice[0], choice[1]);
             }
         }
-        if(this.karbonite > 400 && this.fuel > 400 && this.getVisibleRobots().filter(i => i.unit < 2 
+        if(this.karbonite > 200 && this.fuel > 400 && this.getVisibleRobots().filter(i => i.unit < 2 
             && i.team == this.me.team && this.distSquared([i.x, i.y], [this.me.x, this.me.y])<=2).length==0) { //church because floating cash
-            let nearbyPilgrims = this.getVisibleRobots().filter(i => i.unit == SPECS.PILGRIM && this.distSquared([i.x, i.y], [this.me.x, this.me.y])<=4);
-            let target = [1,0];
-            if(nearbyPilgrims.length > 0)
-                target = [ Math.min(Math.max(nearbyPilgrims[0].x - this.me.x,1),-1), Math.min(Math.max(nearbyPilgrims[0].y - this.me.y,1),-1)]
+            let nearbyPilgrims = this.getVisibleRobots().filter(i => i.unit == SPECS.PILGRIM && Math.abs(i.x - this.me.x)<=2 && Math.abs(i.y - this.me.y)<=2);
+            let target = [this.me.x,this.me.y];
+            if(nearbyPilgrims.length > 0) {
+                for(let nearbyCtr = 0; nearbyCtr<nearbyPilgrims.length; nearbyCtr++) {
+                    target[0] += nearbyPilgrims[nearbyCtr].x;
+                    target[1] += nearbyPilgrims[nearbyCtr].y;
+                }
+                target[0] = Math.round(target[0] / (1+nearbyPilgrims.length));
+                target[1] = Math.round(target[1] / (1+nearbyPilgrims.length));
+            }
             let choice = this.getChurchSpawnLocation(target[0], target[1]);
             if(choice != null) {
                 this.signal(0, 2);

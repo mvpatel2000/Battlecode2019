@@ -168,9 +168,9 @@ function castleTurn() {
     if(visibleEnemies.length > 0) { // rush defense
         // assess the threat
         let threats = visibleEnemies.filter(i => i.unit > 2);
-        let preacherThreats = threats.filter(i => i.unit == 5);
+        let prophetThreats = threats.filter(i => i.unit == 4); //counts number of prophetss
         if(threats.length > 0) { // attacking threat
-            if(this.karbonite >= 25 && this.fuel >= 50) {  
+            if(this.karbonite >= 30 && this.fuel >= 50) {  
                 let minDist = 7939;
                 let closestThreat = [0,0];
                 for(let k = 0; k < threats.length; k++) {
@@ -180,12 +180,12 @@ function castleTurn() {
                         closestThreat = [threats[k].x, threats[k].y];
                     }
                 }
-                if(preacherThreats.length > 0 && this.karbonite >= 30) {
+                if(prophetThreats.length == 0) { //build preachers unless you see 2 prophets
                     let choice = this.getSpawnLocation(closestThreat[0], closestThreat[1]);
                     if(choice != null) {
                         if(this.defensePositions.length > 0) {
                             let defenseTarget = this.defensePositions.shift();
-                            this.signal(this.otherCastleLocations, 2);
+                            this.signal(this.encodeExactLocation(defenseTarget), 2); 
                         }
                         return this.buildUnit(SPECS.PREACHER, choice[0], choice[1]);
                     }
