@@ -172,7 +172,8 @@ function castleTurn() {
             let enemyloc = this.decodeLocation(this.enemyCastleZoneList[c]);
             enemyCastleLocations.push(enemyloc);
         }
-        this.signal(enemyCastleLocations.reduce((a,b) => a[this.orientation() ? 1 : 0] < b[this.orientation() ? 1 : 0] ? a : b),
+        this.signal(this.encodeExactLocation
+            (enemyCastleLocations.reduce((a,b) => a[this.orientation() ? 1 : 0] < b[this.orientation() ? 1 : 0] ? a : b)) | 0x7000,
                 ([this.me.x, this.me.y, this.map.length - this.me.x, this.map.length - this.me.y]
                             .reduce((a, b) => a < b ? b : a) * Math.sqrt(2)) ** 2)
     }
