@@ -64,9 +64,9 @@ function preacherTurn() {
     else {
         route = this.path(this.target);
     }
-    if (this.moves < 20 && this.fuel > (SPECS.UNITS[this.me.unit].FUEL_PER_MOVE * this.getSpeed())) {
+    if (this.moves < 50 && this.fuel > (SPECS.UNITS[this.me.unit].FUEL_PER_MOVE * this.getSpeed())) {
         if (route.length > 0) { //A* towards target
-            //this.moves++;
+            this.moves++;
             return this.move(...route[0]);
         }
     }
