@@ -417,6 +417,7 @@ function castleTurn() {
                                 .reduce((a, b) => a < b ? b : a) * Math.sqrt(2)) ** 2;
             this.log(`pushing; message = ${message.toString(2)}, dist = ${Math.floor(dist)}`);
             this.signal(message, Math.floor(dist));
+            this.updateDefensePositions([this.me.x, this.me.y]);
         }
     }
 
