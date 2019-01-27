@@ -55,7 +55,7 @@ export function Unit() {
         this.queue.splice(0, 0, this.targetTup);
         this.log(this.queue);
         this.harassTurn = harassTurn;
-        this.queue.push(this.avoidTup[0]);
+        this.avoidTup.forEach(i => this.queue.push(i));
     }
 
 
