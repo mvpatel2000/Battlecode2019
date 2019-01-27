@@ -469,7 +469,7 @@ function castleTurn() {
                     }
                 }
                 else {
-                    let choice = this.getSpawnLocation(-1*closestThreat[0], -1*closestThreat[1]);
+                    let choice = this.getSpawnLocation(closestThreat[0], closestThreat[1]);
                     if(choice != null) {
                         if(this.defensePositions.length > 0) {
                             let sub = (a, b) => [a[0] - b[0], a[1] - b[1]];
