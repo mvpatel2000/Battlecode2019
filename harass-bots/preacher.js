@@ -57,7 +57,13 @@ function preacherTurn() {
     //if(this.defend == true)
     //    return;
 
-    let route = this.path(this.target); //path finding
+    let route; //path finding
+    if(this.isAssaulting) {
+        route = this.assaultpath(this.target);
+    }
+    else {
+        route = this.path(this.target);
+    }
     if (this.moves < 20 && this.fuel > (SPECS.UNITS[this.me.unit].FUEL_PER_MOVE * this.getSpeed())) {
         if (route.length > 0) { //A* towards target
             //this.moves++;

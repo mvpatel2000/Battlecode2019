@@ -78,6 +78,24 @@ export const Algorithms = (function() {
         return steps;
     }
 
+    /**
+     * Given a squared radius, current x position, current y position
+     * returns a list of all possible locations that
+     * can be reached in a single move [x,y]
+     */
+    function absoluteMovesSmall(r2, curx, cury) {
+        let steps = []
+        let max = Math.sqrt(r2);
+        for (let x = -max; x <= max; x++) {
+            for (let y = -max; y <= max; y++) {
+                if (x * x + y * y <= 2) {
+                    steps.push([x + curx, y + cury]);
+                }
+            }
+        }
+        return steps;
+    }
+
     return {
         dist: dist,
         distSquared: distSquared,
@@ -834,6 +852,76 @@ export const Algorithms = (function() {
                     return path;
                 }
                 for (let neighbor of absoluteMoves(getSpeed.call(this), current[0], current[1])) { //loops over all moves
+                    if (neighbor[1] >= map.length
+                            || neighbor[0] >= map[0].length
+                            || neighbor[1] < 0
+                            || neighbor[0] < 0
+                            || !map[neighbor[1]][neighbor[0]]
+                            || occupied[neighbor[1]][neighbor[0]] > 0
+                            || openHash[hash(neighbor)]
+                            || g[neighbor] != undefined) //filters invalid moves or already taken moves
+                        continue;
+                    queue.push(neighbor); //push
+                    openHash[hash(neighbor)] = true;
+                    prev[neighbor] = current; //sets current path for backtrace
+                    g[neighbor] = g[current] + 1;
+                    f[neighbor] = g[neighbor] + h(neighbor);
+                }
+            }
+            return [];
+        },
+
+        /**
+         * Takes in destination [x, y].
+         * Return a list of [dx, dy] instructions to get from current location to destination.
+         * Goes more efficiently by only considering small maps
+         */
+        assaultpath: function(dest) {
+            let start = [this.me.x, this.me.y];
+            let map = this.map;
+            let occupied = this.getVisibleRobotMap();
+            if (dest[1] >= map.length
+                || dest[0] >= map[0].length
+                || dest[1] < 0
+                || dest[0] < 0
+                || !map[dest[1]][dest[0]]
+                || occupied[dest[1]][dest[0]] > 0) {
+                return [];
+            }
+            let openHash = {};
+            let done = new PriorityQueue((a, b) => h(a) < h(b));
+            let prev = {}; //used to reconstruct map
+            let h = x => (Math.abs(dest[0] - x[0]) + Math.abs(dest[1] - x[1])) / getSpeed.call(this); //~steps away from destination
+            let hash = p => p[0] * 67 * 73 + p[1];
+            let g = {}; //distance from origin in terms of steps taken
+            g[start] = 0;
+            let f = {}; //g + heuristic (dist to destination)
+            f[start] = h(start);
+
+            const queue = new PriorityQueue((a, b) => f[a] < f[b]);
+            queue.push(start);
+            let i = 128;
+            while (!queue.isEmpty()) {
+                let current = queue.pop(); //pop from priority queue instead of magic symbols
+                done.push(current)
+                if (i-- < 0 || arrEq(current, dest)) { //found destination
+                    if (i < 0)
+                        current = done.pop();
+                    let totalPath = [current];
+                    while (current in prev) { //reconstruct path
+                        current = prev[current];
+                        totalPath.push(current);
+                    }
+                    let path = [];
+                    for (let i = 1; i < totalPath.length; i++) { //reformat path
+                        let [a, b] = totalPath[i];
+                        let [c, d] = totalPath[i - 1];
+                        path.push([c - a, d - b]);
+                    }
+                    path.reverse();
+                    return path;
+                }
+                for (let neighbor of absoluteMovesSmall(getSpeed.call(this), current[0], current[1])) { //loops over all moves
                     if (neighbor[1] >= map.length
                             || neighbor[0] >= map[0].length
                             || neighbor[1] < 0

@@ -4,6 +4,7 @@ import {SPECS} from 'battlecode';
  * Universal constructor called for all units.
  */
 export function Unit() {
+    this.isAssaulting = false;
     this.streak = false;
     this.spawnPoint = this.getVisibleRobots().filter(i => i.unit < 2
                         && this.distSquared([i.x, i.y], [this.me.x, this.me.y]) <= 2 && i.signal >= 0)[0];
@@ -28,6 +29,7 @@ export function Unit() {
             this.target = this.decodeExactLocation(charge[0].signal & 0xfff);
         }
         this.moves = -999;
+        this.isAssaulting = true;
     };
 
     //harassers
