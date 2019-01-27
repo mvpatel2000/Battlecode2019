@@ -134,7 +134,8 @@ export function Unit() {
                     return this.buildUnit(SPECS.CRUSADER, choice[0], choice[1]);
                 }
                 if (this.unitsBuilt > 15) {
-                    return this.buildUnit(SPECS.PREACHER, choice[0], choice[1]);
+                    if (this.rand(3))
+                        return this.buildUnit(SPECS.PREACHER, choice[0], choice[1]);
                 }
                 return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
             }
