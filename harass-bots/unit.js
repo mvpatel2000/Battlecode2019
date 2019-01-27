@@ -55,7 +55,7 @@ export function Unit() {
         this.queue.splice(0, 0, this.targetTup);
         this.log(this.queue);
         this.harassTurn = harassTurn;
-        this.avoidTup.forEach(i => this.queue.push(i));
+        this.queue.push(null);
     }
 
 
@@ -68,11 +68,16 @@ export function Unit() {
             this.log('harasser redirecting');
             this.queue.push(this.queue.shift());
         }
+
         let attackbot = this.getRobotToAttack();
         if (attackbot && (!this.shouldRun || !this.shouldRun())) {
             if (this.fuel > SPECS.UNITS[this.me.unit].ATTACK_FUEL_COST) {
                 return this.attack(attackbot.x - this.me.x, attackbot.y - this.me.y);
             }
+        }
+
+        if (this.queue[0] == null) {
+            return this.go(this.avoidTup[0]);
         }
         // If there are robots that can attack me,
         // move to location that minimizes the sum of the hp damage.
