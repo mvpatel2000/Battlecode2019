@@ -101,7 +101,7 @@ function getNextMissionTarget() {
 }
 
 function castleTurn() {
-    if (this.primary && this.step % 50 == 0) {
+    if (this.step % 50 == 0) {
         this.log(`Turn: ${this.step}`);
     }
     // this.log("Castle "+this.me.id+" at ("+this.me.x+","+this.me.y+") here, on step "+this.step+".  Here's what I know about cluster status:");
@@ -398,7 +398,7 @@ function castleTurn() {
     }
 
     // PUSHING
-    if (!this.hasPushed && (this.step % 600 == 0 || this.toPush)
+    if (false && !this.hasPushed && (this.step == 300 || this.toPush)
             && this.getVisibleRobots().filter(i => (i.signal >> 12) == 0x7).length == 0) {
         if (this.fuel < 20000) {
             this.toPush = true;
