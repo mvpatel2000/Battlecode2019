@@ -164,7 +164,7 @@ function castleTurn() {
         //this.log("My next mission target:");
         //this.log(this.resourceClusters[nextMissionTarget]);
     }
-    
+
     // END OPENING CASTLETALK CODE
     if (this.step == 800 && this.getVisibleRobots().filter(i => (i.signal >> 12) == 0x7).length == 0) {
         let enemyCastleLocations = [];
@@ -173,7 +173,8 @@ function castleTurn() {
             enemyCastleLocations.push(enemyloc);
         }
         this.signal(this.encodeExactLocation
-            (enemyCastleLocations.reduce((a,b) => a[this.orientation() ? 1 : 0] < b[this.orientation() ? 1 : 0] ? a : b)) | 0x7000,
+            (enemyCastleLocations.reduce((a,b) => this.distSquared(a, this.pos())
+                                                < this.distSquared(b, this.pos()) ? a : b)) | 0x7000,
                 ([this.me.x, this.me.y, this.map.length - this.me.x, this.map.length - this.me.y]
                             .reduce((a, b) => a < b ? b : a) * Math.sqrt(2)) ** 2)
     }
