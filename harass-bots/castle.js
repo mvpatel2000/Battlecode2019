@@ -50,6 +50,7 @@ export function Castle() {
     this.numCastles = 3;
     this.numPreachersSpawned = 0;
     this.sendHarasser = 1;
+    this.hp = this.me.health;
 }
 
 /**
@@ -167,8 +168,41 @@ function castleTurn() {
         //this.log("My next mission target:");
         //this.log(this.resourceClusters[nextMissionTarget]);
     }
-
     // END OPENING CASTLETALK CODE
+
+    // MINING UPDATE CODE
+    this.nearbyMineCounts = this.nearbyMineCounts.map(i => i+1);
+    let signalPilgrims = this.getVisibleRobots().filter(i => i.unit == 2 && i.signal >=0);
+    for(let pilgrimCtr = 0; pilgrimCtr<signalPilgrims.length; pilgrimCtr++) {
+        let pilgrimLocation = this.decodeExactLocation(signalPilgrims[pilgrimCtr].signal);
+        for(let mineCtr = 0; mineCtr < this.nearbyMines.length; mineCtr++) {
+            if(this.arrEq(pilgrimLocation, this.nearbyMines[mineCtr])) {
+                if(Math.floor(signalPilgrims[pilgrimCtr].signal / 64 / 64) % 2 == 1) {
+                    this.nearbyMineCounts[mineCtr] = -999; //stop tracking it, it reports to new base
+                }
+                else if(Math.abs(signalPilgrims[pilgrimCtr].x - this.me.x) <= 1 && Math.abs(signalPilgrims[pilgrimCtr].y - this.me.y) <= 1) {
+                    this.nearbyMineCounts[mineCtr] = 0;
+                }
+                break;
+            }
+        }
+    }
+
+    // LOCAL PUSH
+    if(this.me.health != this.hp) {
+        this.me.health = this.hp;
+        let enemyCastleLocations = [];
+        for (let c = 0; c < this.enemyCastleZoneList.length; c++) {
+            let enemyloc = this.decodeLocation(this.enemyCastleZoneList[c]);
+            enemyCastleLocations.push(enemyloc);
+        }
+        let message = this.encodeExactLocation(enemyCastleLocations.reduce(
+                                            (a,b) => this.distSquared(a, this.pos())
+                                            < this.distSquared(b, this.pos()) ? a : b)) | 0x7000;
+        let dist = 100;
+        this.log(`local pushing; message = ${message.toString(2)}, dist = ${Math.floor(dist)}`);
+        this.signal(message, Math.floor(dist));
+    }
 
     // PUSHING
     if (!this.hasPushed && (this.step % 300 == 0 || this.toPush)
@@ -189,24 +223,6 @@ function castleTurn() {
                                 .reduce((a, b) => a < b ? b : a) * Math.sqrt(2)) ** 2;
             this.log(`pushing; message = ${message.toString(2)}, dist = ${Math.floor(dist)}`);
             this.signal(message, Math.floor(dist));
-        }
-    }
-
-    // MINING UPDATE CODE
-    this.nearbyMineCounts = this.nearbyMineCounts.map(i => i+1);
-    let signalPilgrims = this.getVisibleRobots().filter(i => i.unit == 2 && i.signal >=0);
-    for(let pilgrimCtr = 0; pilgrimCtr<signalPilgrims.length; pilgrimCtr++) {
-        let pilgrimLocation = this.decodeExactLocation(signalPilgrims[pilgrimCtr].signal);
-        for(let mineCtr = 0; mineCtr < this.nearbyMines.length; mineCtr++) {
-            if(this.arrEq(pilgrimLocation, this.nearbyMines[mineCtr])) {
-                if(Math.floor(signalPilgrims[pilgrimCtr].signal / 64 / 64) % 2 == 1) {
-                    this.nearbyMineCounts[mineCtr] = -999; //stop tracking it, it reports to new base
-                }
-                else if(Math.abs(signalPilgrims[pilgrimCtr].x - this.me.x) <= 1 && Math.abs(signalPilgrims[pilgrimCtr].y - this.me.y) <= 1) {
-                    this.nearbyMineCounts[mineCtr] = 0;
-                }
-                break;
-            }
         }
     }
 
