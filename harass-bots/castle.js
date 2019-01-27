@@ -169,8 +169,6 @@ function castleTurn() {
         //this.log(this.resourceClusters[nextMissionTarget]);
     }
     // END OPENING CASTLETALK CODE
-<<<<<<< Updated upstream
-=======
 
     
     if (this.step == 800 && this.getVisibleRobots().filter(i => (i.signal >> 12) == 0x7).length == 0) {
@@ -185,7 +183,6 @@ function castleTurn() {
                 ([this.me.x, this.me.y, this.map.length - this.me.x, this.map.length - this.me.y]
                             .reduce((a, b) => a < b ? b : a) * Math.sqrt(2)) ** 2)
     }
->>>>>>> Stashed changes
 
     // MINING UPDATE CODE
     this.nearbyMineCounts = this.nearbyMineCounts.map(i => i+1);
