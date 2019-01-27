@@ -109,7 +109,7 @@ export const Algorithms = (function() {
                 if (route.length > 0) { //A* towards target
                     return this.move(...route[0]);
                 } else { //random move
-                    return;
+                    return this.move(...this.randomMove());
                 }
             }
         },
@@ -123,19 +123,16 @@ export const Algorithms = (function() {
          * Returns 1 for a location with enemy robots. Returns -1 for location with teammate.
          */
         getDamageMap: function(rbotmap, len, len0, j, i) {
-            if (j >= len || j < 0 || i >= len0 || i < 0) {
+            if(j>=len || j<0 || i>=len0 || i<0) {
                 return 0;
             } else {
                 let id = rbotmap[j][i];
-                if (id > 0) {
+                if(id>0) {
                     if(this.getRobot(id).team == this.me.team) {
-                        return -10;
+                        return -1;
                     } else {
-                        return 10;
+                        return 1;
                     }
-                } else if (id < 0) {
-                    //slight positive for squares outside of vision
-                    return 1;
                 } else {
                     return 0;
                 }
@@ -164,17 +161,17 @@ export const Algorithms = (function() {
              let minx = Math.max(0, this.me.x-rad);
              let maxx = Math.min(rbotmaplen0-1, this.me.x+rad);
 
-             for (let j = miny; j <= maxy; j++) {
-                 for (let i = minx; i <= maxx; i++) {
-                     let rely = this.me.y - j;
-                     let relx = this.me.x - i;
-                     if ((rely * rely + relx * relx) <= rad2) {
+             for (let j=miny; j<=maxy; j++) {
+                 for (let i=minx; i<=maxx; i++) {
+                     let rely = this.me.y-j;
+                     let relx = this.me.x-i;
+                     if ((rely*rely + relx*relx) <= rad2) {
                          if((i == this.me.x && j == this.me.y) || rbotmap[j][i]==-1) {
                              continue;
                          }
                          let hpdamage = 0;
-                         for (let k = j - 1; k <= j + 1; k++) {
-                             for (let l = i - 1; l <= i + 1; l++) {
+                         for (let k=j-1; k<=j+1; k++) {
+                             for (let l=i-1; l<=i+1; l++) {
                                  hpdamage += this.getDamageMap(rbotmap, rbotmaplen, rbotmaplen0, k, l);
                              }
                          }
@@ -494,11 +491,21 @@ export const Algorithms = (function() {
             let map = this.map;
             if (map[y][x])
                 return [x, y];
-            for (let dx = -1; dx<2; dx++) {
-                for (let dy = -1; dy<2; dy++) {
+            for (let dx = -1; dx<=1; dx++) {
+                for (let dy = -1; dy<=1; dy++) {
                     if (y + dy >= 0 && x + dx >= 0 && y + dy < sz && x + dx < sz && map[y + dy][x + dx])
                         return [x + dx, y + dy];
                 }
+            }
+            for(let dx = -1; dx <=2; dx++) {
+                let dy = 2;
+                if (y + dy >= 0 && x + dx >= 0 && y + dy < sz && x + dx < sz && map[y + dy][x + dx])
+                    return [x + dx, y + dy];
+            }
+            for(let dy = -1; dy <= 2; dy++) {
+                let dx = 2;
+                if (y + dy >= 0 && x + dx >= 0 && y + dy < sz && x + dx < sz && map[y + dy][x + dx])
+                    return [x + dx, y + dy];
             }
         },
 

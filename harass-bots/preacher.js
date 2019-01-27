@@ -13,26 +13,24 @@ export function Preacher() {
     this.spawnPoint = this.getVisibleRobots().filter(i => i.unit < 2 && this.distSquared([i.x, i.y], [this.me.x, this.me.y]) <= 2 && i.signal >= 0)[0];
     this.target = this.decodeExactLocation(this.spawnPoint.signal);
 
-    this.moves = 0;
+    this.defend = true;
+    this.movesTaken = 0;
 }
 
 /**
  * March across map reflection.
  */
 function preacherTurn() {
-    this.pushAnalysis();
-
     // attack code
     // if there are robots that I can attack,
     // and I have enough fuel to attack,
     // attack them.
     // aoeAnalysis returns a location [x, y]
-    if (this.getRobotToAttack()) {
-        let attackbot = this.aoeAnalysis();
-        if (attackbot) {
-            if (this.fuel > SPECS.UNITS[this.me.unit].ATTACK_FUEL_COST) {
-                return this.attack(attackbot[0] - this.me.x, attackbot[1] - this.me.y);
-            }
+    let attackbot = this.aoeAnalysis();
+    if (attackbot) {
+        if (this.fuel > SPECS.UNITS[this.me.unit].ATTACK_FUEL_COST) {
+            this.defend = false;
+            return this.attack(attackbot[0] - this.me.x, attackbot[1] - this.me.y);
         }
     }
 
@@ -54,13 +52,13 @@ function preacherTurn() {
         }
     }
 
-    //if(this.defend == true)
-    //    return;
+    if(this.defend == true)
+        return;
 
     let route = this.path(this.target); //path finding
-    if (this.moves < 20 && this.fuel > (SPECS.UNITS[this.me.unit].FUEL_PER_MOVE * this.getSpeed())) {
+    if (this.fuel > (SPECS.UNITS[this.me.unit].FUEL_PER_MOVE * this.getSpeed())) {
         if (route.length > 0) { //A* towards target
-            //this.moves++;
+            this.movesTaken++;
             return this.move(...route[0]);
         }
     }

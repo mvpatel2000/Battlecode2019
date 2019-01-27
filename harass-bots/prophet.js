@@ -15,8 +15,6 @@ export function Prophet() {
         this.turn = this.harassTurn;
     }
     this.shouldRun = shouldRun;
-
-    this.moves = 0;
 }
 
 /**
@@ -24,7 +22,6 @@ export function Prophet() {
  */
 function prophetTurn() {
     this.step++;
-    this.pushAnalysis();
 
     // attack code
     // if there are robots that I can attack,
@@ -53,7 +50,7 @@ function prophetTurn() {
         } else {
             return this.move(...[finmove[0] - this.me.x, finmove[1] - this.me.y]);
         }
-    }
+    }  
 
     //get nearest grid square
     //move to it
@@ -63,14 +60,13 @@ function prophetTurn() {
     // movement code
     //this.log(this.target+" | "+[this.spawnPoint.x, this.spawnPoint.y]+" | "+this.me.x+", "+this.me.y);
     let route = this.path(this.target); //path finding
-    if (this.moves < 20 && this.fuel > (SPECS.UNITS[this.me.unit].FUEL_PER_MOVE * this.getSpeed())) {
+    if (this.fuel > (SPECS.UNITS[this.me.unit].FUEL_PER_MOVE * this.getSpeed())) {
         if (route.length > 0) { //A* towards target
-            //this.moves++;
             return this.move(...route[0]);
         }
     }
     return;
-
+    
     /*
     while (this.me.x == this.target[0] && this.me.y == this.target[1]) { //reset target if meet it
         if (this.targetCtr < this.enemyCastleLocations.length) {

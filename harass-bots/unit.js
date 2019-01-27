@@ -8,7 +8,6 @@ export function Unit() {
     this.spawnPoint = this.getVisibleRobots().filter(i => i.unit < 2
                         && this.distSquared([i.x, i.y], [this.me.x, this.me.y]) <= 2 && i.signal >= 0)[0];
     if (!this.spawnPoint) return;
-    this.unitsBuilt = 0;
     let sig = this.spawnPoint.signal;
     if (sig >> 15) {
         this.log(`harass signal = ${sig.toString(2)}`);
@@ -20,15 +19,7 @@ export function Unit() {
 
     this.pos = function() {
         return [this.me.x, this.me.y];
-    };
-
-    this.pushAnalysis = function() {
-        let charge = this.getVisibleRobots().filter(i => (i.signal >> 12) == 0x7);
-        if (charge.length > 0) {
-            this.target = this.decodeExactLocation(charge[0].signal & 0xfff);
-        }
-        this.moves = -999;
-    };
+    }
 
     //harassers
     if (this.harasser) {
@@ -121,14 +112,19 @@ export function Unit() {
                     }
                 }
                 this.signal(this.encodeExactLocation(defenseTarget), 2);
-                this.unitsBuilt++;
                 if (crusader) {
                     return this.buildUnit(SPECS.CRUSADER, choice[0], choice[1]);
                 }
-                if (this.unitsBuilt > 15) {
-                    return this.buildUnit(SPECS.PREACHER, choice[0], choice[1]);
+                if (this.me.turn < 500) {
+                    return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
                 }
-                return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
+                else {
+                    let decision = this.rand(4);
+                    if (decision < 2)
+                        return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
+                    else
+                        return this.buildUnit(SPECS.CRUSADER, choice[0], choice[1]);
+                }
             }
         } else if (coinflip == 1) {
             this.streak = false;
