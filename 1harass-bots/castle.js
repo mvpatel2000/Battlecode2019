@@ -50,6 +50,7 @@ export function Castle() {
     this.numCastles = 3;
     this.numPreachersSpawned = 0;
     this.sendHarasser = 1;
+    this.hp = this.me.health;
 }
 
 /**
@@ -73,8 +74,8 @@ function getNextMissionTarget() {
             target = i;
         }
         if (this.clusterStatus[i] == CLUSTER.OPEN && this.resourceClusters[i].length >= maxSize) { // override the shortest distance if we have big cluster
-            let karbThresh = 10 + Math.floor(Math.sqrt(d));
-            let fuelThresh = 10 + Math.floor(Math.sqrt(d));
+            let karbThresh = 20 + 0.6*Math.floor(Math.sqrt(d));
+            let fuelThresh = 20 + 0.6*Math.floor(Math.sqrt(d));
             shouldSendOverride = (this.fuel >= fuelThresh) && (this.karbonite >= karbThresh);
             maxSize = this.resourceClusters[i].length;
             overrideTarget = i;
@@ -89,9 +90,9 @@ function castleTurn() {
     if (this.primary && this.step % 50 == 0) {
         this.log(`Turn: ${this.step}`);
     }
-    // this.log(this.step);
     // this.log("Castle "+this.me.id+" at ("+this.me.x+","+this.me.y+") here, on step "+this.step+".  Here's what I know about cluster status:");
     // this.log(this.clusterStatus);
+
     // BEGIN OPENING CASTLETALK CODE
     /*
      * outline of opening protocol
@@ -167,8 +168,8 @@ function castleTurn() {
         //this.log("My next mission target:");
         //this.log(this.resourceClusters[nextMissionTarget]);
     }
-
     // END OPENING CASTLETALK CODE
+
 
     // MINING UPDATE CODE
     this.nearbyMineCounts = this.nearbyMineCounts.map(i => i+1);
@@ -185,6 +186,44 @@ function castleTurn() {
                 }
                 break;
             }
+        }
+    }
+
+    // LOCAL PUSH
+    if(this.me.health != this.hp) {
+        this.hp = this.me.health;
+        let enemyCastleLocations = [];
+        for (let c = 0; c < this.enemyCastleZoneList.length; c++) {
+            let enemyloc = this.decodeLocation(this.enemyCastleZoneList[c]);
+            enemyCastleLocations.push(enemyloc);
+        }
+        let message = this.encodeExactLocation(enemyCastleLocations.reduce(
+                                            (a,b) => this.distSquared(a, this.pos())
+                                            < this.distSquared(b, this.pos()) ? a : b)) | 0x7000;
+        let dist = 100;
+        this.log(`local pushing; message = ${message.toString(2)}, dist = ${Math.floor(dist)}`);
+        this.signal(message, Math.floor(dist));
+    }
+
+    // PUSHING
+    if (!this.hasPushed && (this.step % 600 == 0 || this.toPush)
+            && this.getVisibleRobots().filter(i => (i.signal >> 12) == 0x7).length == 0) {
+        if (this.fuel < 20000) {
+            this.toPush = true;
+        } else {
+            this.hasPushed = true;
+            let enemyCastleLocations = [];
+            for (let c = 0; c < this.enemyCastleZoneList.length; c++) {
+                let enemyloc = this.decodeLocation(this.enemyCastleZoneList[c]);
+                enemyCastleLocations.push(enemyloc);
+            }
+            let message = this.encodeExactLocation(enemyCastleLocations.reduce(
+                                                (a,b) => this.distSquared(a, this.pos())
+                                                < this.distSquared(b, this.pos()) ? a : b)) | 0x7000;
+            let dist = ([this.me.x, this.me.y, this.map.length - this.me.x, this.map.length - this.me.y]
+                                .reduce((a, b) => a < b ? b : a) * Math.sqrt(2)) ** 2;
+            this.log(`pushing; message = ${message.toString(2)}, dist = ${Math.floor(dist)}`);
+            this.signal(message, Math.floor(dist));
         }
     }
 

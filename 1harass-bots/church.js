@@ -12,9 +12,9 @@ export function Church() {
     this.nearbyMineCounts = [];
     this.defensePositions = [];
     this.lateGameChurch = true;
+    this.resourceClusters = this.clusterResourceTiles();
+    this.myClusterIndex = this.findNearestClusterIndex([this.me.x, this.me.y], this.resourceClusters);
     if(broadcastingPilgrims.length > 0 && zeroBroadcast.length == 0) { //it is a mission church!
-        this.resourceClusters = this.clusterResourceTiles();
-        this.myClusterIndex = this.findNearestClusterIndex([this.me.x, this.me.y], this.resourceClusters);
         let missionMineLocation = this.decodeExactLocation(broadcastingPilgrims[0].signal);
         this.nearbyMines = this.resourceClusters[this.myClusterIndex];
         let karbMines = this.nearbyMines.filter(i => this.karbonite_map[i[1]][i[0]] == true);
