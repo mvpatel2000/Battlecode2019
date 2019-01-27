@@ -972,8 +972,9 @@ export const Algorithms = (function() {
         /**
          * Takes in destination [x, y].
          * Return a list of [dx, dy] instructions to get from current location to destination.
+         * avoids within r2 of each tuple in avoid
          */
-        harasspath: function(dest, avoid) {
+        avoidpath: function(dest, avoid, r2) {
             let start = [this.me.x, this.me.y];
             let map = this.map;
             let occupied = this.getVisibleRobotMap();
@@ -1027,7 +1028,7 @@ export const Algorithms = (function() {
                             || occupied[neighbor[1]][neighbor[0]] > 0
                             || openHash[hash(neighbor)]
                             || g[neighbor] != undefined //filters invalid moves or already taken moves
-                            || avoid.map(i => this.distSquared(i, neighbor) <= 100).reduce((a, b) => a || b, false))
+                            || avoid.map(i => this.distSquared(i, neighbor) <= r2).reduce((a, b) => a || b, false))
                         continue;
                     queue.push(neighbor); //push
                     openHash[hash(neighbor)] = true;

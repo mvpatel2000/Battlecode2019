@@ -82,7 +82,7 @@ export function Unit() {
                 return;
             }
         }
-        let route = this.harasspath(this.queue[0], this.avoidTup);
+        let route = this.avoidpath(this.queue[0], this.avoidTup, 100);
         if (route.length) {
             return this.move(...route[0]);
         } else {
