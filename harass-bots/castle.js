@@ -90,9 +90,9 @@ function castleTurn() {
     if (this.primary && this.step % 50 == 0) {
         this.log(`Turn: ${this.step}`);
     }
-    // this.log(this.step);
     // this.log("Castle "+this.me.id+" at ("+this.me.x+","+this.me.y+") here, on step "+this.step+".  Here's what I know about cluster status:");
     // this.log(this.clusterStatus);
+
     // BEGIN OPENING CASTLETALK CODE
     /*
      * outline of opening protocol
@@ -169,6 +169,23 @@ function castleTurn() {
         //this.log(this.resourceClusters[nextMissionTarget]);
     }
     // END OPENING CASTLETALK CODE
+<<<<<<< Updated upstream
+=======
+
+    
+    if (this.step == 800 && this.getVisibleRobots().filter(i => (i.signal >> 12) == 0x7).length == 0) {
+        let enemyCastleLocations = [];
+        for (let c = 0; c < this.enemyCastleZoneList.length; c++) {
+            let enemyloc = this.decodeLocation(this.enemyCastleZoneList[c]);
+            enemyCastleLocations.push(enemyloc);
+        }
+        this.signal(this.encodeExactLocation
+            (enemyCastleLocations.reduce((a,b) => this.distSquared(a, this.pos())
+                                                < this.distSquared(b, this.pos()) ? a : b)) | 0x7000,
+                ([this.me.x, this.me.y, this.map.length - this.me.x, this.map.length - this.me.y]
+                            .reduce((a, b) => a < b ? b : a) * Math.sqrt(2)) ** 2)
+    }
+>>>>>>> Stashed changes
 
     // MINING UPDATE CODE
     this.nearbyMineCounts = this.nearbyMineCounts.map(i => i+1);
