@@ -61,6 +61,15 @@ function whereAmIGoing(signal) {
 }
 
 function pilgrimTurn() {
+    if(this.endgameAnalysis()) { //last second resource liquidation
+        let choice = this.getSpawnLocation(this.me.x + 1, this.me.y);
+        if (choice != null) {
+            if (this.fuel >= 200 && this.karbonite >= 50) {
+                return this.buildUnit(SPECS.CHURCH, choice[0], choice[1]);
+            }
+        }
+    } 
+
     let [x, y] = [this.me.x, this.me.y];
 
     if(!this.adjacentDestinations) { //switch mining base

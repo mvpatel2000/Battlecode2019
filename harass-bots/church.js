@@ -38,6 +38,15 @@ export function Church() {
 }
 
 function churchTurn() {
+    if(this.endgameAnalysis()) { //last second resource liquidation
+        let choice = this.getSpawnLocation(this.me.x + 1, this.me.y);
+        if (choice != null) {
+            if (this.fuel >= 50 && this.karbonite >= 10) {
+                return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
+            }
+        }
+    } 
+
     if(this.lateGameChurch)
         return;
 

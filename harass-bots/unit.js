@@ -145,7 +145,7 @@ export function Unit() {
             if (choice) {
                 let defenseTarget = this.defensePositions.shift();
                 let defenseCtr = 0; 
-                while(defenseCtr < this.defensePositions.length && this.get_visible_robot_map()[defenseTarget[1]][defenseTarget[0]] > 0) {
+                while(defenseCtr < this.defensePositions.length && this.getVisibleRobotMap()[defenseTarget[1]][defenseTarget[0]] > 0) {
                     defenseTarget = this.defensePositions.shift();
                     defenseCtr++;
                 }
