@@ -102,14 +102,31 @@ function pilgrimTurn() {
     let route;
     if( this.arrEq(this.destination, this.mineLocation) ) { //moving to mine
         route = this.path(this.destination);
-        
     }
     else { //( this.arrEq(this.destination, this.baseLocation) ) //moving to base
         route = this.workerpath(this.destination);
     }
 
     if (this.fuel > (SPECS.UNITS[this.me.unit].FUEL_PER_MOVE * this.getSpeed()) && route.length > 0) { //A* towards target
-        if(escapemove.length > 0) { //flee in direction of path
+        let myClusterIndex = this.findNearestClusterIndex([this.me.x, this.me.y], this.resourceClusters);
+        let myCluster = this.resourceClusters[myClusterIndex];
+        let lookForBase = this.centroid(myCluster);
+        let onMission = this.getVisibleRobots().filter(i => i.unit < 2 && i.team == this.me.team
+            && this.distSquared(lookForBase, [i.x, i.y])<=2).length == 0; //check if church/castle at centroid
+        onMission = onMission && this.getVisibleRobots().filter(i => i.unit == 0 && i.team == this.me.team 
+            && this.distSquared(lookForBase, [i.x, i.y])<=16).length == 0; //check if castle nearby
+        if(escapemove.length > 0 && this.karbonite > 200 && this.fuel > 400 && onMission && Math.abs(this.destination[0] - this.me.x) <= 4 && Math.abs(this.destination[1] - this.me.y) <= 4) {
+            let target = this.exactCentroid(myCluster);
+            let choice = this.getChurchSpawnLocation(target[0], target[1]);
+            if(choice != null) {
+                this.signal(this.encodeExactLocation(this.mineLocation), 2);
+                this.baseLocation = [this.me.x + choice[0], this.me.y + choice[1]];
+                this.adjacentDestinations = true;
+                // this.log("Pilgrim "+this.me.id+" starting a mission church at "+this.baseLocation);
+                return this.buildUnit(SPECS.CHURCH, choice[0], choice[1]);
+            }
+        }
+        else if(escapemove.length > 0) { //flee in direction of path
             let [dx, dy] = route.length ? route[0] : [0, 0];
             let old = [this.me.x + dx, this.me.y + dy];
             let finmove = escapemove.reduce((a, b) => this.dist(a, old) < this.dist(b, old) ? a : b);
