@@ -1,9 +1,0 @@
-#!/bin/bash
-dir=$(mktemp -d)
-mkdir "$dir/a"
-cd $1
-bc19compile -d .
-mv compiled_bot.js "$dir/a/robot.js"
-cd ..
-bc19upload -i "$dir/a/robot.js"
-rm -rf "$dir"
