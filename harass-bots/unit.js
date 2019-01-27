@@ -139,6 +139,11 @@ export function Unit() {
             let choice = this.getSpawnLocation(target[0], target[1]);
             if (choice) {
                 let defenseTarget = this.defensePositions.shift();
+                let defenseCtr = 0; 
+                while(defenseCtr < this.defensePositions.length && this.get_visible_robot_map()[defenseTarget[1]][defenseTarget[0]] > 0) {
+                    defenseTarget = this.defensePositions.shift();
+                    defenseCtr++;
+                }
                 let vertical = this.orientation();
                 let crusader = false;
                 let adj = this.me.unit == SPECS.CASTLE ? 0 : 8;
