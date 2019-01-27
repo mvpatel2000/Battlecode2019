@@ -470,7 +470,7 @@ export const Algorithms = (function() {
                     if ( x>=0 && y>=0 && x < this.map.length && y < this.map.length
                         && this.map[y][x] && this.getVisibleRobotMap()[y][x] <= 0
                         && !this.karbonite_map[y][x] && !this.fuel_map[y][x]) {
-                        positions.unshift([x, y]);
+                        this.defensePositions.unshift([x, y]);
                     }
 
                     delta[0] = delta[0] + dirs[0];
