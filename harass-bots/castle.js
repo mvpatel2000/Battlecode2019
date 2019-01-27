@@ -81,8 +81,8 @@ function getNextMissionTarget() {
     for (let i = 0; i < this.resourceClusters.length; i++) {
         let d = this.distSquared(this.resourceCentroids[i], [this.me.x, this.me.y]);
         if (this.clusterStatus[i] == CLUSTER.OPEN && d < minScore) {
-            let karbThresh = 20 + 10*this.clusterStatus.filter(i => i == CLUSTER.CONTROLLED).length + Math.floor(Math.sqrt(d));
-            let fuelThresh = 20 + 10*this.clusterStatus.filter(i => i == CLUSTER.CONTROLLED).length + Math.floor(Math.sqrt(d));
+            let karbThresh = 20 + 5*this.clusterStatus.filter(i => i == CLUSTER.CONTROLLED).length + Math.floor(Math.sqrt(d));
+            let fuelThresh = 20 + 5*this.clusterStatus.filter(i => i == CLUSTER.CONTROLLED).length + Math.floor(Math.sqrt(d));
             shouldSend = (this.fuel >= fuelThresh) && (this.karbonite >= karbThresh);
             minScore = d;
             target = i;
