@@ -24,9 +24,10 @@ export function Unit() {
     };
 
     this.pushAnalysis = function() {
-        let charge = this.getVisibleRobots().filter(i => (i.signal >> 12) == 0x7);
+        let charge = this.getVisibleRobots().filter(i => i.team == this.me.team && (i.signal >> 12) == 0x7);
         if (charge.length > 0) {
             this.target = this.decodeExactLocation(charge[0].signal & 0xfff);
+            this.log(`attacking ${this.target}`);
         }
         this.moves = -999;
         this.isAssaulting = true;
@@ -89,7 +90,7 @@ export function Unit() {
                 return this.move(...[finmove[0] - this.me.x, finmove[1] - this.me.y]);
             }
         }
-        
+
         if (!this.queue.length) {
             return;
         }
