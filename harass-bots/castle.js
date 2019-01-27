@@ -164,6 +164,7 @@ function castleTurn() {
         //this.log("My next mission target:");
         //this.log(this.resourceClusters[nextMissionTarget]);
     }
+    
     // END OPENING CASTLETALK CODE
     if (this.step == 800) {
         let enemyCastleLocations = [];

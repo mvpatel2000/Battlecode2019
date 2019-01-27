@@ -23,8 +23,9 @@ export function Unit() {
     };
 
     this.pushAnalysis = function() {
-        if ((this.spawnPoint.signal >> 12) == 0x7) {
-            this.target = this.decodeExactLocation(this.spawnPoint.signal & 0xfff);
+        let charge = this.getVisibleRobots().filter(i => (i.signal >> 12) == 0x7);
+        if (charge.length > 0) {
+            this.target = this.decodeExactLocation(charge[0].signal & 0xfff);
         }
     };
 
