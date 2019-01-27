@@ -110,6 +110,52 @@ function churchTurn() {
                 }
             }
         }
+        else if(this.karbonite >= 25 && this.fuel >= 50 && this.distSquared([visibleEnemies[0].x, visibleEnemies[0].y],[this.me.x, this.me.y]) >= 25) {
+            let closestThreat = [visibleEnemies[0].x, visibleEnemies[0].y]
+            let choice = this.getSpawnLocation(closestThreat[0], closestThreat[1]);
+            if(choice != null) {
+                if(this.defensePositions.length > 0) {
+                    let sub = (a, b) => [a[0] - b[0], a[1] - b[1]];
+                    let angle = (v, w) => Math.acos(
+                        (v[0] * w[0] + v[1] * w[1]) / (Math.sqrt(v[0] * v[0] + v[1] * v[1])
+                            * Math.sqrt(w[0] * w[0] + w[1] * w[1])));
+                    let candidates = this.defensePositions.filter(i =>
+                        angle(sub(i, this.pos()), sub(closestThreat, this.pos())) <= Math.PI / 4)
+                    let defenseTarget = candidates[0];
+                    for (let i = 0; i < this.defensePositions.length; i++) {
+                        if (this.arrEq(this.defensePositions[i], defenseTarget)) {
+                            this.defensePositions.splice(i, 1);
+                            break;
+                        }
+                    }
+                    this.signal(this.encodeExactLocation(defenseTarget), 2);
+                }
+                return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
+            }
+        }
+        else if(this.karbonite >= 15 && this.fuel >= 50) {
+            let closestThreat = [visibleEnemies[0].x, visibleEnemies[0].y]
+            let choice = this.getSpawnLocation(closestThreat[0], closestThreat[1]);
+            if(choice != null) {
+                if(this.defensePositions.length > 0) {
+                    let sub = (a, b) => [a[0] - b[0], a[1] - b[1]];
+                    let angle = (v, w) => Math.acos(
+                        (v[0] * w[0] + v[1] * w[1]) / (Math.sqrt(v[0] * v[0] + v[1] * v[1])
+                            * Math.sqrt(w[0] * w[0] + w[1] * w[1])));
+                    let candidates = this.defensePositions.filter(i =>
+                        angle(sub(i, this.pos()), sub(closestThreat, this.pos())) <= Math.PI / 4)
+                    let defenseTarget = candidates[0];
+                    for (let i = 0; i < this.defensePositions.length; i++) {
+                        if (this.arrEq(this.defensePositions[i], defenseTarget)) {
+                            this.defensePositions.splice(i, 1);
+                            break;
+                        }
+                    }
+                    this.signal(this.encodeExactLocation(defenseTarget), 2);
+                }
+                return this.buildUnit(SPECS.CRUSADER, choice[0], choice[1]);
+            }
+        }
     }
 
     // SATURATION CODE

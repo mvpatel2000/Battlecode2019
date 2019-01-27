@@ -109,7 +109,7 @@ export const Algorithms = (function() {
                 if (route.length > 0) { //A* towards target
                     return this.move(...route[0]);
                 } else { //random move
-                    return this.move(...this.randomMove());
+                    return;
                 }
             }
         },

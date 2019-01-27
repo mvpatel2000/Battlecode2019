@@ -60,7 +60,7 @@ function preacherTurn() {
     let route = this.path(this.target); //path finding
     if (this.moves < 20 && this.fuel > (SPECS.UNITS[this.me.unit].FUEL_PER_MOVE * this.getSpeed())) {
         if (route.length > 0) { //A* towards target
-            this.moves++;
+            //this.moves++;
             return this.move(...route[0]);
         }
     }
