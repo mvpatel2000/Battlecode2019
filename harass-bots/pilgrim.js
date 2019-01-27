@@ -21,8 +21,6 @@ export function Pilgrim() {
 function pilgrimTurn() {
     let [x, y] = [this.me.x, this.me.y];
 
-    //TODO: Add mission code to determine what type of cluster we're in / heading to
-
     if(!this.adjacentDestinations) { //switch mining base
         let adjacentBases = this.getVisibleRobots().filter(i => i.unit < 2 && this.distSquared([i.x,i.y], this.mineLocation)<=2)
         if(adjacentBases.length > 0) { //signal to original base
@@ -40,7 +38,7 @@ function pilgrimTurn() {
         let myCluster = this.resourceClusters[myClusterIndex];
         let lookForBase = this.centroid(myCluster);
         let onMission = this.getVisibleRobots().filter(i => i.unit < 2 && i.team == this.me.team
-            && this.distSquared(lookForBase, [i.x, i.y])<=2).length == 0; //check if church/castle at centroid
+            && this.distSquared(lookForBase, [i.x, i.y])<=4).length == 0; //check if church/castle at centroid
         onMission = onMission && this.distSquared(lookForBase, [this.me.x, this.me.y]) <= 100; //can see centroid
         onMission = onMission && this.getVisibleRobots().filter(i => i.unit == 0 && i.team == this.me.team 
             && this.distSquared(lookForBase, [i.x, i.y])<=16).length == 0; //check if castle nearby
@@ -124,7 +122,7 @@ function pilgrimTurn() {
                 this.signal(this.encodeExactLocation(this.mineLocation), 2);
                 this.baseLocation = [this.me.x + choice[0], this.me.y + choice[1]];
                 this.adjacentDestinations = true;
-                // this.log("Pilgrim "+this.me.id+" starting a mission church at "+this.baseLocation);
+                this.log("Pilgrim "+this.me.id+" starting an emergency church at "+this.baseLocation);
                 return this.buildUnit(SPECS.CHURCH, choice[0], choice[1]);
             }
         }
