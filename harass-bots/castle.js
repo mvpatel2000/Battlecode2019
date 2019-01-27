@@ -312,7 +312,7 @@ function castleTurn() {
                                 (v[0] * w[0] + v[1] * w[1]) / (Math.sqrt(v[0] * v[0] + v[1] * v[1])
                                     * Math.sqrt(w[0] * w[0] + w[1] * w[1])));
                             let candidates = this.defensePositions.filter(i =>
-                                angle(sub(i, this.pos()), sub(closestThreat, this.pos())) <= Math.PI / 2)
+                                angle(sub(i, this.pos()), sub(closestThreat, this.pos())) <= Math.PI / 4)
                             let defenseTarget = candidates[0];
                             for (let i = 0; i < this.defensePositions.length; i++) {
                                 if (this.arrEq(this.defensePositions[i], defenseTarget)) {
