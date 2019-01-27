@@ -13,7 +13,7 @@ export function Preacher() {
     this.spawnPoint = this.getVisibleRobots().filter(i => i.unit < 2 && this.distSquared([i.x, i.y], [this.me.x, this.me.y]) <= 2 && i.signal >= 0)[0];
     this.target = this.decodeExactLocation(this.spawnPoint.signal);
 
-    this.defend = true;
+    this.moves = 0;
 }
 
 /**
@@ -31,7 +31,6 @@ function preacherTurn() {
         let attackbot = this.aoeAnalysis();
         if (attackbot) {
             if (this.fuel > SPECS.UNITS[this.me.unit].ATTACK_FUEL_COST) {
-                //this.defend = false;
                 return this.attack(attackbot[0] - this.me.x, attackbot[1] - this.me.y);
             }
         }
@@ -59,8 +58,9 @@ function preacherTurn() {
     //    return;
 
     let route = this.path(this.target); //path finding
-    if (this.fuel > (SPECS.UNITS[this.me.unit].FUEL_PER_MOVE * this.getSpeed())) {
+    if (this.moves < 20 && this.fuel > (SPECS.UNITS[this.me.unit].FUEL_PER_MOVE * this.getSpeed())) {
         if (route.length > 0) { //A* towards target
+            this.moves++;
             return this.move(...route[0]);
         }
     }
