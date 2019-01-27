@@ -36,6 +36,7 @@ function crusaderTurn() {
     // move to location that minimizes the sum of the hp damage.
     // Tiebreaker: location closest (euclidean distance) from the original path move to target
     // Fall through if no robots can attack me, or not enough fuel to move.
+    /*
     let optimalmove = this.getOptimalEscapeLocation();
     if (optimalmove.length && this.fuel >= this.fuelpermove) {
         let route = this.path(this.target);
@@ -48,7 +49,7 @@ function crusaderTurn() {
         } else {
             return this.go(finmove);
         }
-    }
+    } */
 
     // non-combat mode
    /* while (this.me.x == this.target[0] && this.me.y == this.target[1]) { //reset target if meet it
