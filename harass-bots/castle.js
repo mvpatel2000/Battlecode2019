@@ -170,19 +170,6 @@ function castleTurn() {
     }
     // END OPENING CASTLETALK CODE
 
-    
-    if (this.step == 800 && this.getVisibleRobots().filter(i => (i.signal >> 12) == 0x7).length == 0) {
-        let enemyCastleLocations = [];
-        for (let c = 0; c < this.enemyCastleZoneList.length; c++) {
-            let enemyloc = this.decodeLocation(this.enemyCastleZoneList[c]);
-            enemyCastleLocations.push(enemyloc);
-        }
-        this.signal(this.encodeExactLocation>>
-            (enemyCastleLocations.reduce((a,b) => this.distSquared(a, this.pos())
-                                                < this.distSquared(b, this.pos()) ? a : b)) | 0x7000,
-                ([this.me.x, this.me.y, this.map.length - this.me.x, this.map.length - this.me.y]
-                            .reduce((a, b) => a < b ? b : a) * Math.sqrt(2)) ** 2)
-    }
 
     // MINING UPDATE CODE
     this.nearbyMineCounts = this.nearbyMineCounts.map(i => i+1);
