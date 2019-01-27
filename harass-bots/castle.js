@@ -31,9 +31,9 @@ export function Castle() {
     this.myClusterIndex = this.findNearestClusterIndex([this.me.x, this.me.y], this.resourceClusters);
 
     this.clusterStatus[this.myClusterIndex] = CLUSTER.CONTROLLED;
-    let oppositeClusterIndex = this.reflectClusterByIndex(this.myClusterIndex, this.resourceClusters);
+    this.doppelganger = this.reflectClusterByIndex(this.myClusterIndex, this.resourceClusters);
     //this.log("my cluster: "+this.myClusterIndex+"; enemy cluster: "+oppositeClusterIndex);
-    this.clusterStatus[oppositeClusterIndex] = CLUSTER.HOSTILE;
+    this.clusterStatus[this.doppelganger] = CLUSTER.HOSTILE;
 
     this.nearbyMines = this.resourceClusters[this.myClusterIndex];
     let karbMines = this.nearbyMines.filter(i => this.karbonite_map[i[1]][i[0]] == true);
@@ -516,29 +516,45 @@ function castleTurn() {
     if (this.step > 4 && this.homeSaturated && sendingMission) { // perhaps replace with an actual threshold
         let targetCentroid = this.resourceCentroids[targetClusterIndex];
         let targetCluster = this.resourceClusters[targetClusterIndex];
-        let target = targetCluster[0];
-        if(this.karbonite_map[targetCentroid[1]][targetCentroid[0]] || this.fuel_map[targetCentroid[1]][targetCentroid[0]])
-            target = targetCentroid;
-        else {
-            for(let i = -1; i <= 1; i++) {
-                for(let j = -1; j <= 1; j++) {
-                    let newx = targetCentroid[0]+i;
-                    let newy = targetCentroid[1]+j;
-                    if(newx >= 0 && newx < this.fuel_map.length && newy >= 0 && newy <= this.fuel_map.length &&
-                        (this.karbonite_map[newy][newx] || this.fuel_map[newy][newx])) {
-                        target = [newx, newy];
-                    }
-                }
-            }
-        }
+        // let target = targetCluster[0];
+        // if(this.karbonite_map[targetCentroid[1]][targetCentroid[0]] || this.fuel_map[targetCentroid[1]][targetCentroid[0]])
+        //     target = targetCentroid;
+        // else {
+        //     for(let i = -1; i <= 1; i++) {
+        //         for(let j = -1; j <= 1; j++) {
+        //             let newx = targetCentroid[0]+i;
+        //             let newy = targetCentroid[1]+j;
+        //             if(newx >= 0 && newx < this.fuel_map.length && newy >= 0 && newy <= this.fuel_map.length &&
+        //                 (this.karbonite_map[newy][newx] || this.fuel_map[newy][newx])) {
+        //                 target = [newx, newy];
+        //             }
+        //         }
+        //     }
+        // }
 
-        let choice = this.getSpawnLocation(target[0], target[1]);
+        let choice = this.getSpawnLocation(targetCentroid[0], targetCentroid[1]);
         if (choice != null) {
             this.clusterStatus[targetClusterIndex] = CLUSTER.CONTROLLED;
             this.castleTalk(targetClusterIndex+1);
             // this.log("I'm sending a mission to cluster "+targetClusterIndex+" and broadcasting it.");
             //this.log("Spawning pilgrim in direction " + choice + " towards " + target);
-            this.signal(this.encodeExactLocation(target), 2);
+
+            let enemyCastleClusterCodes = [];
+            for(let i = 0; i < this.clusterStatus.length; i++) {
+                if(this.clusterStatus[i] == CLUSTER.HOSTILE && i != this.doppelganger) {
+                    enemyCastleClusterCodes.push(i);
+                }
+            }
+            while(enemyCastleClusterCodes.length < 2) {
+                enemyCastleClusterCodes.push(this.doppelganger);
+            }
+            this.log(enemyCastleClusterCodes);
+
+            let signal = (1 << 15) + (targetClusterIndex << 10) + (enemyCastleClusterCodes[0] << 5) + enemyCastleClusterCodes[1];
+
+            this.log(signal);
+
+            this.signal(signal, 2);
             return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
         }
     }

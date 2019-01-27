@@ -7,15 +7,57 @@ export function Pilgrim() {
 
     this.baseLocation = [this.spawnPoint.x, this.spawnPoint.y];
     this.originalBaseLocation = this.baseLocation;
-    this.mineLocation = this.decodeExactLocation(this.spawnPoint.signal);
-    this.adjacentDestinations = this.distSquared(this.baseLocation, this.mineLocation) <= 2;
 
     this.resourceClusters = this.clusterResourceTiles();
-    this.avoid = this.spawnPoint.unit == SPECS.CASTLE ? [this.reflectPoint(...this.pos())] : [];
+    this.avoid = this.spawnPoint.unit == SPECS.CASTLE ? [this.reflectPoint(...this.baseLocation)] : [];
+    // this.log(this.avoid);
+
+    this.mineLocation = whereAmIGoing.call(this, this.spawnPoint.signal);
+    this.adjacentDestinations = this.distSquared(this.baseLocation, this.mineLocation) <= 2;
 
     this.destination = this.mineLocation;
     this.karboniteMine = this.karbonite_map[this.mineLocation[1]][this.mineLocation[0]];
     this.fuelMine = this.fuel_map[this.mineLocation[1]][this.mineLocation[0]];
+}
+
+function whereAmIGoing(signal) {
+    if(signal >> 15 == 0) {
+        // this.log("im a normie pilgrim");
+        return this.decodeExactLocation(signal);
+    }
+    // this.log("i am special pilgrim, i avoid "+this.avoid);
+    let targetClusterIndex = (signal >> 10) & 0x1f;
+    let firstEnemyCentroid = this.centroid(this.resourceClusters[(signal >> 5) & 0x1f]);
+    let secondEnemyCentroid = this.centroid(this.resourceClusters[signal & 0x1f]);
+    this.avoid.push(firstEnemyCentroid);
+    this.avoid.push(secondEnemyCentroid);
+    this.log(this.avoid);
+
+    let targetCluster = this.resourceClusters[targetClusterIndex];
+    let targetCentroid = this.centroid(targetCluster);
+    if(this.karbonite_map[targetCentroid[1]][targetCentroid[0]] || this.fuel_map[targetCentroid[1]][targetCentroid[0]])
+        return targetCentroid;
+    for(let i = -1; i <= 1; i++) {
+        for(let j = -1; j <= 1; j++) {
+            let newx = targetCentroid[0]+i;
+            let newy = targetCentroid[1]+j;
+            if(newx >= 0 && newx < this.fuel_map.length && newy >= 0 && newy <= this.fuel_map.length &&
+                (this.karbonite_map[newy][newx] || this.fuel_map[newy][newx])) {
+                return [newx, newy];
+            }
+        }
+    }
+    for(let i = -2; i <= 2; i++) {
+        for(let j = -2; j <= 2; j++) {
+            let newx = targetCentroid[0]+i;
+            let newy = targetCentroid[1]+j;
+            if(newx >= 0 && newx < this.fuel_map.length && newy >= 0 && newy <= this.fuel_map.length &&
+                (this.karbonite_map[newy][newx] || this.fuel_map[newy][newx])) {
+                return [newx, newy];
+            }
+        }
+    }
+    return targetCluster[0];
 }
 
 function pilgrimTurn() {
@@ -100,7 +142,7 @@ function pilgrimTurn() {
 
     let route;
     if( this.arrEq(this.destination, this.mineLocation) ) { //moving to mine
-        route = this.path(this.destination);
+        route = this.avoidpath(this.destination, this.avoid, 100);
     }
     else { //( this.arrEq(this.destination, this.baseLocation) ) //moving to base
         route = this.workerpath(this.destination);
