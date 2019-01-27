@@ -175,7 +175,7 @@ function castleTurn() {
 
     if (!this.hasPushed && (this.step % 300 == 0 || this.toPush)
             && this.getVisibleRobots().filter(i => (i.signal >> 12) == 0x7).length == 0) {
-        if (this.fuel < 500 && !this.getVisibleRobots().filter(i => (i.signal >> 12) == 0x7).length == 0) {
+        if (this.fuel < 5000 && !this.getVisibleRobots().filter(i => (i.signal >> 12) == 0x7).length == 0) {
             this.toPush = true;
         } else {
             this.hasPushed = true;
