@@ -27,6 +27,7 @@ export function Unit() {
         if (charge.length > 0) {
             this.target = this.decodeExactLocation(charge[0].signal & 0xfff);
         }
+        this.moves = -999;
     };
 
     //harassers
