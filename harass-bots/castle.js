@@ -166,7 +166,7 @@ function castleTurn() {
     }
     
     // END OPENING CASTLETALK CODE
-    if (this.step == 800) {
+    if (this.step == 800 && this.getVisibleRobots().filter(i => (i.signal >> 12) == 0x7).length == 0) {
         let enemyCastleLocations = [];
         for (let c = 0; c < this.enemyCastleZoneList.length; c++) {
             let enemyloc = this.decodeLocation(this.enemyCastleZoneList[c]);
