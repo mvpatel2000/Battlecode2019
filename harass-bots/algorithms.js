@@ -816,7 +816,7 @@ export const Algorithms = (function() {
                 || dest[0] < 0
                 || !map[dest[1]][dest[0]]
                 || occupied[dest[1]][dest[0]] > 0) {
-                return [];
+                return this.workerpath(dest);
             }
             let openHash = {};
             let done = new PriorityQueue((a, b) => h(a) < h(b));
