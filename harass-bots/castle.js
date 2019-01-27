@@ -234,7 +234,7 @@ function castleTurn() {
         for (let c = 0; c < this.enemyCastleZoneList.length; c++) {
             //this.log("zone list " + this.enemyCastleZoneList[c]);
             let enemyloc = this.decodeLocation(this.enemyCastleZoneList[c]);
-            this.log("enemyloc " + enemyloc);
+            //this.log("enemyloc " + enemyloc);
             let myloc = this.reflectPoint(enemyloc[0], enemyloc[1]);
             enemyCastleLocations.push(enemyloc);
             friendlyCastleLocations.push(myloc);
