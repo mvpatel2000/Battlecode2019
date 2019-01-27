@@ -41,6 +41,7 @@ function pilgrimTurn() {
         let lookForBase = this.centroid(myCluster);
         let onMission = this.getVisibleRobots().filter(i => i.unit < 2 && i.team == this.me.team
             && this.distSquared(lookForBase, [i.x, i.y])<=2).length == 0; //check if church/castle at centroid
+        onMission = onMission && this.distSquared(lookForBase, [this.me.x, this.me.y]) <= 100; //can see centroid
         onMission = onMission && this.getVisibleRobots().filter(i => i.unit == 0 && i.team == this.me.team 
             && this.distSquared(lookForBase, [i.x, i.y])<=16).length == 0; //check if castle nearby
         if(this.karbonite > 80 && this.fuel > 300 && onMission) { //want to build mission church for mission
@@ -113,6 +114,7 @@ function pilgrimTurn() {
         let lookForBase = this.centroid(myCluster);
         let onMission = this.getVisibleRobots().filter(i => i.unit < 2 && i.team == this.me.team
             && this.distSquared(lookForBase, [i.x, i.y])<=2).length == 0; //check if church/castle at centroid
+        onMission = onMission && this.distSquared(lookForBase, [this.me.x, this.me.y]) <= 100; //can see centroid
         onMission = onMission && this.getVisibleRobots().filter(i => i.unit == 0 && i.team == this.me.team 
             && this.distSquared(lookForBase, [i.x, i.y])<=16).length == 0; //check if castle nearby
         if(escapemove.length > 0 && this.karbonite > 200 && this.fuel > 400 && onMission && Math.abs(this.destination[0] - this.me.x) <= 4 && Math.abs(this.destination[1] - this.me.y) <= 4) {
