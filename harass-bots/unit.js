@@ -61,6 +61,11 @@ export function Unit() {
      * Turn for harass bots.
      */
     function harassTurn() {
+        if (this.getVisibleRobots().map(i => i.unit == SPECS.CHURCH
+            && this.dist([i.x, i.y], this.pos()) < 2).reduce((a, b) => a || b, false)) {
+            this.log('harasser redirecting');
+            this.queue.push(this.queue.shift());
+        }
         let attackbot = this.getRobotToAttack();
         if (attackbot && (!this.shouldRun || !this.shouldRun())) {
             if (this.fuel > SPECS.UNITS[this.me.unit].ATTACK_FUEL_COST) {
@@ -95,7 +100,7 @@ export function Unit() {
                 return;
             }
         }
-        let route = this.harasspath(this.queue[0], this.avoidTup);
+        let route = this.avoidpath(this.queue[0], this.avoidTup, 100);
         if (route.length) {
             return this.move(...route[0]);
         } else {
