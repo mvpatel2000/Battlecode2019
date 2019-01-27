@@ -74,8 +74,8 @@ function getNextMissionTarget() {
             target = i;
         }
         if (this.clusterStatus[i] == CLUSTER.OPEN && this.resourceClusters[i].length >= maxSize) { // override the shortest distance if we have big cluster
-            let karbThresh = 10 + Math.floor(Math.sqrt(d));
-            let fuelThresh = 10 + Math.floor(Math.sqrt(d));
+            let karbThresh = 20 + 0.6*Math.floor(Math.sqrt(d));
+            let fuelThresh = 20 + 0.6*Math.floor(Math.sqrt(d));
             shouldSendOverride = (this.fuel >= fuelThresh) && (this.karbonite >= karbThresh);
             maxSize = this.resourceClusters[i].length;
             overrideTarget = i;
