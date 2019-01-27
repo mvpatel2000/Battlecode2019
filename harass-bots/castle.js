@@ -166,6 +166,24 @@ function castleTurn() {
     }
     // END OPENING CASTLETALK CODE
 
+    // MINING UPDATE CODE
+    this.nearbyMineCounts = this.nearbyMineCounts.map(i => i+1);
+    let signalPilgrims = this.getVisibleRobots().filter(i => i.unit == 2 && i.signal >=0);
+    for(let pilgrimCtr = 0; pilgrimCtr<signalPilgrims.length; pilgrimCtr++) {
+        let pilgrimLocation = this.decodeExactLocation(signalPilgrims[pilgrimCtr].signal);
+        for(let mineCtr = 0; mineCtr < this.nearbyMines.length; mineCtr++) {
+            if(this.arrEq(pilgrimLocation, this.nearbyMines[mineCtr])) {
+                if(Math.floor(signalPilgrims[pilgrimCtr].signal / 64 / 64) % 2 == 1) {
+                    this.nearbyMineCounts[mineCtr] = -999; //stop tracking it, it reports to new base
+                }
+                else if(Math.abs(signalPilgrims[pilgrimCtr].x - this.me.x) <= 1 && Math.abs(signalPilgrims[pilgrimCtr].y - this.me.y) <= 1) {
+                    this.nearbyMineCounts[mineCtr] = 0;
+                }
+                break;
+            }
+        }
+    }
+
     // HARASS CODE
     if (this.step > 2 && this.sendHarasser == 1 && this.fuel > 50 && this.karbonite > 25 && this.clusterStatus.length <= 32) {
         let harassSignal = 1<<15;
