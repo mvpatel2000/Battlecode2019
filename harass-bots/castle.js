@@ -184,6 +184,44 @@ function castleTurn() {
     }
     // END OPENING CASTLETALK CODE
 
+    // **************************************************
+    // ************NEVER RETURN BEFORE THESE TWO*********
+    // ****************UPDATE FUNCTIONS******************
+    // **************************************************
+    // MINING UPDATE CODE
+    this.nearbyMineCounts = this.nearbyMineCounts.map(i => i+1);
+    let signalPilgrims = this.getVisibleRobots().filter(i => i.unit == 2 && i.signal >=0);
+    for(let pilgrimCtr = 0; pilgrimCtr<signalPilgrims.length; pilgrimCtr++) {
+        let pilgrimLocation = this.decodeExactLocation(signalPilgrims[pilgrimCtr].signal);
+        for(let mineCtr = 0; mineCtr < this.nearbyMines.length; mineCtr++) {
+            if(this.arrEq(pilgrimLocation, this.nearbyMines[mineCtr])) {
+                if(Math.floor(signalPilgrims[pilgrimCtr].signal / 64 / 64) % 2 == 1) {
+                    this.nearbyMineCounts[mineCtr] = -999; //stop tracking it, it reports to new base
+                }
+                else if(Math.abs(signalPilgrims[pilgrimCtr].x - this.me.x) <= 1 && Math.abs(signalPilgrims[pilgrimCtr].y - this.me.y) <= 1) {
+                    this.nearbyMineCounts[mineCtr] = 0;
+                }
+                break;
+            }
+        }
+    }
+
+    // LISTENING CODE
+    if(this.step > 4 && talkingCastles.length > 0) {
+        for(let i = 0; i < talkingCastles.length; i++) {
+            let talk = talkingCastles[i].castle_talk;
+            //this.log("I hear "+talk);
+            if(0 < talk && talk < 32) { // means it's a mission index
+                this.clusterStatus[talk-1] = CLUSTER.CONTROLLED;
+                //this.log("Ah, I see that we are sending a mission to cluster "+(talk-1));
+            }
+        }
+    }
+    // ***********************************************
+    // ***END MINING AND LISTENING CODE***************
+    // ***********************************************
+
+
     // ***************************************
     // *************BEGIN HARASS CODE*********
     // ***************************************
@@ -343,38 +381,6 @@ function castleTurn() {
     // *************END HARASS CODE***********
     // ***************************************
 
-
-    if (this.step == 800 && this.getVisibleRobots().filter(i => (i.signal >> 12) == 0x7).length == 0) {
-        let enemyCastleLocations = [];
-        for (let c = 0; c < this.enemyCastleZoneList.length; c++) {
-            let enemyloc = this.decodeLocation(this.enemyCastleZoneList[c]);
-            enemyCastleLocations.push(enemyloc);
-        }
-        this.signal(this.encodeExactLocation>>
-            (enemyCastleLocations.reduce((a,b) => this.distSquared(a, this.pos())
-                                                < this.distSquared(b, this.pos()) ? a : b)) | 0x7000,
-                ([this.me.x, this.me.y, this.map.length - this.me.x, this.map.length - this.me.y]
-                            .reduce((a, b) => a < b ? b : a) * Math.sqrt(2)) ** 2)
-    }
-
-    // MINING UPDATE CODE
-    this.nearbyMineCounts = this.nearbyMineCounts.map(i => i+1);
-    let signalPilgrims = this.getVisibleRobots().filter(i => i.unit == 2 && i.signal >=0);
-    for(let pilgrimCtr = 0; pilgrimCtr<signalPilgrims.length; pilgrimCtr++) {
-        let pilgrimLocation = this.decodeExactLocation(signalPilgrims[pilgrimCtr].signal);
-        for(let mineCtr = 0; mineCtr < this.nearbyMines.length; mineCtr++) {
-            if(this.arrEq(pilgrimLocation, this.nearbyMines[mineCtr])) {
-                if(Math.floor(signalPilgrims[pilgrimCtr].signal / 64 / 64) % 2 == 1) {
-                    this.nearbyMineCounts[mineCtr] = -999; //stop tracking it, it reports to new base
-                }
-                else if(Math.abs(signalPilgrims[pilgrimCtr].x - this.me.x) <= 1 && Math.abs(signalPilgrims[pilgrimCtr].y - this.me.y) <= 1) {
-                    this.nearbyMineCounts[mineCtr] = 0;
-                }
-                break;
-            }
-        }
-    }
-
     // LOCAL PUSH
     if(this.me.health != this.hp) {
         this.hp = this.me.health;
@@ -410,18 +416,6 @@ function castleTurn() {
                                 .reduce((a, b) => a < b ? b : a) * Math.sqrt(2)) ** 2;
             this.log(`pushing; message = ${message.toString(2)}, dist = ${Math.floor(dist)}`);
             this.signal(message, Math.floor(dist));
-        }
-    }
-
-    // LISTENING CODE
-    if(this.step > 4 && talkingCastles.length > 0) {
-        for(let i = 0; i < talkingCastles.length; i++) {
-            let talk = talkingCastles[i].castle_talk;
-            //this.log("I hear "+talk);
-            if(0 < talk && talk < 32) { // means it's a mission index
-                this.clusterStatus[talk-1] = CLUSTER.CONTROLLED;
-                //this.log("Ah, I see that we are sending a mission to cluster "+(talk-1));
-            }
         }
     }
 
@@ -542,18 +536,5 @@ function castleTurn() {
 
     // PUMP PROPHETS CODE
     return this.pumpProphets();
-    // if you have enough for mission
-        // determine which mission to go to
-        // launch mission
-        // communicate to other churches mission is built
-
-//Notes: Each pilgrim should comm back its tile its at (indicating alive) or under attack
-//       Each church should continuously say alive & if still saturating, saturated, or under attack
-
-//     if (this.prophet < 3 && this.fuel >= 50 && this.karbonite >= 30 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
-//         this.signal(this.otherCastleLocations, 2);
-//         this.prophet++;
-//         return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
-//     }
 
 }
