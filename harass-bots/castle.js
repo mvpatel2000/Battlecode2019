@@ -190,7 +190,7 @@ function castleTurn() {
 
     // LOCAL PUSH
     if(this.me.health != this.hp) {
-        this.me.health = this.hp;
+        this.hp = this.me.health;
         let enemyCastleLocations = [];
         for (let c = 0; c < this.enemyCastleZoneList.length; c++) {
             let enemyloc = this.decodeLocation(this.enemyCastleZoneList[c]);
