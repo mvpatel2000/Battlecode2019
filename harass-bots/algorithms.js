@@ -443,12 +443,6 @@ export const Algorithms = (function() {
                         && !this.karbonite_map[y][x] && !this.fuel_map[y][x]) {
                         positions.push([x, y]);
                     }
-                    //this.log((x>=0 && y>=0 && x < this.map.length && y < this.map.length))
-                    if((x>=0 && y>=0 && x < this.map.length && y < this.map.length)) {
-                        //this.log((this.map[y][x]))
-                        //this.log((this.getVisibleRobotMap()[y][x] <= 0))
-                        //this.log((!this.karbonite_map[y][x] && !this.fuel_map[y][x]))
-                    }
 
                     delta[0] = delta[0] + dirs[0];
                     delta[1] = delta[1] + dirs[1];
@@ -460,6 +454,34 @@ export const Algorithms = (function() {
                 //this.log(positions);
             }
             return positions;
+        },
+
+        /*
+         * Gets nearest defense matrix location
+         */
+        updateDefensePositions: function(source) {
+            let dirs = [-1, 1];
+            for(let max = 2; max<10; max+=2) {
+                let delta = [max, 0];
+                for(let i=0; i<max*4; i++) {
+                    let x = source[0] + delta[0];
+                    let y = source[1] + delta[1];
+                    //this.log("START "+x+" "+y)
+                    if ( x>=0 && y>=0 && x < this.map.length && y < this.map.length
+                        && this.map[y][x] && this.getVisibleRobotMap()[y][x] <= 0
+                        && !this.karbonite_map[y][x] && !this.fuel_map[y][x]) {
+                        positions.unshift([x, y]);
+                    }
+
+                    delta[0] = delta[0] + dirs[0];
+                    delta[1] = delta[1] + dirs[1];
+                    if(delta[0] == max || delta[0] == -max)
+                        dirs[0] = dirs[0] * -1;
+                    if(delta[1] == max || delta[1] == -max)
+                        dirs[1] = dirs[1] * -1;
+                }
+                //this.log(positions);
+            }
         },
 
         /**

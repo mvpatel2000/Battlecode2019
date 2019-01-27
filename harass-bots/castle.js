@@ -395,6 +395,7 @@ function castleTurn() {
         let dist = 100;
         this.log(`local pushing; message = ${message.toString(2)}, dist = ${Math.floor(dist)}`);
         this.signal(message, Math.floor(dist));
+        this.updateDefensePositions([this.me.x, this.me.y]);
     }
 
     // PUSHING
