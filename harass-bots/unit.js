@@ -33,6 +33,11 @@ export function Unit() {
         this.isAssaulting = true;
     };
 
+    this.endgameAnalysis = function() {
+        let charge = this.getVisibleRobots().filter(i => i.team == this.me.team && (i.signal >> 12) == 0x5);
+        return charge.length > 0;
+    };
+
     //harassers
     if (this.harasser) {
         this.resourceClusters = this.clusterResourceTiles();

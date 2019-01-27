@@ -182,6 +182,13 @@ function castleTurn() {
         //this.log("My next mission target:");
         //this.log(this.resourceClusters[nextMissionTarget]);
     }
+    if (this.step == 999) {
+        let message = 0x5000
+        let dist = ([this.me.x, this.me.y, this.map.length - this.me.x, this.map.length - this.me.y]
+                            .reduce((a, b) => a < b ? b : a) * Math.sqrt(2)) ** 2;
+        this.log(`endgame; message = ${message.toString(2)}, dist = ${Math.floor(dist)}`);
+        this.signal(message, Math.floor(dist));
+    }
     // END OPENING CASTLETALK CODE
 
     // **************************************************

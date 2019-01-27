@@ -196,7 +196,7 @@ export const Algorithms = (function() {
                                  hpdamage += this.getDamageMap(rbotmap, rbotmaplen, rbotmaplen0, k, l);
                              }
                          }
-                         if (hpdamage > maxhpdamage) {
+                         if (hpdamage > maxhpdamage && hpdamage >= 10) {
                              maxhpdamage = hpdamage;
                              aoelocation = [i,j];
                          }
