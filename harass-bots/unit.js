@@ -92,7 +92,7 @@ export function Unit() {
         let p = numFuelSquares*6/(numProduction*50);
         if(this.fuel >= 4000) p = numFuelSquares*7/(numProduction*50);
         let coinflip = this.rand(10000) < 10000*p;
-        let fuelThresh = 200 + 100 * this.unitsBuilt;
+        let fuelThresh = 200 + 80 * this.unitsBuilt;
         // let fuelThresh = Math.min(Math.max(200, 10*this.me.turn), 5000);
 
         // coinflip = this.streak ? coinflip : 1;
