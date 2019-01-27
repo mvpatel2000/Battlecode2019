@@ -20,7 +20,13 @@ export function Unit() {
 
     this.pos = function() {
         return [this.me.x, this.me.y];
-    }
+    };
+
+    this.pushAnalysis = function() {
+        if ((this.spawnPoint.signal >> 12) == 0x7) {
+            this.target = this.decodeExactLocation(this.spawnPoint.signal & 0xfff);
+        }
+    };
 
     //harassers
     if (this.harasser) {

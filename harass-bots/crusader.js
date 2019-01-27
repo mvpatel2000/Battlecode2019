@@ -18,6 +18,7 @@ export function Crusader() {
  * March across map reflection.
  */
 function crusaderTurn() {
+    this.pushAnalysis();
 
     // attack code
     // if there are robots that I can attack,

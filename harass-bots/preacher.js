@@ -20,6 +20,8 @@ export function Preacher() {
  * March across map reflection.
  */
 function preacherTurn() {
+    this.pushAnalysis();
+
     // attack code
     // if there are robots that I can attack,
     // and I have enough fuel to attack,
