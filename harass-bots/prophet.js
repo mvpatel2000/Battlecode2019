@@ -15,6 +15,8 @@ export function Prophet() {
         this.turn = this.harassTurn;
     }
     this.shouldRun = shouldRun;
+
+    this.moves = 0;
 }
 
 /**
@@ -61,8 +63,9 @@ function prophetTurn() {
     // movement code
     //this.log(this.target+" | "+[this.spawnPoint.x, this.spawnPoint.y]+" | "+this.me.x+", "+this.me.y);
     let route = this.path(this.target); //path finding
-    if (this.fuel > (SPECS.UNITS[this.me.unit].FUEL_PER_MOVE * this.getSpeed())) {
+    if (this.moves < 20 && this.fuel > (SPECS.UNITS[this.me.unit].FUEL_PER_MOVE * this.getSpeed())) {
         if (route.length > 0) { //A* towards target
+            //this.moves++;
             return this.move(...route[0]);
         }
     }
