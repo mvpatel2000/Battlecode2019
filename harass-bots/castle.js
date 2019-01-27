@@ -86,6 +86,9 @@ function getNextMissionTarget() {
 }
 
 function castleTurn() {
+    if (this.primary && this.step % 50 == 0) {
+        this.log(`Turn: ${this.step}`);
+    }
     // this.log(this.step);
     // this.log("Castle "+this.me.id+" at ("+this.me.x+","+this.me.y+") here, on step "+this.step+".  Here's what I know about cluster status:");
     // this.log(this.clusterStatus);
@@ -170,7 +173,7 @@ function castleTurn() {
     // PUSHING
 
 
-    if (!this.hasPushed && (this.step % 200 == 0 || this.toPush)
+    if (!this.hasPushed && (this.step % 300 == 0 || this.toPush)
             && this.getVisibleRobots().filter(i => (i.signal >> 12) == 0x7).length == 0) {
         if (this.fuel < 500 && !this.getVisibleRobots().filter(i => (i.signal >> 12) == 0x7).length == 0) {
             this.toPush = true;
@@ -310,6 +313,7 @@ function castleTurn() {
                 //this.log("I am a castle, I am sending a harasser prophet to this location.");
                 this.signal(harassSignal, 2);
                 this.sendHarasser = 0;
+                this.primary = true;
                 return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
             } else {
                 //this.log("Whoops there was an error. Too many hostile clusters detected. Something went wrong.");
