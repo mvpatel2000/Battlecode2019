@@ -166,17 +166,29 @@ function castleTurn() {
     }
 
     // END OPENING CASTLETALK CODE
-    if (this.step == 800 && this.getVisibleRobots().filter(i => (i.signal >> 12) == 0x7).length == 0) {
-        let enemyCastleLocations = [];
-        for (let c = 0; c < this.enemyCastleZoneList.length; c++) {
-            let enemyloc = this.decodeLocation(this.enemyCastleZoneList[c]);
-            enemyCastleLocations.push(enemyloc);
+
+    // PUSHING
+
+
+    if (!this.hasPushed && (this.step % 200 == 0 || this.toPush)
+            && this.getVisibleRobots().filter(i => (i.signal >> 12) == 0x7).length == 0) {
+        if (this.fuel < 500 && !this.getVisibleRobots().filter(i => (i.signal >> 12) == 0x7).length == 0) {
+            this.toPush = true;
+        } else {
+            this.hasPushed = true;
+            let enemyCastleLocations = [];
+            for (let c = 0; c < this.enemyCastleZoneList.length; c++) {
+                let enemyloc = this.decodeLocation(this.enemyCastleZoneList[c]);
+                enemyCastleLocations.push(enemyloc);
+            }
+            let message = this.encodeExactLocation(enemyCastleLocations.reduce(
+                                                (a,b) => this.distSquared(a, this.pos())
+                                                < this.distSquared(b, this.pos()) ? a : b)) | 0x7000;
+            let dist = ([this.me.x, this.me.y, this.map.length - this.me.x, this.map.length - this.me.y]
+                                .reduce((a, b) => a < b ? b : a) * Math.sqrt(2)) ** 2;
+            this.log(`pushing; message = ${message.toString(2)}, dist = ${Math.floor(dist)}`);
+            this.signal(message, Math.floor(dist));
         }
-        this.signal(this.encodeExactLocation
-            (enemyCastleLocations.reduce((a,b) => this.distSquared(a, this.pos())
-                                                < this.distSquared(b, this.pos()) ? a : b)) | 0x7000,
-                ([this.me.x, this.me.y, this.map.length - this.me.x, this.map.length - this.me.y]
-                            .reduce((a, b) => a < b ? b : a) * Math.sqrt(2)) ** 2)
     }
 
     // MINING UPDATE CODE

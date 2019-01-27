@@ -22,6 +22,7 @@ export function Prophet() {
  */
 function prophetTurn() {
     this.step++;
+    this.pushAnalysis();
 
     // attack code
     // if there are robots that I can attack,
@@ -50,7 +51,7 @@ function prophetTurn() {
         } else {
             return this.move(...[finmove[0] - this.me.x, finmove[1] - this.me.y]);
         }
-    }  
+    }
 
     //get nearest grid square
     //move to it
@@ -66,7 +67,7 @@ function prophetTurn() {
         }
     }
     return;
-    
+
     /*
     while (this.me.x == this.target[0] && this.me.y == this.target[1]) { //reset target if meet it
         if (this.targetCtr < this.enemyCastleLocations.length) {
