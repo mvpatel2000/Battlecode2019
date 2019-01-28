@@ -379,7 +379,7 @@ function castleTurn() {
             }
             let choice = this.getSpawnLocation(this.resourceCentroids[optimalCluster][0], this.resourceCentroids[optimalCluster][1]);
             if(this.hostile==2 & choice != null) {
-                this.log("I am a castle at: " + this.me.x + " " + this.me.y + " sending a harasser prophet to enemy cluster: " + this.resourceCentroids[optimalCluster]);
+                //this.log("I am a castle at: " + this.me.x + " " + this.me.y + " sending a harasser prophet to enemy cluster: " + this.resourceCentroids[optimalCluster]);
                 this.harassSignal += (optimalCluster & 0x1f) << 5 * this.hostile;
                 //this.log("I am a castle, I am sending a harasser prophet to this location.");
                 this.signal(this.harassSignal, 2);
@@ -388,7 +388,7 @@ function castleTurn() {
                 return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
             } else {
                 this.harassSignal = this.hostileSignal; // reset harass signal
-                this.log("Resetting harass signal, choice was null...");
+                //this.log("Resetting harass signal, choice was null...");
             }
         }
     }
@@ -408,7 +408,7 @@ function castleTurn() {
                                             (a,b) => this.distSquared(a, this.pos())
                                             < this.distSquared(b, this.pos()) ? a : b)) | 0x7000;
         let dist = 100;
-        this.log(`local pushing; message = ${message.toString(2)}, dist = ${Math.floor(dist)}`);
+        //this.log(`local pushing; message = ${message.toString(2)}, dist = ${Math.floor(dist)}`);
         this.signal(message, Math.floor(dist));
         this.updateDefensePositions([this.me.x, this.me.y]);
     }
@@ -430,7 +430,7 @@ function castleTurn() {
                                                 < this.distSquared(b, this.pos()) ? a : b)) | 0x7000;
             let dist = ([this.me.x, this.me.y, this.map.length - this.me.x, this.map.length - this.me.y]
                                 .reduce((a, b) => a < b ? b : a) * Math.sqrt(2)) ** 2;
-            this.log(`pushing; message = ${message.toString(2)}, dist = ${Math.floor(dist)}`);
+            //this.log(`pushing; message = ${message.toString(2)}, dist = ${Math.floor(dist)}`);
             this.signal(message, Math.floor(dist));
             this.updateDefensePositions([this.me.x, this.me.y]);
         }
@@ -568,11 +568,11 @@ function castleTurn() {
             while(enemyCastleClusterCodes.length < 2) {
                 enemyCastleClusterCodes.push(this.doppelganger);
             }
-            this.log(enemyCastleClusterCodes);
+            //this.log(enemyCastleClusterCodes);
 
             let signal = (1 << 15) + (targetClusterIndex << 10) + (enemyCastleClusterCodes[0] << 5) + enemyCastleClusterCodes[1];
 
-            this.log(signal);
+            //this.log(signal);
 
             this.signal(signal, 2);
             return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);

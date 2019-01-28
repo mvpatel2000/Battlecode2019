@@ -12,7 +12,7 @@ export function Unit() {
     this.unitsBuilt = 0;
     let sig = this.spawnPoint.signal;
     if (sig >> 15) {
-        this.log(`harass signal = ${sig.toString(2)}`);
+        //this.log(`harass signal = ${sig.toString(2)}`);
         this.harasser = true;
         this.avoid = [0x1f & (sig >> 5),
                         0x1f & (sig)]
@@ -27,7 +27,7 @@ export function Unit() {
         let charge = this.getVisibleRobots().filter(i => i.team == this.me.team && (i.signal >> 12) == 0x7);
         if (charge.length > 0) {
             this.target = this.decodeExactLocation(charge[0].signal & 0xfff);
-            this.log(`attacking ${this.target}`);
+            //this.log(`attacking ${this.target}`);
         }
         this.moves = -999;
         this.isAssaulting = true;
@@ -58,7 +58,7 @@ export function Unit() {
         const d = i => this.distSquared([this.me.x, this.me.y], i);
         this.queue.sort((a, b) => d(a) - d(b));
         this.queue.splice(0, 0, this.targetTup);
-        this.log(this.queue);
+        //this.log(this.queue);
         this.harassTurn = harassTurn;
         this.queue.push(null);
     }
@@ -70,7 +70,7 @@ export function Unit() {
     function harassTurn() {
         if (this.getVisibleRobots().map(i => i.unit == SPECS.CHURCH
             && this.dist([i.x, i.y], this.pos()) < 2).reduce((a, b) => a || b, false)) {
-            this.log('harasser redirecting');
+            //this.log('harasser redirecting');
             this.queue.push(this.queue.shift());
         }
 
