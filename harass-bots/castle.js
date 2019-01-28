@@ -68,6 +68,7 @@ export function Castle() {
 
     this.numCastles = 0;
     this.numCastlesAlive = 0;
+    this.hasPushed = false;
 }
 
 /**
