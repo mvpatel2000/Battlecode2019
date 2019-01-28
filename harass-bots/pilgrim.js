@@ -78,8 +78,15 @@ function pilgrimTurn() {
         if(adjacentBases.length > 0) { //signal to original base
             this.signal(1*64*64+this.encodeExactLocation(this.mineLocation), this.distSquared([this.me.x, this.me.y], this.originalBaseLocation) );
                 //this.log("Me: "+this.me.x+" "+this.me.y+" Mine: "+this.mineLocation+" Old Base: "+this.originalBaseLocation+" Signal: "+this.distSquared([this.me.x, this.me.y], this.originalBaseLocation) );
-            this.baseLocation = [adjacentBases[0].x, adjacentBases[0].y];
-            this.adjacentDestinations = true;
+            if(this.destination == this.baseLocation) {
+                this.baseLocation = [adjacentBases[0].x, adjacentBases[0].y];
+                this.adjacentDestinations = true;
+                this.destination = this.baseLocation;
+            }
+            else {
+                this.baseLocation = [adjacentBases[0].x, adjacentBases[0].y];
+                this.adjacentDestinations = true;
+            }
             return;
         }
     }
