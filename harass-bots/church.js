@@ -42,10 +42,11 @@ function churchTurn() {
         let choice = this.getSpawnLocation(this.me.x + 1, this.me.y);
         if (choice != null) {
             if (this.fuel >= 50 && this.karbonite >= 10) {
+                this.signal(0, 2);
                 return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
             }
         }
-    } 
+    }
 
     if(this.lateGameChurch)
         return;

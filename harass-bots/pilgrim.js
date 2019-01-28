@@ -65,10 +65,11 @@ function pilgrimTurn() {
         let choice = this.getSpawnLocation(this.me.x + 1, this.me.y);
         if (choice != null) {
             if (this.fuel >= 200 && this.karbonite >= 50) {
+                this.signal(0, 2);
                 return this.buildUnit(SPECS.CHURCH, choice[0], choice[1]);
             }
         }
-    } 
+    }
 
     let [x, y] = [this.me.x, this.me.y];
 
@@ -79,7 +80,7 @@ function pilgrimTurn() {
                 //this.log("Me: "+this.me.x+" "+this.me.y+" Mine: "+this.mineLocation+" Old Base: "+this.originalBaseLocation+" Signal: "+this.distSquared([this.me.x, this.me.y], this.originalBaseLocation) );
             this.baseLocation = [adjacentBases[0].x, adjacentBases[0].y];
             this.adjacentDestinations = true;
-            return; 
+            return;
         }
     }
 
@@ -91,7 +92,7 @@ function pilgrimTurn() {
         let onMission = this.getVisibleRobots().filter(i => i.unit < 2 && i.team == this.me.team
             && this.distSquared(lookForBase, [i.x, i.y])<=4).length == 0; //check if church/castle at centroid
         onMission = onMission && this.distSquared(lookForBase, [this.me.x, this.me.y]) <= 100; //can see centroid
-        onMission = onMission && this.getVisibleRobots().filter(i => i.unit == 0 && i.team == this.me.team 
+        onMission = onMission && this.getVisibleRobots().filter(i => i.unit == 0 && i.team == this.me.team
             && this.distSquared(lookForBase, [i.x, i.y])<=16).length == 0; //check if castle nearby
         if(this.karbonite > 80 && this.fuel > 300 && onMission) { //want to build mission church for mission
             let target = this.exactCentroid(myCluster);
@@ -104,7 +105,7 @@ function pilgrimTurn() {
                 return this.buildUnit(SPECS.CHURCH, choice[0], choice[1]);
             }
         }
-        if(this.karbonite > 200 && this.fuel > 400 && this.getVisibleRobots().filter(i => i.unit < 2 
+        if(this.karbonite > 200 && this.fuel > 400 && this.getVisibleRobots().filter(i => i.unit < 2
             && i.team == this.me.team && this.distSquared([i.x, i.y], [this.me.x, this.me.y])<=2).length==0) { //church because floating cash
             let nearbyPilgrims = this.getVisibleRobots().filter(i => i.unit == SPECS.PILGRIM && Math.abs(i.x - this.me.x)<=2 && Math.abs(i.y - this.me.y)<=2);
             let target = [this.me.x,this.me.y];
@@ -125,7 +126,7 @@ function pilgrimTurn() {
         }
         else if( this.fuel > 1 && ((this.fuelMine && this.me.fuel < SPECS.UNITS[this.me.unit].FUEL_CAPACITY)
             || (this.karboniteMine && this.me.karbonite < SPECS.UNITS[this.me.unit].KARBONITE_CAPACITY)) ) { //want to mine
-            if(escapemove.length > 0 && !this.arrEq(escapemove[0],[this.me.x,this.me.y]) 
+            if(escapemove.length > 0 && !this.arrEq(escapemove[0],[this.me.x,this.me.y])
                 && this.fuel > (SPECS.UNITS[this.me.unit].FUEL_PER_MOVE * this.getSpeed())) { //must flee if optimal dodge is not stay still
                 return this.move(...[escapemove[0][0] - this.me.x, escapemove[0][1] - this.me.y]);
             }
@@ -136,7 +137,7 @@ function pilgrimTurn() {
         }
     }
     if( this.arrEq(this.destination, this.baseLocation) && this.distSquared([x,y], this.baseLocation) <=2 ) { //at base
-        if(escapemove.length > 0 && !this.arrEq(escapemove[0],[this.me.x,this.me.y]) 
+        if(escapemove.length > 0 && !this.arrEq(escapemove[0],[this.me.x,this.me.y])
             && this.fuel > (SPECS.UNITS[this.me.unit].FUEL_PER_MOVE * this.getSpeed())) { //must flee if optimal dodge is not stay still
             return this.move(...[escapemove[0][0] - this.me.x, escapemove[0][1] - this.me.y]);
         }
@@ -164,9 +165,9 @@ function pilgrimTurn() {
         let onMission = this.getVisibleRobots().filter(i => i.unit < 2 && i.team == this.me.team
             && this.distSquared(lookForBase, [i.x, i.y])<=4).length == 0; //check if no church/castle at centroid
         onMission = onMission && this.distSquared(lookForBase, [this.me.x, this.me.y]) <= 100; //can see centroid
-        onMission = onMission && this.getVisibleRobots().filter(i => i.unit == 0 && i.team == this.me.team 
+        onMission = onMission && this.getVisibleRobots().filter(i => i.unit == 0 && i.team == this.me.team
             && this.distSquared(lookForBase, [i.x, i.y])<=16).length == 0; //check if no castle nearby
-        onMission = onMission && this.getVisibleRobots().filter(i => i.unit < 2 && i.team == this.me.team 
+        onMission = onMission && this.getVisibleRobots().filter(i => i.unit < 2 && i.team == this.me.team
             && this.distSquared([this.me.x, this.me.y], [i.x, i.y])<=16).length == 0; //no nearby castles
         if(escapemove.length > 0 && this.karbonite > 200 && this.fuel > 400 && onMission && Math.abs(this.destination[0] - this.me.x) <= 4 && Math.abs(this.destination[1] - this.me.y) <= 4) {
             let target = this.exactCentroid(myCluster);
@@ -193,6 +194,6 @@ function pilgrimTurn() {
             return this.move(...route[0]);
         }
     }
-    
+
     return;
 }
