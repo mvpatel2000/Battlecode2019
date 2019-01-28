@@ -244,6 +244,22 @@ function castleTurn() {
         //this.log("The total number of castles on my team is " + friendlyCastleLocations.length);
         //this.log(this.resourceCentroids);
 
+        //figure out which castle is me
+        let mincastledist = Infinity;
+        for (let fc = 0; fc < friendlyCastleLocations.length; fc++) {
+            let m = this.dist([this.me.x, this.me.y], friendlyCastleLocations[fc])
+            if(m < mincastledist) {
+                mincastledist = m;
+                this.mycastle = fc;
+            }
+        }
+        //Information assymmetry:
+        //Put in my location exactly, and the reflected enemy castle location
+        //exactly.
+        friendlyCastleLocations[this.mycastle][0] = this.me.x;
+        friendlyCastleLocations[this.mycastle][1] = this.me.y;
+        enemyCastleLocations[this.mycastle] = this.reflectPoint(friendlyCastleLocations[this.mycastle][0], friendlyCastleLocations[this.mycastle][1]);
+
         //filter out all all of my clusters, keep enemy ones
         this.queue = this.resourceCentroids.filter(i =>
             enemyCastleLocations.map(q => this.dist(q, i)).reduce((a, b) => a + b)
@@ -272,15 +288,6 @@ function castleTurn() {
         }
         this.maximumHarassers = Math.min(this.queue.length, 3);
 
-        //figure out which castle is me
-        let mincastledist = Infinity;
-        for (let fc = 0; fc < friendlyCastleLocations.length; fc++) {
-            let m = this.dist([this.me.x, this.me.y], friendlyCastleLocations[fc])
-            if(m < mincastledist) {
-                mincastledist = m;
-                this.mycastle = fc;
-            }
-        }
         //write the hostile enemy clusters that cannot be inferred
         //by a unit i send out.
         //that is, they are not nearest to the enemy reflection of this castle
