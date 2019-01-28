@@ -31,7 +31,7 @@ function whereAmIGoing(signal) {
     let secondEnemyCentroid = this.centroid(this.resourceClusters[signal & 0x1f]);
     this.avoid.push(firstEnemyCentroid);
     this.avoid.push(secondEnemyCentroid);
-    this.log(this.avoid);
+    //this.log(this.avoid);
 
     let targetCluster = this.resourceClusters[targetClusterIndex];
     let targetCentroid = this.centroid(targetCluster);
@@ -183,7 +183,7 @@ function pilgrimTurn() {
                 this.signal(this.encodeExactLocation(this.mineLocation), 2);
                 this.baseLocation = [this.me.x + choice[0], this.me.y + choice[1]];
                 this.adjacentDestinations = true;
-                this.log("Pilgrim "+this.me.id+" starting an emergency church at "+this.baseLocation);
+                //this.log("Pilgrim "+this.me.id+" starting an emergency church at "+this.baseLocation);
                 return this.buildUnit(SPECS.CHURCH, choice[0], choice[1]);
             }
         }
