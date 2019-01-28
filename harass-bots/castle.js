@@ -418,7 +418,7 @@ function castleTurn() {
     }
 
     // PUSHING
-    if (this.me.turn > 800 && this.numCastlesAlive < this.numCastles &&
+    if (this.me.turn == 800 && this.numCastlesAlive < this.numCastles && !this.hasPushed
             && this.getVisibleRobots().filter(i => (i.signal >> 12) == 0x7).length == 0) {
         this.hasPushed = true;
         let enemyCastleLocations = [];
