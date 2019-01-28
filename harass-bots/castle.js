@@ -65,6 +65,9 @@ export function Castle() {
     //end only used for harassers
 
     this.hp = this.me.health;
+
+    this.numCastles = 0;
+    this.numCastlesAlive = 0;
 }
 
 /**
@@ -103,6 +106,7 @@ function getNextMissionTarget() {
 function castleTurn() {
     if (this.step % 50 == 0) {
         this.log(`Turn: ${this.step}`);
+        this.log(this.numCastlesAlive);
     }
     // this.log("Castle "+this.me.id+" at ("+this.me.x+","+this.me.y+") here, on step "+this.step+".  Here's what I know about cluster status:");
     // this.log(this.clusterStatus);
@@ -123,6 +127,7 @@ function castleTurn() {
      */
     this.step++;
     let talkingCastles = this.getVisibleRobots().filter(i => i.castle_talk!=0 && i.id != this.me.id);
+    this.numCastlesAlive = talkingCastles.length + 1;
     if (this.step == 1) {
         // this.log("Opening started.  Castle "+this.me.id+" at ("+this.me.x+","+this.me.y+") here.");
 
@@ -174,13 +179,12 @@ function castleTurn() {
             let oppositeClusterIndex = this.reflectClusterByIndex(otherCastleClusters[i]-1, this.resourceClusters);
             this.clusterStatus[oppositeClusterIndex] = CLUSTER.HOSTILE;
         }
+
+        this.numCastles = this.clusterStatus.filter(i => i == CLUSTER.HOSTILE).length;
+        this.numCastlesAlive = this.numCastles;
     }
-    else if (this.step == 5) {
-        //this.log("Opening complete.  Castle "+this.me.id+" at ("+this.me.x+","+this.me.y+") here.  Clusters we control:");
-        //this.log(this.resourceClusters.filter((item, i) => this.clusterStatus[i] == CLUSTER.CONTROLLED));
-        let nextMissionTarget = getNextMissionTarget.call(this);
-        //this.log("My next mission target:");
-        //this.log(this.resourceClusters[nextMissionTarget]);
+    else if (this.step >= 5) {
+        this.castleTalk(0xaa);
     }
     if (this.step == 998) {
         let message = 0x5000;
@@ -414,7 +418,7 @@ function castleTurn() {
     }
 
     // PUSHING
-    if (false && !this.hasPushed && (this.step == 300 || this.toPush)
+    if (this.turn > 800 && this.numCastlesAlive < this.numCastles && !this.hasPushed && (this.step == 300 || this.toPush)
             && this.getVisibleRobots().filter(i => (i.signal >> 12) == 0x7).length == 0) {
         if (this.fuel < 20000) {
             this.toPush = true;
