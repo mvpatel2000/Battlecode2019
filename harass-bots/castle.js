@@ -418,24 +418,22 @@ function castleTurn() {
     }
 
     // PUSHING
-    if (this.me.turn > 800 && this.numCastlesAlive < this.numCastles && !this.hasPushed &&
+    if (this.me.turn > 800 && this.numCastlesAlive < this.numCastles &&
             && this.getVisibleRobots().filter(i => (i.signal >> 12) == 0x7).length == 0) {
-        else {
-            this.hasPushed = true;
-            let enemyCastleLocations = [];
-            for (let c = 0; c < this.enemyCastleZoneList.length; c++) {
-                let enemyloc = this.decodeLocation(this.enemyCastleZoneList[c]);
-                enemyCastleLocations.push(enemyloc);
-            }
-            let message = this.encodeExactLocation(enemyCastleLocations.reduce(
-                                                (a,b) => this.distSquared(a, this.pos())
-                                                < this.distSquared(b, this.pos()) ? a : b)) | 0x7000;
-            let dist = ([this.me.x, this.me.y, this.map.length - this.me.x, this.map.length - this.me.y]
-                                .reduce((a, b) => a < b ? b : a) * Math.sqrt(2)) ** 2;
-            //this.log(`pushing; message = ${message.toString(2)}, dist = ${Math.floor(dist)}`);
-            this.signal(message, Math.floor(dist));
-            this.updateDefensePositions([this.me.x, this.me.y]);
+        this.hasPushed = true;
+        let enemyCastleLocations = [];
+        for (let c = 0; c < this.enemyCastleZoneList.length; c++) {
+            let enemyloc = this.decodeLocation(this.enemyCastleZoneList[c]);
+            enemyCastleLocations.push(enemyloc);
         }
+        let message = this.encodeExactLocation(enemyCastleLocations.reduce(
+                                            (a,b) => this.distSquared(a, this.pos())
+                                            < this.distSquared(b, this.pos()) ? a : b)) | 0x7000;
+        let dist = ([this.me.x, this.me.y, this.map.length - this.me.x, this.map.length - this.me.y]
+                            .reduce((a, b) => a < b ? b : a) * Math.sqrt(2)) ** 2;
+        //this.log(`pushing; message = ${message.toString(2)}, dist = ${Math.floor(dist)}`);
+        this.signal(message, Math.floor(dist));
+        this.updateDefensePositions([this.me.x, this.me.y]);
     }
 
     // EMERGENCY DEFENSE CODE: always attack if enemy is in range
