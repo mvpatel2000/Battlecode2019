@@ -418,11 +418,9 @@ function castleTurn() {
     }
 
     // PUSHING
-    if (this.turn > 800 && this.numCastlesAlive < this.numCastles && !this.hasPushed && (this.step == 300 || this.toPush)
+    if (this.me.turn > 800 && this.numCastlesAlive < this.numCastles && !this.hasPushed &&
             && this.getVisibleRobots().filter(i => (i.signal >> 12) == 0x7).length == 0) {
-        if (this.fuel < 20000) {
-            this.toPush = true;
-        } else {
+        else {
             this.hasPushed = true;
             let enemyCastleLocations = [];
             for (let c = 0; c < this.enemyCastleZoneList.length; c++) {
