@@ -105,10 +105,10 @@ function getNextMissionTarget() {
 }
 
 function castleTurn() {
-    if (this.step % 50 == 0) {
+   /* if (this.step % 50 == 0) {
         this.log(`Turn: ${this.step}`);
         this.log(this.numCastlesAlive);
-    }
+    } */
     // this.log("Castle "+this.me.id+" at ("+this.me.x+","+this.me.y+") here, on step "+this.step+".  Here's what I know about cluster status:");
     // this.log(this.clusterStatus);
 
