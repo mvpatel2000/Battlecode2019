@@ -63,7 +63,7 @@ function prophetTurn() {
     // movement code
     //this.log(this.target+" | "+[this.spawnPoint.x, this.spawnPoint.y]+" | "+this.me.x+", "+this.me.y);
     let route; //path finding
-    if(this.isAssaulting) {
+    if(this.isAssaulting && this.fuel > 1000) {
         route = this.assaultpath(this.target);
     }
     else {

@@ -70,7 +70,7 @@ function crusaderTurn() {
     } */
 
     let route; //path finding
-    if(this.isAssaulting) {
+    if(this.isAssaulting && this.fuel > 1000) {
         route = this.assaultpath(this.target);
     }
     else {
