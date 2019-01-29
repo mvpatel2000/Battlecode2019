@@ -3,7 +3,7 @@ import {SPECS} from 'battlecode';
 export function Pilgrim() {
     this.turn = pilgrimTurn;
     this.spawnPoint = this.getVisibleRobots().filter(i => (i.unit == SPECS.CHURCH || i.unit == SPECS.CASTLE) &&
-        Math.pow(i.x - this.me.x,2) + Math.pow(i.y - this.me.y,2) <= 2 && i.signal>=0)[0];
+        Math.pow(i.x - this.me.x,2) + Math.pow(i.y - this.me.y,2) <= 2 && this.decrypt(i.signal)>=0)[0];
 
     this.baseLocation = [this.spawnPoint.x, this.spawnPoint.y];
     this.originalBaseLocation = this.baseLocation;
@@ -12,7 +12,7 @@ export function Pilgrim() {
     this.avoid = this.spawnPoint.unit == SPECS.CASTLE ? [this.reflectPoint(...this.baseLocation)] : [];
     // this.log(this.avoid);
 
-    this.mineLocation = whereAmIGoing.call(this, this.spawnPoint.signal);
+    this.mineLocation = whereAmIGoing.call(this, this.decrypt(this.spawnPoint.signal));
     this.adjacentDestinations = this.distSquared(this.baseLocation, this.mineLocation) <= 2;
 
     this.destination = this.mineLocation;
@@ -62,10 +62,11 @@ function whereAmIGoing(signal) {
 
 function pilgrimTurn() {
     if(this.endgameAnalysis()) { //last second resource liquidation
+        this.log('endgame');
         let choice = this.getSpawnLocation(this.me.x + 1, this.me.y);
         if (choice != null) {
             if (this.fuel >= 200 && this.karbonite >= 50) {
-                this.signal(0, 2);
+                this.signal(this.encrypt(0), 2);
                 return this.buildUnit(SPECS.CHURCH, choice[0], choice[1]);
             }
         }
@@ -76,7 +77,8 @@ function pilgrimTurn() {
     if(!this.adjacentDestinations) { //switch mining base
         let adjacentBases = this.getVisibleRobots().filter(i => i.unit < 2 && this.distSquared([i.x,i.y], this.mineLocation)<=2)
         if(adjacentBases.length > 0) { //signal to original base
-            this.signal(1*64*64+this.encodeExactLocation(this.mineLocation), this.distSquared([this.me.x, this.me.y], this.originalBaseLocation) );
+            this.signal(this.encrypt(1*64*64+this.encodeExactLocation(this.mineLocation)),
+                                        this.distSquared([this.me.x, this.me.y], this.originalBaseLocation) );
                 //this.log("Me: "+this.me.x+" "+this.me.y+" Mine: "+this.mineLocation+" Old Base: "+this.originalBaseLocation+" Signal: "+this.distSquared([this.me.x, this.me.y], this.originalBaseLocation) );
             if(this.destination == this.baseLocation) {
                 this.baseLocation = [adjacentBases[0].x, adjacentBases[0].y];
@@ -105,7 +107,7 @@ function pilgrimTurn() {
             let target = this.exactCentroid(myCluster);
             let choice = this.getChurchSpawnLocation(target[0], target[1]);
             if(choice != null) {
-                this.signal(this.encodeExactLocation(this.mineLocation), 2);
+                this.signal(this.encrypt(this.encodeExactLocation(this.mineLocation)), 2);
                 this.baseLocation = [this.me.x + choice[0], this.me.y + choice[1]];
                 this.adjacentDestinations = true;
                 // this.log("Pilgrim "+this.me.id+" starting a mission church at "+this.baseLocation);
@@ -126,7 +128,7 @@ function pilgrimTurn() {
             }
             let choice = this.getChurchSpawnLocation(target[0], target[1]);
             if(choice != null) {
-                this.signal(0, 2);
+                this.signal(this.encrypt(0), 2);
                 //this.baseLocation = [this.me.x + choice[0], this.me.y + choice[1]];
                 return this.buildUnit(SPECS.CHURCH, choice[0], choice[1]);
             }
@@ -152,7 +154,7 @@ function pilgrimTurn() {
             Math.pow(i.x - this.me.x,2) + Math.pow(i.y - this.me.y,2) <= 2);
         if(base.length>0) {
             this.destination = this.mineLocation;
-            this.signal(this.encodeExactLocation(this.mineLocation), 2);
+            this.signal(this.encrypt(this.encodeExactLocation(this.mineLocation)), 2);
             return this.give(base[0].x - x, base[0].y -y, this.me.karbonite, this.me.fuel);
         }
     }
@@ -180,7 +182,7 @@ function pilgrimTurn() {
             let target = this.exactCentroid(myCluster);
             let choice = this.getChurchSpawnLocation(target[0], target[1]);
             if(choice != null) {
-                this.signal(this.encodeExactLocation(this.mineLocation), 2);
+                this.signal(this.encrypt(this.encodeExactLocation(this.mineLocation)), 2);
                 this.baseLocation = [this.me.x + choice[0], this.me.y + choice[1]];
                 this.adjacentDestinations = true;
                 //this.log("Pilgrim "+this.me.id+" starting an emergency church at "+this.baseLocation);

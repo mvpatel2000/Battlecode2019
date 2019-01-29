@@ -7,10 +7,10 @@ export function Unit() {
     this.isAssaulting = false;
     this.streak = false;
     this.spawnPoint = this.getVisibleRobots().filter(i => i.unit < 2
-                        && this.distSquared([i.x, i.y], [this.me.x, this.me.y]) <= 2 && i.signal >= 0)[0];
+                        && this.distSquared([i.x, i.y], [this.me.x, this.me.y]) <= 2 && this.decrypt(i.signal) >= 0)[0];
     if (!this.spawnPoint) return;
     this.unitsBuilt = 0;
-    let sig = this.spawnPoint.signal;
+    let sig = this.decrypt(this.spawnPoint.signal);
     if (sig >> 15) {
         //this.log(`harass signal = ${sig.toString(2)}`);
         this.harasser = true;
@@ -172,7 +172,7 @@ export function Unit() {
                         crusader = true;
                     }
                 }
-                this.signal(this.encodeExactLocation(defenseTarget), 2);
+                this.signal(this.encrypt(this.encodeExactLocation(defenseTarget)), 2);
                 this.unitsBuilt++;
                 if (crusader) {
                     return this.buildUnit(SPECS.CRUSADER, choice[0], choice[1]);

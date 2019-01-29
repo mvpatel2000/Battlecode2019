@@ -3,6 +3,7 @@ import {PriorityQueue} from './priorityqueue'
 
 export const Algorithms = (function() {
     let seed = 1;
+    let adj;
 
     function dist(a, b) {
         let dx = a[0] - b[0];
@@ -133,14 +134,22 @@ export const Algorithms = (function() {
         },
 
         encrypt: function(signal) {
-            let ret = (0xaaaa + (signal + this.map.length * 37
-                            + this.fuel_map.flatMap(i => i).reduce((a, b) => a + b) * 53)) % 0xffff;
+            if (!adj) {
+                adj =  (0xaaaa + this.map.length * 37
+                                + this.fuel_map.flatMap(i => i).reduce((a, b) => a + b) * 53)
+            }
+            let ret = (signal + adj) % 0xffff;
             return ret;
         },
 
         decrypt: function(signal) {
-            let ret = signal - 0xaaaa - this.map.length * 37 - this.fuel_map.flatMap(i => i).reduce((a, b) => a + b) * 53;
-            while (ret < 0) ret += 0xffff;
+            if (!adj) {
+                adj =  (0xaaaa + this.map.length * 37
+                                + this.fuel_map.flatMap(i => i).reduce((a, b) => a + b) * 53)
+            }
+            let ret = signal - adj;
+            while (ret < 0)
+                ret += 0xffff;
             return ret;
         },
 

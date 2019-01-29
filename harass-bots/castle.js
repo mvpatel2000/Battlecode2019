@@ -204,12 +204,12 @@ function castleTurn() {
     // **************************************************
     // MINING UPDATE CODE
     this.nearbyMineCounts = this.nearbyMineCounts.map(i => i+1);
-    let signalPilgrims = this.getVisibleRobots().filter(i => i.unit == 2 && i.signal >=0);
+    let signalPilgrims = this.getVisibleRobots().filter(i => i.unit == 2 && this.decrypt(i.signal) >=0);
     for(let pilgrimCtr = 0; pilgrimCtr<signalPilgrims.length; pilgrimCtr++) {
-        let pilgrimLocation = this.decodeExactLocation(signalPilgrims[pilgrimCtr].signal);
+        let pilgrimLocation = this.decodeExactLocation(this.decrypt(signalPilgrims[pilgrimCtr].signal));
         for(let mineCtr = 0; mineCtr < this.nearbyMines.length; mineCtr++) {
             if(this.arrEq(pilgrimLocation, this.nearbyMines[mineCtr])) {
-                if(Math.floor(signalPilgrims[pilgrimCtr].signal / 64 / 64) % 2 == 1) {
+                if(Math.floor(this.decrypt(signalPilgrims[pilgrimCtr].signal) / 64 / 64) % 2 == 1) {
                     this.nearbyMineCounts[mineCtr] = -999; //stop tracking it, it reports to new base
                 }
                 else if(Math.abs(signalPilgrims[pilgrimCtr].x - this.me.x) <= 1 && Math.abs(signalPilgrims[pilgrimCtr].y - this.me.y) <= 1) {
@@ -388,7 +388,7 @@ function castleTurn() {
                 //this.log("I am a castle at: " + this.me.x + " " + this.me.y + " sending a harasser prophet to enemy cluster: " + this.resourceCentroids[optimalCluster]);
                 this.harassSignal += (optimalCluster & 0x1f) << 5 * this.hostile;
                 //this.log("I am a castle, I am sending a harasser prophet to this location.");
-                this.signal(this.harassSignal, 2);
+                this.signal(this.encrypt(this.harassSignal), 2);
                 this.numHarassersSent += 1;
                 this.harassSignal = this.hostileSignal; // reset harass signal
                 return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
@@ -421,7 +421,7 @@ function castleTurn() {
 
     // PUSHING
     if (this.me.turn == 800 && this.numCastlesAlive < this.numCastles && !this.hasPushed
-            && this.getVisibleRobots().filter(i => (i.signal >> 12) == 0x7).length == 0) {
+            && this.getVisibleRobots().filter(i => (this.decrypt(i.signal) >> 12) == 0x7).length == 0) {
         this.hasPushed = true;
         let enemyCastleLocations = [];
         for (let c = 0; c < this.enemyCastleZoneList.length; c++) {
@@ -472,7 +472,7 @@ function castleTurn() {
                                     break;
                                 }
                             }
-                            this.signal(this.encodeExactLocation(defenseTarget), 2);
+                            this.signal(this.encrypt(this.encodeExactLocation(defenseTarget)), 2);
                         }
                         this.unitsBuilt++;
                         return this.buildUnit(SPECS.PREACHER, choice[0], choice[1]);
@@ -495,7 +495,7 @@ function castleTurn() {
                                     break;
                                 }
                             }
-                            this.signal(this.encodeExactLocation(defenseTarget), 2);
+                            this.signal(this.encrypt(this.encodeExactLocation(defenseTarget)), 2);
                         }
                         this.unitsBuilt++;
                         return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
@@ -526,7 +526,7 @@ function castleTurn() {
         let choice = this.getSpawnLocation(target[0], target[1]);
         if (choice != null) {
             //this.log("Spawning pilgrim in direction " + choice + " towards " + target);
-            this.signal(this.encodeExactLocation(target), 2);
+            this.signal(this.encrypt(this.encodeExactLocation(target)), 2);
             return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
         }
     }
@@ -576,7 +576,7 @@ function castleTurn() {
 
             //this.log(signal);
 
-            this.signal(signal, 2);
+            this.signal(this.encrypt(signal), 2);
             return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
         }
     }

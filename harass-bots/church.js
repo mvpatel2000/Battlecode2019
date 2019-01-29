@@ -5,8 +5,8 @@ export function Church() {
     this.step = 0;
 
     let broadcastingPilgrims = this.getVisibleRobots().filter(i => (i.unit == SPECS.PILGRIM) &&
-        Math.pow(i.x - this.me.x,2) + Math.pow(i.y - this.me.y,2) <= 2 && i.signal>=0);
-    let zeroBroadcast = broadcastingPilgrims.filter(i => i.signal == 0);
+        Math.pow(i.x - this.me.x,2) + Math.pow(i.y - this.me.y,2) <= 2 && this.decrypt(i.signal)>=0);
+    let zeroBroadcast = broadcastingPilgrims.filter(i => this.decrypt(i.signal) == 0);
 
     this.nearbyMines = [];
     this.nearbyMineCounts = [];
@@ -15,7 +15,7 @@ export function Church() {
     this.resourceClusters = this.clusterResourceTiles();
     this.myClusterIndex = this.findNearestClusterIndex([this.me.x, this.me.y], this.resourceClusters);
     if(broadcastingPilgrims.length > 0 && zeroBroadcast.length == 0) { //it is a mission church!
-        let missionMineLocation = this.decodeExactLocation(broadcastingPilgrims[0].signal);
+        let missionMineLocation = this.decodeExactLocation(this.decrypt(broadcastingPilgrims[0].signal));
         this.nearbyMines = this.resourceClusters[this.myClusterIndex];
         let karbMines = this.nearbyMines.filter(i => this.karbonite_map[i[1]][i[0]] == true);
         let fuelMines = this.nearbyMines.filter(i => this.fuel_map[i[1]][i[0]] == true);
@@ -42,7 +42,7 @@ function churchTurn() {
         let choice = this.getSpawnLocation(this.me.x + 1, this.me.y);
         if (choice != null) {
             if (this.fuel >= 50 && this.karbonite >= 10) {
-                this.signal(0, 2);
+                this.signal(this.encrypt(0), 2);
                 return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
             }
         }
@@ -53,12 +53,12 @@ function churchTurn() {
 
     // MINING UPDATE CODE
     this.nearbyMineCounts = this.nearbyMineCounts.map(i => i+1);
-    let signalPilgrims = this.getVisibleRobots().filter(i => i.unit == 2 && i.signal >=0);
+    let signalPilgrims = this.getVisibleRobots().filter(i => i.unit == 2 && this.encrypt(i.signal) >=0);
     for(let pilgrimCtr = 0; pilgrimCtr<signalPilgrims.length; pilgrimCtr++) {
-        let pilgrimLocation = this.decodeExactLocation(signalPilgrims[pilgrimCtr].signal);
+        let pilgrimLocation = this.decodeExactLocation(this.decrypt(signalPilgrims[pilgrimCtr].signal));
         for(let mineCtr = 0; mineCtr < this.nearbyMines.length; mineCtr++) {
             if(this.arrEq(pilgrimLocation, this.nearbyMines[mineCtr])) {
-                if(Math.floor(signalPilgrims[pilgrimCtr].signal / 64 / 64) % 2 == 1) {
+                if(Math.floor(this.decrypt(signalPilgrims[pilgrimCtr].signal) / 64 / 64) % 2 == 1) {
                     this.nearbyMineCounts[mineCtr] = -999; //stop tracking it, it reports to new base
                 }
                 else if(Math.abs(signalPilgrims[pilgrimCtr].x - this.me.x) <= 1 && Math.abs(signalPilgrims[pilgrimCtr].y - this.me.y) <= 1) {
@@ -103,7 +103,7 @@ function churchTurn() {
                                     break;
                                 }
                             }
-                            this.signal(this.encodeExactLocation(defenseTarget), 2);
+                            this.signal(this.encrypt(this.encodeExactLocation(defenseTarget)), 2);
                         }
                         this.unitsBuilt++;
                         return this.buildUnit(SPECS.PREACHER, choice[0], choice[1]);
@@ -126,7 +126,7 @@ function churchTurn() {
                                     break;
                                 }
                             }
-                            this.signal(this.encodeExactLocation(defenseTarget), 2);
+                            this.signal(this.encrypt(this.encodeExactLocation(defenseTarget)), 2);
                         }
                         this.unitsBuilt++;
                         return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
@@ -153,7 +153,7 @@ function churchTurn() {
                             break;
                         }
                     }
-                    this.signal(this.encodeExactLocation(defenseTarget), 2);
+                    this.signal(this.encrypt(this.encodeExactLocation(defenseTarget)), 2);
                 }
                 this.unitsBuilt++;
                 return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
@@ -177,7 +177,7 @@ function churchTurn() {
                             break;
                         }
                     }
-                    this.signal(this.encodeExactLocation(defenseTarget), 2);
+                    this.signal(this.encrypt(this.encodeExactLocation(defenseTarget)), 2);
                 }
                 this.unitsBuilt++;
                 return this.buildUnit(SPECS.CRUSADER, choice[0], choice[1]);
@@ -200,7 +200,7 @@ function churchTurn() {
         let choice = this.getSpawnLocation(target[0], target[1]);
         if (choice != null) {
             //this.log("Spawning pilgrim in direction " + choice + " towards " + target);
-            this.signal(this.encodeExactLocation(target), 2);
+            this.signal(this.encrypt(this.encodeExactLocation(target)), 2);
             return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
         }
     }
