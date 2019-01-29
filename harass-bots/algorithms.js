@@ -136,7 +136,9 @@ export const Algorithms = (function() {
         encrypt: function(signal) {
             if (!adj) {
                 adj =  (0xaaaa + this.map.length * 37
-                                + this.fuel_map.flatMap(i => i).reduce((a, b) => a + b) * 53)
+                                + this.fuel_map.map(i => i
+                                                    .reduce((a, b) => a + b))
+                                               .reduce((a, b) => a + b) * 53)
             }
             let ret = (signal + adj) % 0xffff;
             return ret;
@@ -145,7 +147,9 @@ export const Algorithms = (function() {
         decrypt: function(signal) {
             if (!adj) {
                 adj =  (0xaaaa + this.map.length * 37
-                                + this.fuel_map.flatMap(i => i).reduce((a, b) => a + b) * 53)
+                                + this.fuel_map.map(i => i
+                                                    .reduce((a, b) => a + b))
+                                               .reduce((a, b) => a + b) * 53)
             }
             let ret = signal - adj;
             while (ret < 0)
