@@ -105,6 +105,7 @@ function getNextMissionTarget() {
 }
 
 function castleTurn() {
+
    /* if (this.step % 50 == 0) {
         this.log(`Turn: ${this.step}`);
         this.log(this.numCastlesAlive);
@@ -188,7 +189,7 @@ function castleTurn() {
         this.castleTalk(0xaa);
     }
     if (this.step == 998) {
-        let message = 0x5000;
+        let message = this.encrypt(0x5000);
         let dist = ([this.me.x, this.me.y, this.map.length - this.me.x, this.map.length - this.me.y]
                             .reduce((a, b) => a < b ? b : a) * Math.sqrt(2)) ** 2;
         this.log(`endgame; message = ${message.toString(2)}, dist = ${Math.floor(dist)}`);
@@ -414,7 +415,7 @@ function castleTurn() {
                                             < this.distSquared(b, this.pos()) ? a : b)) | 0x7000;
         let dist = 100;
         //this.log(`local pushing; message = ${message.toString(2)}, dist = ${Math.floor(dist)}`);
-        this.signal(message, Math.floor(dist));
+        this.signal(this.encrypt(message), Math.floor(dist));
         this.updateDefensePositions([this.me.x, this.me.y]);
     }
 
@@ -433,7 +434,7 @@ function castleTurn() {
         let dist = ([this.me.x, this.me.y, this.map.length - this.me.x, this.map.length - this.me.y]
                             .reduce((a, b) => a < b ? b : a) * Math.sqrt(2)) ** 2;
         //this.log(`pushing; message = ${message.toString(2)}, dist = ${Math.floor(dist)}`);
-        this.signal(message, Math.floor(dist));
+        this.signal(this.encrypt(message), Math.floor(dist));
         this.updateDefensePositions([this.me.x, this.me.y]);
     }
 

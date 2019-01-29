@@ -132,6 +132,18 @@ export const Algorithms = (function() {
             }
         },
 
+        encrypt: function(signal) {
+            let ret = (0xaaaa + (signal + this.map.length * 37
+                            + this.fuel_map.flatMap(i => i).reduce((a, b) => a + b) * 53)) % 0xffff;
+            return ret;
+        },
+
+        decrypt: function(signal) {
+            let ret = signal - 0xaaaa - this.map.length * 37 - this.fuel_map.flatMap(i => i).reduce((a, b) => a + b) * 53;
+            while (ret < 0) ret += 0xffff;
+            return ret;
+        },
+
         /**
          * Helper function for aoeAnalysis method.
          * Given a 2d array from getVisibleRobotMap(), the length of the y and x-axis

@@ -24,9 +24,9 @@ export function Unit() {
     };
 
     this.pushAnalysis = function() {
-        let charge = this.getVisibleRobots().filter(i => i.team == this.me.team && (i.signal >> 12) == 0x7);
+        let charge = this.getVisibleRobots().filter(i => (this.decrypt(i.signal) >> 12) == 0x7);
         if (charge.length > 0) {
-            this.target = this.decodeExactLocation(charge[0].signal & 0xfff);
+            this.target = this.decodeExactLocation(this.decrypt(charge[0].signal) & 0xfff);
             //this.log(`attacking ${this.target}`);
         }
         this.moves = -999;
@@ -34,7 +34,7 @@ export function Unit() {
     };
 
     this.endgameAnalysis = function() {
-        let charge = this.getVisibleRobots().filter(i => i.team == this.me.team && (i.signal >> 12) == 0x5);
+        let charge = this.getVisibleRobots().filter(i => (this.decrypt(i.signal) >> 12) == 0x5);
         return charge.length > 0;
     };
 
@@ -144,7 +144,7 @@ export function Unit() {
             let choice = this.getSpawnLocation(target[0], target[1]);
             if (choice) {
                 let defenseTarget = this.defensePositions.shift();
-                let defenseCtr = 0; 
+                let defenseCtr = 0;
                 while(defenseCtr < this.defensePositions.length && this.getVisibleRobotMap()[defenseTarget[1]][defenseTarget[0]] > 0) {
                     defenseTarget = this.defensePositions.shift();
                     defenseCtr++;
