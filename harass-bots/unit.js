@@ -96,7 +96,7 @@ export function Unit() {
         }
         let enemy = this.getVisibleRobots().filter(i => i.team != this.me.team && i.unit > 1);
         if (enemy.length) {
-            if (enemy[0].unit == SPECS.CRUSADER) {
+            if (enemy[0].unit == SPECS.CRUSADER || enemy[0].unit == SPECS.PREACHER) {
                 let optimalmove = this.getOptimalEscapeLocation();
                 if (optimalmove.length && this.fuel >= this.fuelpermove) {
                     let route = this.path(this.queue[0]);
@@ -111,7 +111,14 @@ export function Unit() {
                     }
                 }
             }
-            let path = this.workerpath([enemy[0].x, enemy[0].y])[0]
+            let path = this.workerpath([enemy[0].x, enemy[0].y])[0];
+            let tenative = [path[0] + this.me.x, path[1] + this.me.y];
+            if (this.avoidTup.map(i => this.dist(i, tenative) <= 8).reduce((a, b) => a || b)) {
+                let route = this.avoidpath(this.queue[0], this.avoidTup, 100);
+                if (route.length) {
+                    return this.move(...route[0]);
+                }
+            }
             if (path)
                 return this.move(...path);
         }
