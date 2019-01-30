@@ -206,7 +206,7 @@ export function Unit() {
         if(contestedProduction) this.log("Contested Production");
         if (// contestedProduction || // uncomment to implement threshold override for contested zone, otherwise it's just unit comp change
             (coinflip && this.fuel >= fuelThresh && this.karbonite >= 100 && this.defensePositions.length > 0
-            && (!this.targetClusterIndex || this.targetClusterIndex == -1)
+            // && (!this.targetClusterIndex || this.targetClusterIndex == -1)
             && ((this.fuel >= 300 && this.karbonite >= 200) || this.rand(2) == 0))) {
             // this.log("pump");
             // this.streak = true;
