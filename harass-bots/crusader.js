@@ -15,6 +15,9 @@ export function Crusader() {
     this.target = this.decodeExactLocation(this.decrypt(this.spawnPoint.signal));
 
     this.moves = 0;
+    if (this.harasser) {
+        this.turn = this.harassTurn;
+    }
 }
 
 /**

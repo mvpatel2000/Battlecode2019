@@ -5,6 +5,7 @@ import {SPECS} from 'battlecode';
  */
 export function Unit() {
     this.isAssaulting = false;
+    this.currhp = this.me.health;
     this.streak = false;
     this.spawnPoint = this.getVisibleRobots().filter(i => i.unit < 2
                         && this.distSquared([i.x, i.y], [this.me.x, this.me.y]) <= 2 && this.decrypt(i.signal) >= 0)[0];
@@ -76,6 +77,11 @@ export function Unit() {
      * Turn for harass bots.
      */
     function harassTurn() {
+        let plinked = false;
+        if (this.me.health < this.currhp) {
+            this.currhp = this.me.health;
+            plinked = true;
+        }
         if (this.getVisibleRobots().map(i => i.unit == SPECS.CHURCH
             && this.dist([i.x, i.y], this.pos()) < 2).reduce((a, b) => a || b, false)) {
             //this.log('harasser redirecting');
@@ -87,6 +93,33 @@ export function Unit() {
             if (this.fuel > SPECS.UNITS[this.me.unit].ATTACK_FUEL_COST) {
                 return this.attack(attackbot.x - this.me.x, attackbot.y - this.me.y);
             }
+        }
+        let enemy = this.getVisibleRobots().filter(i => i.team != this.me.team && i.unit > 1);
+        if (enemy.length) {
+            if (enemy[0].unit == SPECS.CRUSADER) {
+                let optimalmove = this.getOptimalEscapeLocation();
+                if (optimalmove.length && this.fuel >= this.fuelpermove) {
+                    let route = this.path(this.queue[0]);
+                    let [dx, dy] = route.length ? route[0] : [0, 0];
+                    let old = [this.me.x + dx, this.me.y + dy];
+                    let finmove = optimalmove.reduce((a, b) => this.dist(a, old) < this.dist(b, old) ? a : b);
+                    //if best possible move is to stay still, return nothing.
+                    if (finmove[0] == this.me.x && finmove[1] == this.me.y) {
+                        return;
+                    } else {
+                        return this.go(finmove);
+                    }
+                }
+            }
+            let path = this.workerpath([enemy[0].x, enemy[0].y])[0]
+            if (path)
+                return this.move(...path);
+        }
+
+
+        if (plinked) {
+            let explore = this.avoidTup.reduce((i, j) => this.dist(this.pos(), i) < this.dist(this.pos(), j) ? j : i);
+            return this.go(explore);
         }
 
         if (this.queue[0] == null) {
