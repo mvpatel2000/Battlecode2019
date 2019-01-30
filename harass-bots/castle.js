@@ -285,6 +285,7 @@ function castleTurn() {
             enemyCastleLocations.map(q => this.dist(q, i)).reduce((a, b) => a + b)
             <= friendlyCastleLocations.map(q => this.dist(q, i)).reduce((a, b) => a + b) + 4);
         this.queue = this.queue.filter(i => enemyCastleLocations.every(l => this.dist(l, i) > 10));
+        this.log(this.queue);
         for (let i=0; i < this.queue.length; i++) {
             let minfriendlycastledist = Infinity;
             let minenemycastledist = Infinity;
@@ -300,14 +301,14 @@ function castleTurn() {
             }
             //this.log(this.queue[i] + " " + minfriendlycastledist);
             //this.log(this.queue[i] + " " + minenemycastledist);
-            if ((minfriendlycastledist - minenemycastledist) > 15) {
+            //if ((minfriendlycastledist - minenemycastledist) > 15) {
                 //this.log("removing cluster at " + this.queue[i]);
-                this.queue.splice(i, 1);
-                i-=1;
-            }
+            //    this.queue.splice(i, 1);
+            //    i-=1;
+            //}
         }
         this.maximumHarassers = Math.min(this.queue.length, 3);
-
+        this.log(this.queue);
         //write the hostile enemy clusters that cannot be inferred
         //by a unit i send out.
         //that is, they are not nearest to the enemy reflection of this castle
