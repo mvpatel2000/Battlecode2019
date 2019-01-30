@@ -5,7 +5,7 @@ export function Church() {
     this.step = 0;
     this.freed = [];
 
-    let broadcastingPilgrims = this.getVisibleRobots().filter(i => (i.unit == SPECS.PILGRIM) &&
+    let broadcastingPilgrims = this.getVisibleRobots().filter(i => (i.unit == SPECS.PILGRIM) && (i.team == this.me.team) &&
         Math.pow(i.x - this.me.x,2) + Math.pow(i.y - this.me.y,2) <= 2 && this.decrypt(i.signal)>=0);
     let zeroBroadcast = broadcastingPilgrims.filter(i => this.decrypt(i.signal) == 0);
 
