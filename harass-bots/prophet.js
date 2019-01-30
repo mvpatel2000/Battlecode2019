@@ -35,9 +35,7 @@ function prophetTurn() {
     this.pushAnalysis();
 
     if (this.scout) {
-        if (this.getVisibleRobots().filter(i => i.team != this.me.team && i.unit > 2).length > 3) {
-            this.log('warning');
-        }
+        this.castleTalk(0xaa);
     }
     // attack code
     // if there are robots that I can attack,
