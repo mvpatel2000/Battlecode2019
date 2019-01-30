@@ -77,6 +77,9 @@ function crusaderTurn() {
     if(this.isAssaulting && this.fuel > 1000) {
         route = this.assaultpath(this.target);
     }
+    else if(this.isAssaulting) {
+        return;
+    }
     else {
         route = this.path(this.target);
     }

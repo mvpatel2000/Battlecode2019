@@ -468,14 +468,44 @@ export const Algorithms = (function() {
             }
 
             for(let max = 2; max<40; max+=1) {
-                if(max == 4) {
-                    this.log("Start: "+startloc+" Source: "+source)
-                    this.log("Pos: "+positions)
-                    this.log("Solid: "+solid)
-                    for(let i=0; i<solid.length; i++)
-                        positions.push(solid.shift())
-                    this.log("New Pos: "+positions)
+                let delta = [max, 0];
+                for(let i=0; i<max*4; i++) {
+                    let x = source[0] + delta[0];
+                    let y = source[1] + delta[1];
+                    //this.log("START "+x+" "+y)
+                    
+                    if ( x>=0 && y>=0 && x < this.map.length && y < this.map.length
+                        && this.map[y][x] && this.getVisibleRobotMap()[y][x] <= 0
+                        && !this.karbonite_map[y][x] && !this.fuel_map[y][x]) {
+                            if(max % 2 == 0)
+                                positions.push([x, y]);
+                    }
+
+                    delta[0] = delta[0] + dirs[0];
+                    delta[1] = delta[1] + dirs[1];
+                    if(delta[0] == max || delta[0] == -max)
+                        dirs[0] = dirs[0] * -1;
+                    if(delta[1] == max || delta[1] == -max)
+                        dirs[1] = dirs[1] * -1;
                 }
+                //this.log(positions);
+            }
+            return positions.filter(i => Math.abs(i[0] - startloc[0]) > 1 || Math.abs(i[1] - startloc[1]) > 1);
+        },
+
+        /*
+         * Gets nearest defense matrix location
+         */
+        getDenseDefensePositions: function(startloc) {
+            let positions = []
+            let solid = []
+            let source = [startloc[0], startloc[1]];
+            let dirs = [-1, 1];
+            if ((startloc[0] + startloc[1]) % 2) {
+                source[0] += 1;
+            }
+
+            for(let max = 2; max<40; max+=1) {
                 let delta = [max, 0];
                 for(let i=0; i<max*4; i++) {
                     let x = source[0] + delta[0];
@@ -488,7 +518,7 @@ export const Algorithms = (function() {
                             if(max % 2 == 0)
                                 positions.push([x, y]);
                             else if(x % 2 == 1)
-                                solid.push([x, y]);
+                                positions.push([x, y]);
                     }
 
                     delta[0] = delta[0] + dirs[0];
