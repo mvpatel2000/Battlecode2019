@@ -15,18 +15,18 @@ export function Church() {
     this.lateGameChurch = true;
     this.resourceClusters = this.clusterResourceTiles();
     this.myClusterIndex = this.findNearestClusterIndex([this.me.x, this.me.y], this.resourceClusters);
-    if(broadcastingPilgrims.length > 0 && zeroBroadcast.length == 0) { //it is a mission church!
+    if (broadcastingPilgrims.length > 0 && zeroBroadcast.length == 0) { //it is a mission church!
         let missionMineLocation = this.decodeExactLocation(this.decrypt(broadcastingPilgrims[0].signal));
         this.nearbyMines = this.resourceClusters[this.myClusterIndex];
         let karbMines = this.nearbyMines.filter(i => this.karbonite_map[i[1]][i[0]] == true);
         let fuelMines = this.nearbyMines.filter(i => this.fuel_map[i[1]][i[0]] == true);
         this.nearbyMines = karbMines;
-        for(let fuelctr = 0; fuelctr < fuelMines.length; fuelctr++)
+        for (let fuelctr = 0; fuelctr < fuelMines.length; fuelctr++)
             this.nearbyMines.push(fuelMines[fuelctr]);
 
         this.nearbyMineCounts = this.nearbyMines.map(i => 100);
-        for(let minectr = 0; minectr < this.nearbyMines.length; minectr++) {
-            if(this.arrEq(this.nearbyMines[minectr], missionMineLocation)) {
+        for (let minectr = 0; minectr < this.nearbyMines.length; minectr++) {
+            if (this.arrEq(this.nearbyMines[minectr], missionMineLocation)) {
                 this.nearbyMineCounts[minectr] = 0;
                 break;
             }
@@ -41,7 +41,7 @@ export function Church() {
 
 function churchTurn() {
     this.checkFreed();
-    if(this.endgameAnalysis()) { //last second resource liquidation
+    if (this.endgameAnalysis()) { //last second resource liquidation
         let choice = this.getSpawnLocation(this.me.x + 1, this.me.y);
         if (choice != null) {
             if (this.fuel >= 50 && this.karbonite >= 10) {
@@ -51,20 +51,20 @@ function churchTurn() {
         }
     }
 
-    if(this.lateGameChurch)
+    if (this.lateGameChurch)
         return;
 
     // MINING UPDATE CODE
     this.nearbyMineCounts = this.nearbyMineCounts.map(i => i+1);
     let signalPilgrims = this.getVisibleRobots().filter(i => i.unit == 2 && this.decrypt(i.signal) >=0);
-    for(let pilgrimCtr = 0; pilgrimCtr<signalPilgrims.length; pilgrimCtr++) {
+    for (let pilgrimCtr = 0; pilgrimCtr<signalPilgrims.length; pilgrimCtr++) {
         let pilgrimLocation = this.decodeExactLocation(this.decrypt(signalPilgrims[pilgrimCtr].signal));
-        for(let mineCtr = 0; mineCtr < this.nearbyMines.length; mineCtr++) {
-            if(this.arrEq(pilgrimLocation, this.nearbyMines[mineCtr])) {
-                if(Math.floor(this.decrypt(signalPilgrims[pilgrimCtr].signal) / 64 / 64) % 2 == 1) {
+        for (let mineCtr = 0; mineCtr < this.nearbyMines.length; mineCtr++) {
+            if (this.arrEq(pilgrimLocation, this.nearbyMines[mineCtr])) {
+                if (Math.floor(this.decrypt(signalPilgrims[pilgrimCtr].signal) / 64 / 64) % 2 == 1) {
                     this.nearbyMineCounts[mineCtr] = -999; //stop tracking it, it reports to new base
                 }
-                else if(Math.abs(signalPilgrims[pilgrimCtr].x - this.me.x) <= 1 && Math.abs(signalPilgrims[pilgrimCtr].y - this.me.y) <= 1) {
+                else if (Math.abs(signalPilgrims[pilgrimCtr].x - this.me.x) <= 1 && Math.abs(signalPilgrims[pilgrimCtr].y - this.me.y) <= 1) {
                     this.nearbyMineCounts[mineCtr] = 0;
                 }
                 break;
@@ -74,25 +74,25 @@ function churchTurn() {
 
     // EMERGENCY DEFENSE CODE: always attack if enemy is in range
     let visibleEnemies = this.getVisibleRobots().filter(i => i.team != this.me.team);
-    if(visibleEnemies.length > 0) { // rush defense
+    if (visibleEnemies.length > 0) { // rush defense
         // assess the threat
         let threats = visibleEnemies.filter(i => i.unit > 2 || i.unit < 2);
         let prophetThreats = threats.filter(i => i.unit == 4); //counts number of prophetss
-        if(threats.length > 0) { // attacking threat
-            if(this.karbonite >= 30 && this.fuel >= 50 && (this.unitsBuilt < 25 || this.fuel >= 5000)) {
+        if (threats.length > 0) { // attacking threat
+            if (this.karbonite >= 30 && this.fuel >= 50 && (this.unitsBuilt < 25 || this.fuel >= 5000)) {
                 let minDist = 7939;
                 let closestThreat = [0,0];
-                for(let k = 0; k < threats.length; k++) {
+                for (let k = 0; k < threats.length; k++) {
                     let dist = this.distSquared([this.me.x, this.me.y], [threats[k].x, threats[k].y]);
-                    if(dist < minDist) {
+                    if (dist < minDist) {
                         minDist = dist;
                         closestThreat = [threats[k].x, threats[k].y];
                     }
                 }
-                if(prophetThreats.length == 0) { //build preachers unless you see 2 prophets
+                if (prophetThreats.length == 0) { //build preachers unless you see 2 prophets
                     let choice = this.getSpawnLocation(closestThreat[0], closestThreat[1]);
-                    if(choice != null) {
-                        if(this.defensePositions.length > 0) {
+                    if (choice != null) {
+                        if (this.defensePositions.length > 0) {
                             let sub = (a, b) => [a[0] - b[0], a[1] - b[1]];
                             let angle = (v, w) => Math.acos(
                                 (v[0] * w[0] + v[1] * w[1]) / (Math.sqrt(v[0] * v[0] + v[1] * v[1])
@@ -115,8 +115,8 @@ function churchTurn() {
                 }
                 else {
                     let choice = this.getSpawnLocation(closestThreat[0], closestThreat[1]);
-                    if(choice != null) {
-                        if(this.defensePositions.length > 0) {
+                    if (choice != null) {
+                        if (this.defensePositions.length > 0) {
                             let sub = (a, b) => [a[0] - b[0], a[1] - b[1]];
                             let angle = (v, w) => Math.acos(
                                 (v[0] * w[0] + v[1] * w[1]) / (Math.sqrt(v[0] * v[0] + v[1] * v[1])
@@ -139,12 +139,12 @@ function churchTurn() {
                 }
             }
         }
-        else if(this.karbonite >= 25 && this.fuel >= 50 && (this.unitsBuilt < 25 || this.fuel >= 5000)
+        else if (this.karbonite >= 25 && this.fuel >= 50 && (this.unitsBuilt < 25 || this.fuel >= 5000)
             && this.distSquared([visibleEnemies[0].x, visibleEnemies[0].y],[this.me.x, this.me.y]) >= 25) {
             let closestThreat = [visibleEnemies[0].x, visibleEnemies[0].y]
             let choice = this.getSpawnLocation(closestThreat[0], closestThreat[1]);
-            if(choice != null) {
-                if(this.defensePositions.length > 0) {
+            if (choice != null) {
+                if (this.defensePositions.length > 0) {
                     let sub = (a, b) => [a[0] - b[0], a[1] - b[1]];
                     let angle = (v, w) => Math.acos(
                         (v[0] * w[0] + v[1] * w[1]) / (Math.sqrt(v[0] * v[0] + v[1] * v[1])
@@ -165,11 +165,11 @@ function churchTurn() {
                 return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
             }
         }
-        else if(this.karbonite >= 15 && this.fuel >= 50 && (this.unitsBuilt < 25 || this.fuel >= 5000)) {
+        else if (this.karbonite >= 15 && this.fuel >= 50 && (this.unitsBuilt < 25 || this.fuel >= 5000)) {
             let closestThreat = [visibleEnemies[0].x, visibleEnemies[0].y]
             let choice = this.getSpawnLocation(closestThreat[0], closestThreat[1]);
-            if(choice != null) {
-                if(this.defensePositions.length > 0) {
+            if (choice != null) {
+                if (this.defensePositions.length > 0) {
                     let sub = (a, b) => [a[0] - b[0], a[1] - b[1]];
                     let angle = (v, w) => Math.acos(
                         (v[0] * w[0] + v[1] * w[1]) / (Math.sqrt(v[0] * v[0] + v[1] * v[1])
@@ -197,7 +197,7 @@ function churchTurn() {
     if (this.fuel >= 50 && this.karbonite >= 10 && !this.homeSaturated) {
         let target = [this.me.x, this.me.y];
         for (let mineCtr = 0; mineCtr < this.nearbyMines.length; mineCtr++) { //finds empty mining location
-            if(this.nearbyMineCounts[mineCtr] >= 20) {
+            if (this.nearbyMineCounts[mineCtr] >= 20) {
                 target = this.nearbyMines[mineCtr];
                 this.nearbyMineCounts[mineCtr] = 0;
                 //this.log("Spawning pilgrim in direction "+target+" count: "+this.nearbyMineCounts[mineCtr]);
