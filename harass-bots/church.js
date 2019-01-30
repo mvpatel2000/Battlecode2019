@@ -27,7 +27,7 @@ export function Church() {
         this.makeDense = false;
         this.numEmergencies = 0;
         this.extendedDefenseTimer = 0;
-        
+
         if(this.decrypt(broadcastingPilgrims[0].signal) == 0xdddd) {
             this.aggroChurch = true;
             this.log("i am an aggro church");
@@ -105,7 +105,7 @@ function churchTurn() {
                         closestThreat = [threats[k].x, threats[k].y];
                     }
                 }
-                if (prophetThreats.length == 0 && threats.length > 0) { //build preachers unless you see 2 prophets
+                if (prophetThreats.length == 0 && threats.length > 0 && !this.aggroChurch) { //build preachers unless you see 2 prophets
                     let choice = this.getSpawnLocation(closestThreat[0], closestThreat[1]);
                     if (choice != null) {
                         if (this.defensePositions.length > 0) {

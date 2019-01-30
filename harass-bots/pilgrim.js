@@ -21,6 +21,7 @@ export function Pilgrim() {
 
     this.missionPilgrim = (this.decrypt(this.spawnPoint.signal) >> 15 == 1);
     if(this.missionPilgrim) this.log("i am a mission pilgrim");
+    this.builtAggroChurch = false;
 }
 
 function whereAmIGoing(signal) {
@@ -75,15 +76,36 @@ function pilgrimTurn() {
         }
     }
 
-    if(this.missionPilgrim) { // aggro church
+    if(this.missionPilgrim && this.distSquared([this.me.x, this.me.y], this.destination)) { // aggro church
         let threats = this.getVisibleRobots().filter(i => i.team != this.me.team);
-        if(threats.length > 0 &&
-            this.getVisibleRobots().filter(i => i.team == this.me.team && i.unit < 2).length == 0 &&
-            this.karbonite >= 75 && this.fuel >= 300) {
+        let bases = this.getVisibleRobots().filter(i => i.team == this.me.team && i.unit < 2);
+
+        let minDist = 7939;
+        let closestThreat = [-1000,-1000];
+        for(let k = 0; k < threats.length; k++) {
+            let dist = this.distSquared([this.me.x, this.me.y], [threats[k].x, threats[k].y]);
+            if(dist < minDist) {
+                minDist = dist;
+                closestThreat = [threats[k].x, threats[k].y];
+            }
+        }
+
+        minDist = 7939;
+        let closestBase = [1000,1000];
+        for(let k = 0; k < bases.length; k++) {
+            let dist = this.distSquared([this.me.x, this.me.y], [bases[k].x, bases[k].y]);
+            if(dist < minDist) {
+                minDist = dist;
+                closestBase = [bases[k].x, bases[k].y];
+            }
+        }
+
+        if(threats.length > 0 && this.distSquared(closestThreat, closestBase) > 100 &&
+            this.karbonite >= 75 && this.fuel >= 300 && !this.builtAggroChurch) {
             // if you can't see any friendly castles or churches and you can see an enemy
             this.log("i am building an aggro church");
             let minDist = 7939;
-            let closestThreat = [0,0];
+            let closestThreat = [-100,-100];
             for(let k = 0; k < threats.length; k++) {
                 let dist = this.distSquared([this.me.x, this.me.y], [threats[k].x, threats[k].y]);
                 if(dist < minDist) {
@@ -92,6 +114,7 @@ function pilgrimTurn() {
                 }
             }
             let choice = this.getSpawnLocation(...closestThreat);
+            this.builtAggroChurch = true;
             this.signal(this.encrypt(0xdddd), 2);
             return this.buildUnit(SPECS.CHURCH, choice[0], choice[1]);
         }
