@@ -113,7 +113,7 @@ export function Unit() {
             }
             let path = this.workerpath([enemy[0].x, enemy[0].y])[0];
             let tentative = [path[0] + this.me.x, path[1] + this.me.y];
-            if (this.avoidTup.map(i => this.dist(i, tentative) <= 8).reduce((a, b) => a || b)) {
+            if (this.avoidTup.map(i => this.dist(i, tentative) <= 10).reduce((a, b) => a || b)) {
                 let route = this.avoidpath(this.queue[0], this.avoidTup, 100);
                 if (route.length) {
                     return this.move(...route[0]);
