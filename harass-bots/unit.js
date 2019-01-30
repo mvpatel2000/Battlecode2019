@@ -36,10 +36,10 @@ export function Unit() {
         let charge = this.getVisibleRobots().filter(i => (this.decrypt(i.signal) >> 12) == 0x7);
         if (charge.length > 0) {
             this.target = this.decodeExactLocation(this.decrypt(charge[0].signal) & 0xfff);
-            //this.log(`attacking ${this.target}`);
+            this.log(`attacking ${this.target}`);
+            this.isAssaulting = true;
         }
         this.moves = -999;
-        this.isAssaulting = true;
     };
 
     this.endgameAnalysis = function() {
