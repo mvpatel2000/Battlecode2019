@@ -14,6 +14,7 @@ export function Unit() {
             if (!this.occupied(...this.freed[i])) {
                 this.defensePositions.unshift(this.freed[i]);
                 this.freed.splice(i, 1);
+                this.contestedTimer = this.me.turn;
             }
         }
     }
@@ -197,9 +198,13 @@ export function Unit() {
         // let fuelThresh = Math.min(Math.max(200, 10*this.me.turn), 5000);
 
         // coinflip = this.streak ? coinflip : 1;
-        if (coinflip && this.fuel >= fuelThresh && this.karbonite >= 100 && this.defensePositions.length > 0
+
+        let contestedProduction = (this.me.turn - this.contestedTimer < 20 && this.karbonite >= 75 && this.fuel >= 200) // contested zone threshold override
+        if(contestedProduction) this.log("Contested Production");
+        if (// contestedProduction || // uncomment to implement threshold override for contested zone, otherwise it's just unit comp change
+            (coinflip && this.fuel >= fuelThresh && this.karbonite >= 100 && this.defensePositions.length > 0
             && (!this.targetClusterIndex || this.targetClusterIndex == -1)
-            && ((this.fuel >= 300 && this.karbonite >= 200) || this.rand(2) == 0)) {
+            && ((this.fuel >= 300 && this.karbonite >= 200) || this.rand(2) == 0))) {
             // this.log("pump");
             // this.streak = true;
             let target = [this.map.length / 2, this.map.length / 2];
@@ -242,7 +247,7 @@ export function Unit() {
                     return this.buildUnit(SPECS.CRUSADER, choice[0], choice[1]);
                 }
                 if (this.unitsBuilt > 15) {
-                    if (this.rand(3))
+                    if (contestedProduction ? (this.rand(3) < 1) : (this.rand(3) < 2))
                         return this.buildUnit(SPECS.PREACHER, choice[0], choice[1]);
                 }
                 return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
