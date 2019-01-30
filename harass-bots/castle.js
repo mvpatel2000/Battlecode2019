@@ -407,22 +407,24 @@ function castleTurn() {
     // LOCAL PUSH
     if(this.me.health != this.hp) {
         this.hp = this.me.health;
-        let enemyCastleLocations = [];
-        for (let c = 0; c < this.enemyCastleZoneList.length; c++) {
-            let enemyloc = this.decodeLocation(this.enemyCastleZoneList[c]);
-            enemyCastleLocations.push(enemyloc);
+        if(this.getVisibleRobots().filter(i => i.unit > 2 && i.team == this.me.team).length >= 10) { //require 10 ally units
+            let enemyCastleLocations = [];
+            for (let c = 0; c < this.enemyCastleZoneList.length; c++) {
+                let enemyloc = this.decodeLocation(this.enemyCastleZoneList[c]);
+                enemyCastleLocations.push(enemyloc);
+            }
+            let message = this.encodeExactLocation(enemyCastleLocations.reduce(
+                                                (a,b) => this.distSquared(a, this.pos())
+                                                < this.distSquared(b, this.pos()) ? a : b)) | 0x7000;
+            let dist = 100;
+            //this.log(`local pushing; message = ${message.toString(2)}, dist = ${Math.floor(dist)}`);
+            this.signal(this.encrypt(message), Math.floor(dist));
+            this.updateDefensePositions([this.me.x, this.me.y]);
         }
-        let message = this.encodeExactLocation(enemyCastleLocations.reduce(
-                                            (a,b) => this.distSquared(a, this.pos())
-                                            < this.distSquared(b, this.pos()) ? a : b)) | 0x7000;
-        let dist = 100;
-        //this.log(`local pushing; message = ${message.toString(2)}, dist = ${Math.floor(dist)}`);
-        this.signal(this.encrypt(message), Math.floor(dist));
-        this.updateDefensePositions([this.me.x, this.me.y]);
     }
 
     // PUSHING
-    if (this.me.turn == 800 && this.numCastlesAlive < this.numCastles && !this.hasPushed
+    if (this.me.turn >= 800 && this.numCastlesAlive < this.numCastles && !this.hasPushed
             && this.getVisibleRobots().filter(i => (this.decrypt(i.signal) >> 12) == 0x7).length == 0) {
         this.hasPushed = true;
         let enemyCastleLocations = [];
