@@ -18,6 +18,9 @@ export function Pilgrim() {
     this.destination = this.mineLocation;
     this.karboniteMine = this.karbonite_map[this.mineLocation[1]][this.mineLocation[0]];
     this.fuelMine = this.fuel_map[this.mineLocation[1]][this.mineLocation[0]];
+
+    this.missionPilgrim = (this.decrypt(this.spawnPoint.signal) >> 15 == 1);
+    if(this.missionPilgrim) this.log("i am a mission pilgrim");
 }
 
 function whereAmIGoing(signal) {
@@ -69,6 +72,28 @@ function pilgrimTurn() {
                 this.signal(this.encrypt(0), 2);
                 return this.buildUnit(SPECS.CHURCH, choice[0], choice[1]);
             }
+        }
+    }
+
+    if(this.missionPilgrim) { // aggro church
+        let threats = this.getVisibleRobots().filter(i => i.team != this.me.team);
+        if(threats.length > 0 &&
+            this.getVisibleRobots().filter(i => i.team == this.me.team && i.unit < 2).length == 0 &&
+            this.karbonite >= 75 && this.fuel >= 300) {
+            // if you can't see any friendly castles or churches and you can see an enemy
+            this.log("i am building an aggro church");
+            let minDist = 7939;
+            let closestThreat = [0,0];
+            for(let k = 0; k < threats.length; k++) {
+                let dist = this.distSquared([this.me.x, this.me.y], [threats[k].x, threats[k].y]);
+                if(dist < minDist) {
+                    minDist = dist;
+                    closestThreat = [threats[k].x, threats[k].y];
+                }
+            }
+            let choice = this.getSpawnLocation(...closestThreat);
+            this.signal(this.encrypt(0xdddd), 2);
+            return this.buildUnit(SPECS.CHURCH, choice[0], choice[1]);
         }
     }
 

@@ -15,31 +15,41 @@ export function Church() {
     this.lateGameChurch = true;
     this.resourceClusters = this.clusterResourceTiles();
     this.myClusterIndex = this.findNearestClusterIndex([this.me.x, this.me.y], this.resourceClusters);
-    if (broadcastingPilgrims.length > 0 && zeroBroadcast.length == 0) { //it is a mission church!
-        let missionMineLocation = this.decodeExactLocation(this.decrypt(broadcastingPilgrims[0].signal));
-        this.nearbyMines = this.resourceClusters[this.myClusterIndex];
-        let karbMines = this.nearbyMines.filter(i => this.karbonite_map[i[1]][i[0]] == true);
-        let fuelMines = this.nearbyMines.filter(i => this.fuel_map[i[1]][i[0]] == true);
-        this.nearbyMines = karbMines;
-        for (let fuelctr = 0; fuelctr < fuelMines.length; fuelctr++)
-            this.nearbyMines.push(fuelMines[fuelctr]);
 
-        this.nearbyMineCounts = this.nearbyMines.map(i => 100);
-        for (let minectr = 0; minectr < this.nearbyMines.length; minectr++) {
-            if (this.arrEq(this.nearbyMines[minectr], missionMineLocation)) {
-                this.nearbyMineCounts[minectr] = 0;
-                break;
-            }
-        }
-        this.homeSaturated = false;
+    this.aggroChurch = false;
 
-        this.defensePositions = this.getDefensePositions([this.me.x, this.me.y]);
+    if (broadcastingPilgrims.length > 0 && zeroBroadcast.length == 0) { //it is a mission or aggro church!
 
         this.lateGameChurch = false;
+
+        this.defensePositions = this.getDefensePositions([this.me.x, this.me.y]);
 
         this.makeDense = false;
         this.numEmergencies = 0;
         this.extendedDefenseTimer = 0;
+        
+        if(this.decrypt(broadcastingPilgrims[0].signal) == 0xdddd) {
+            this.aggroChurch = true;
+            this.log("i am an aggro church");
+        }
+        else {
+            let missionMineLocation = this.decodeExactLocation(this.decrypt(broadcastingPilgrims[0].signal));
+            this.nearbyMines = this.resourceClusters[this.myClusterIndex];
+            let karbMines = this.nearbyMines.filter(i => this.karbonite_map[i[1]][i[0]] == true);
+            let fuelMines = this.nearbyMines.filter(i => this.fuel_map[i[1]][i[0]] == true);
+            this.nearbyMines = karbMines;
+            for (let fuelctr = 0; fuelctr < fuelMines.length; fuelctr++)
+                this.nearbyMines.push(fuelMines[fuelctr]);
+
+            this.nearbyMineCounts = this.nearbyMines.map(i => 100);
+            for (let minectr = 0; minectr < this.nearbyMines.length; minectr++) {
+                if (this.arrEq(this.nearbyMines[minectr], missionMineLocation)) {
+                    this.nearbyMineCounts[minectr] = 0;
+                    break;
+                }
+            }
+            this.homeSaturated = false;
+        }
     }
 }
 
@@ -58,20 +68,22 @@ function churchTurn() {
     if (this.lateGameChurch)
         return;
 
-    // MINING UPDATE CODE
-    this.nearbyMineCounts = this.nearbyMineCounts.map(i => i+1);
-    let signalPilgrims = this.getVisibleRobots().filter(i => i.unit == 2 && this.decrypt(i.signal) >=0);
-    for (let pilgrimCtr = 0; pilgrimCtr<signalPilgrims.length; pilgrimCtr++) {
-        let pilgrimLocation = this.decodeExactLocation(this.decrypt(signalPilgrims[pilgrimCtr].signal));
-        for (let mineCtr = 0; mineCtr < this.nearbyMines.length; mineCtr++) {
-            if (this.arrEq(pilgrimLocation, this.nearbyMines[mineCtr])) {
-                if (Math.floor(this.decrypt(signalPilgrims[pilgrimCtr].signal) / 64 / 64) % 2 == 1) {
-                    this.nearbyMineCounts[mineCtr] = -999; //stop tracking it, it reports to new base
+    if(!this.aggroChurch) {
+        // MINING UPDATE CODE
+        this.nearbyMineCounts = this.nearbyMineCounts.map(i => i+1);
+        let signalPilgrims = this.getVisibleRobots().filter(i => i.unit == 2 && this.decrypt(i.signal) >=0);
+        for (let pilgrimCtr = 0; pilgrimCtr<signalPilgrims.length; pilgrimCtr++) {
+            let pilgrimLocation = this.decodeExactLocation(this.decrypt(signalPilgrims[pilgrimCtr].signal));
+            for (let mineCtr = 0; mineCtr < this.nearbyMines.length; mineCtr++) {
+                if (this.arrEq(pilgrimLocation, this.nearbyMines[mineCtr])) {
+                    if (Math.floor(this.decrypt(signalPilgrims[pilgrimCtr].signal) / 64 / 64) % 2 == 1) {
+                        this.nearbyMineCounts[mineCtr] = -999; //stop tracking it, it reports to new base
+                    }
+                    else if (Math.abs(signalPilgrims[pilgrimCtr].x - this.me.x) <= 1 && Math.abs(signalPilgrims[pilgrimCtr].y - this.me.y) <= 1) {
+                        this.nearbyMineCounts[mineCtr] = 0;
+                    }
+                    break;
                 }
-                else if (Math.abs(signalPilgrims[pilgrimCtr].x - this.me.x) <= 1 && Math.abs(signalPilgrims[pilgrimCtr].y - this.me.y) <= 1) {
-                    this.nearbyMineCounts[mineCtr] = 0;
-                }
-                break;
             }
         }
     }
@@ -81,7 +93,7 @@ function churchTurn() {
     if (visibleEnemies.length > 0 || this.extendedDefenseTimer > 0) { // rush defense
         // assess the threat
         let threats = visibleEnemies.filter(i => i.unit > 2 || i.unit < 2);
-        let prophetThreats = threats.filter(i => i.unit == 4); //counts number of prophetss
+        let prophetThreats = threats.filter(i => i.unit == 4); //counts number of prophets
         if (threats.length > 0 || this.extendedDefenseTimer > 0) { // attacking threat
             if (this.karbonite >= 30 && this.fuel >= 50) {
                 let minDist = 7939;
@@ -207,23 +219,25 @@ function churchTurn() {
         }
     }
 
-    // SATURATION CODE
-    this.homeSaturated = this.nearbyMineCounts.filter(i => i>=20).length == 0;
-    if (this.fuel >= 50 && this.karbonite >= 10 && !this.homeSaturated) {
-        let target = [this.me.x, this.me.y];
-        for (let mineCtr = 0; mineCtr < this.nearbyMines.length; mineCtr++) { //finds empty mining location
-            if (this.nearbyMineCounts[mineCtr] >= 20) {
-                target = this.nearbyMines[mineCtr];
-                this.nearbyMineCounts[mineCtr] = 0;
-                //this.log("Spawning pilgrim in direction "+target+" count: "+this.nearbyMineCounts[mineCtr]);
-                break;
+    if(!this.aggroChurch) {
+        // SATURATION CODE
+        this.homeSaturated = this.nearbyMineCounts.filter(i => i>=20).length == 0;
+        if (this.fuel >= 50 && this.karbonite >= 10 && !this.homeSaturated) {
+            let target = [this.me.x, this.me.y];
+            for (let mineCtr = 0; mineCtr < this.nearbyMines.length; mineCtr++) { //finds empty mining location
+                if (this.nearbyMineCounts[mineCtr] >= 20) {
+                    target = this.nearbyMines[mineCtr];
+                    this.nearbyMineCounts[mineCtr] = 0;
+                    //this.log("Spawning pilgrim in direction "+target+" count: "+this.nearbyMineCounts[mineCtr]);
+                    break;
+                }
             }
-        }
-        let choice = this.getSpawnLocation(target[0], target[1]);
-        if (choice != null) {
-            //this.log("Spawning pilgrim in direction " + choice + " towards " + target);
-            this.signal(this.encrypt(this.encodeExactLocation(target)), 2);
-            return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
+            let choice = this.getSpawnLocation(target[0], target[1]);
+            if (choice != null) {
+                //this.log("Spawning pilgrim in direction " + choice + " towards " + target);
+                this.signal(this.encrypt(this.encodeExactLocation(target)), 2);
+                return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
+            }
         }
     }
 
