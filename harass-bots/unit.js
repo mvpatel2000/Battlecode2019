@@ -52,7 +52,7 @@ export function Unit() {
         this.resourceClusters = this.clusterResourceTiles();
         this.resourceCentroids = this.resourceClusters.map(x => this.centroid(x));
         this.avoidTup = this.avoid.map(i => this.resourceCentroids[i]).filter(i => i);
-        this.avoidTup.push(this.reflectPoint(...this.pos()));
+        this.avoidTup.push(this.reflectPoint(this.spawnPoint.x, this.spawnPoint.y));
         this.targetTup = this.resourceCentroids[this.target];
         this.mineTup = this.avoidTup.map(i => this.reflectPoint(...i));
         this.avoid.forEach(i => {
@@ -99,7 +99,7 @@ export function Unit() {
             if (enemy[0].unit == SPECS.CRUSADER || enemy[0].unit == SPECS.PREACHER) {
                 let optimalmove = this.getOptimalEscapeLocation();
                 if (optimalmove.length && this.fuel >= this.fuelpermove) {
-                    let route = this.path(this.queue[0]);
+                    let route = this.path(this.queue[0] ? this.queue[0] : this.avoidTup[0]);
                     let [dx, dy] = route.length ? route[0] : [0, 0];
                     let old = [this.me.x + dx, this.me.y + dy];
                     let finmove = optimalmove.reduce((a, b) => this.dist(a, old) < this.dist(b, old) ? a : b);
