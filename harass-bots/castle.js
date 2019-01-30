@@ -47,7 +47,7 @@ export function Castle() {
     this.nearbyMineCounts = this.nearbyMines.map(i => 100);
     this.homeSaturated = false;
 
-    this.defensePositions = this.getDenseDefensePositions([this.me.x, this.me.y]);
+    this.defensePositions = this.getDefensePositions([this.me.x, this.me.y]);
 
     this.numCastles = 3;
     this.numPreachersSpawned = 0;
