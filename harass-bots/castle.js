@@ -194,7 +194,7 @@ function castleTurn() {
     else if (this.step >= 5) {
         this.castleTalk(0xaa);
     }
-    if (this.step == 998) {
+    if (this.step == 999) {
         let message = this.encrypt(0x5000);
         let dist = ([this.me.x, this.me.y, this.map.length - this.me.x, this.map.length - this.me.y]
                             .reduce((a, b) => a < b ? b : a) * Math.sqrt(2)) ** 2;
