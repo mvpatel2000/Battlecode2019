@@ -176,7 +176,7 @@ export function Unit() {
         // let fuelThresh = Math.min(Math.max(200, 10*this.me.turn), 5000);
 
         // coinflip = this.streak ? coinflip : 1;
-        if (coinflip && this.fuel >= fuelThresh && this.karbonite >= 200 && this.defensePositions.length > 0
+        if (coinflip && this.fuel >= fuelThresh && this.karbonite >= 100 && this.defensePositions.length > 0
             && (!this.targetClusterIndex || this.targetClusterIndex == -1)
             && ((this.fuel >= 300 && this.karbonite >= 300) || this.rand(2) == 0)) {
             // this.log("pump");
