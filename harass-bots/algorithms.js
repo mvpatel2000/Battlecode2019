@@ -392,7 +392,7 @@ export const Algorithms = (function() {
             let castles = this.getVisibleRobots().filter(i => i.team == this.me.team && i.unit == 0);
             for (let i = 0; i < castles.length; i++) {
                 let castle = castles[i];
-                let signal = castle.signal;
+                let signal = this.decrypt(castle.signal);
                 if (signal != undefined && signal!=-1) {
                     enemyCastleLocations.push(this.reflectPoint(castle.x, castle.y));
                     enemyCastleLocations.push(this.decodeLocation(signal % (2 ** 8)));

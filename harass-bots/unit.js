@@ -140,7 +140,7 @@ export function Unit() {
             && ((this.fuel >= 300 && this.karbonite >= 300) || this.rand(2) == 0)) {
             // this.log("pump");
             // this.streak = true;
-            let target = [1,0];
+            let target = [this.map.length / 2, this.map.length / 2];
             let choice = this.getSpawnLocation(target[0], target[1]);
             if (choice) {
                 let defenseTarget = this.defensePositions.shift();
