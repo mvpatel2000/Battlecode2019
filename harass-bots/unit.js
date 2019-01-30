@@ -9,7 +9,7 @@ export function Unit() {
     this.spawnPoint = this.getVisibleRobots().filter(i => i.unit < 2
                         && this.distSquared([i.x, i.y], [this.me.x, this.me.y]) <= 2 && this.decrypt(i.signal) >= 0)[0];
     this.checkFreed = function () {
-        for (let i = this.freed.length - 10; i >= 0; i--) {
+        for (let i = this.freed.length - 8; i >= 0; i--) {
             if (!this.occupied(...this.freed[i])) {
                 this.defensePositions.unshift(this.freed[i]);
                 this.freed.splice(i, 1);
