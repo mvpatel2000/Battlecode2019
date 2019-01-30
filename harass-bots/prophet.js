@@ -15,10 +15,6 @@ export function Prophet() {
     if (this.harasser) {
         this.turn = this.harassTurn;
     }
-    if (this.arrEq(this.target, [32,26])) {
-        this.log(this.decodeExactLocation(this.decrypt(this.spawnPoint.signal)));
-        this.log(this.decrypt(this.spawnPoint.signal));
-    }
     this.shouldRun = shouldRun;
 
     this.moves = 0;
