@@ -517,7 +517,7 @@ export const Algorithms = (function() {
                         && !this.karbonite_map[y][x] && !this.fuel_map[y][x]) {
                             if(max % 2 == 0)
                                 positions.push([x, y]);
-                            else if(x % 2 == 1)
+                            else if(x % 2 == 1 && max > 3)
                                 positions.push([x, y]);
                     }
 
