@@ -169,7 +169,7 @@ export function Unit() {
         let numProduction = this.resourceClusters.length;
         let k = 5;
         if(this.fuel >= 4000) k++;
-        if(this.karbonite >= 300) k++;
+        if(this.karbonite >= 200) k++;
         let p = numFuelSquares*k/(numProduction*50);
         let coinflip = this.rand(10000) < 10000*p;
         let fuelThresh = 200 + 80 * this.unitsBuilt;
@@ -178,7 +178,7 @@ export function Unit() {
         // coinflip = this.streak ? coinflip : 1;
         if (coinflip && this.fuel >= fuelThresh && this.karbonite >= 100 && this.defensePositions.length > 0
             && (!this.targetClusterIndex || this.targetClusterIndex == -1)
-            && ((this.fuel >= 300 && this.karbonite >= 300) || this.rand(2) == 0)) {
+            && ((this.fuel >= 300 && this.karbonite >= 200) || this.rand(2) == 0)) {
             // this.log("pump");
             // this.streak = true;
             let target = [this.map.length / 2, this.map.length / 2];

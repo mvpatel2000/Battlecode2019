@@ -71,6 +71,10 @@ export function Castle() {
     this.numCastles = 0;
     this.numCastlesAlive = 0;
     this.hasPushed = false;
+
+    this.contestedTimer = -10;
+    this.numEmergencies = 0;
+    this.extendedDefenseTimer = 0;
 }
 
 /**
@@ -444,11 +448,11 @@ function castleTurn() {
 
     // EMERGENCY DEFENSE CODE: always attack if enemy is in range
     let visibleEnemies = this.getVisibleRobots().filter(i => i.team != this.me.team);
-    if(visibleEnemies.length > 0) { // rush defense
+    if(visibleEnemies.length > 0 || this.extendedDefenseTimer > 0) { // rush defense
         // assess the threat
         let threats = visibleEnemies.filter(i => i.unit > 2 || i.unit < 2);
         let prophetThreats = threats.filter(i => i.unit == 4); //counts number of prophetss
-        if(threats.length > 0) { // attacking threat
+        if(threats.length > 0 || this.extendedDefenseTimer > 0) { // attacking threat
             if(this.karbonite >= 30 && this.fuel >= 50 && (this.unitsBuilt < 25 || this.fuel >= 5000)) {
                 let minDist = 7939;
                 let closestThreat = [0,0];
@@ -459,7 +463,7 @@ function castleTurn() {
                         closestThreat = [threats[k].x, threats[k].y];
                     }
                 }
-                if(prophetThreats.length == 0) { //build preachers unless you see 2 prophets
+                if(prophetThreats.length == 0 && threats.length > 0) { //build preachers unless you see prophets
                     let choice = this.getSpawnLocation(closestThreat[0], closestThreat[1]);
                     if(choice != null) {
                         if(this.defensePositions.length > 0) {
@@ -480,10 +484,13 @@ function castleTurn() {
                             this.signal(this.encrypt(this.encodeExactLocation(defenseTarget)), 2);
                         }
                         this.unitsBuilt++;
+                        this.numEmergencies++;
+                        if(this.numEmergencies == 1) this.extendedDefenseTimer = 1;
+                        else this.extendedDefenseTimer = 3;
                         return this.buildUnit(SPECS.PREACHER, choice[0], choice[1]);
                     }
                 }
-                else {
+                else { // build prophets
                     let choice = this.getSpawnLocation(closestThreat[0], closestThreat[1]);
                     if(choice != null) {
                         if(this.defensePositions.length > 0) {
@@ -504,6 +511,14 @@ function castleTurn() {
                             this.signal(this.encrypt(this.encodeExactLocation(defenseTarget)), 2);
                         }
                         this.unitsBuilt++;
+                        if(threats.length > 0) { // actual emergency defense
+                            this.numEmergencies++;
+                            if(this.numEmergencies == 1) this.extendedDefenseTimer = 1;
+                            else this.extendedDefenseTimer = 3;
+                        }
+                        else { // extended emergency defense
+                            this.extendedDefenseTimer--;
+                        }
                         return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
                     }
                 }
