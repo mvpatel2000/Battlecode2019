@@ -8,6 +8,14 @@ export function Unit() {
     this.streak = false;
     this.spawnPoint = this.getVisibleRobots().filter(i => i.unit < 2
                         && this.distSquared([i.x, i.y], [this.me.x, this.me.y]) <= 2 && this.decrypt(i.signal) >= 0)[0];
+    this.checkFreed = function () {
+        for (let i = this.freed.length - 10; i >= 0; i--) {
+            if (!this.occupied(...this.freed[i])) {
+                this.defensePositions.unshift(this.freed[i]);
+                this.freed.splice(i, 1);
+            }
+        }
+    }
     if (!this.spawnPoint) return;
     this.unitsBuilt = 0;
     let sig = this.decrypt(this.spawnPoint.signal);
@@ -144,9 +152,11 @@ export function Unit() {
             let choice = this.getSpawnLocation(target[0], target[1]);
             if (choice) {
                 let defenseTarget = this.defensePositions.shift();
+                this.freed.push(defenseTarget);
                 let defenseCtr = 0;
                 while(defenseCtr < this.defensePositions.length && this.getVisibleRobotMap()[defenseTarget[1]][defenseTarget[0]] > 0) {
                     defenseTarget = this.defensePositions.shift();
+                    this.freed.push(defenseTarget);
                     defenseCtr++;
                 }
                 let vertical = this.orientation();

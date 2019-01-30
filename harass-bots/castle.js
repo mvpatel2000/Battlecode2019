@@ -111,6 +111,7 @@ function castleTurn() {
     if (this.step % 50 == 0) {
         this.log(`Turn: ${this.step}`);
     }
+    this.step++;
     // this.log("Castle "+this.me.id+" at ("+this.me.x+","+this.me.y+") here, on step "+this.step+".  Here's what I know about cluster status:");
     // this.log(this.clusterStatus);
 
@@ -128,7 +129,7 @@ function castleTurn() {
      * step 4:
      *  - listen to others clusters
      */
-    this.step++;
+    this.checkFreed();
     let talkingCastles = this.getVisibleRobots().filter(i => i.castle_talk!=0 && i.id != this.me.id);
     this.numCastlesAlive = talkingCastles.length + 1;
     if (this.step == 1) {
@@ -469,6 +470,7 @@ function castleTurn() {
                             let defenseTarget = candidates[0];
                             for (let i = 0; i < this.defensePositions.length; i++) {
                                 if (this.arrEq(this.defensePositions[i], defenseTarget)) {
+                                    this.freed.push(this.defensePositions[i]);
                                     this.defensePositions.splice(i, 1);
                                     break;
                                 }
@@ -492,6 +494,7 @@ function castleTurn() {
                             let defenseTarget = candidates[0];
                             for (let i = 0; i < this.defensePositions.length; i++) {
                                 if (this.arrEq(this.defensePositions[i], defenseTarget)) {
+                                    this.freed.push(this.defensePositions[i]);
                                     this.defensePositions.splice(i, 1);
                                     break;
                                 }

@@ -3,6 +3,7 @@ import {SPECS} from 'battlecode';
 export function Church() {
     this.turn = churchTurn;
     this.step = 0;
+    this.freed = [];
 
     let broadcastingPilgrims = this.getVisibleRobots().filter(i => (i.unit == SPECS.PILGRIM) &&
         Math.pow(i.x - this.me.x,2) + Math.pow(i.y - this.me.y,2) <= 2 && this.decrypt(i.signal)>=0);
@@ -33,11 +34,13 @@ export function Church() {
         this.homeSaturated = false;
 
         this.defensePositions = this.getDefensePositions([this.me.x, this.me.y]);
+
         this.lateGameChurch = false;
     }
 }
 
 function churchTurn() {
+    this.checkFreed();
     if(this.endgameAnalysis()) { //last second resource liquidation
         let choice = this.getSpawnLocation(this.me.x + 1, this.me.y);
         if (choice != null) {
@@ -99,6 +102,7 @@ function churchTurn() {
                             let defenseTarget = candidates[0];
                             for (let i = 0; i < this.defensePositions.length; i++) {
                                 if (this.arrEq(this.defensePositions[i], defenseTarget)) {
+                                    this.freed.push(this.defensePositions[i]);
                                     this.defensePositions.splice(i, 1);
                                     break;
                                 }
@@ -122,6 +126,7 @@ function churchTurn() {
                             let defenseTarget = candidates[0];
                             for (let i = 0; i < this.defensePositions.length; i++) {
                                 if (this.arrEq(this.defensePositions[i], defenseTarget)) {
+                                    this.freed.push(this.defensePositions[i]);
                                     this.defensePositions.splice(i, 1);
                                     break;
                                 }
@@ -149,6 +154,7 @@ function churchTurn() {
                     let defenseTarget = candidates[0];
                     for (let i = 0; i < this.defensePositions.length; i++) {
                         if (this.arrEq(this.defensePositions[i], defenseTarget)) {
+                            this.freed.push(this.defensePositions[i]);
                             this.defensePositions.splice(i, 1);
                             break;
                         }
@@ -173,6 +179,7 @@ function churchTurn() {
                     let defenseTarget = candidates[0];
                     for (let i = 0; i < this.defensePositions.length; i++) {
                         if (this.arrEq(this.defensePositions[i], defenseTarget)) {
+                            this.freed.push(this.defensePositions[i]);
                             this.defensePositions.splice(i, 1);
                             break;
                         }
