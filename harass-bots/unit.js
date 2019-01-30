@@ -12,9 +12,12 @@ export function Unit() {
     this.checkFreed = function () {
         for (let i = this.freed.length - 8; i >= 0; i--) {
             if (!this.occupied(...this.freed[i])) {
+                if(!this.makeDense) {
+                    this.makeDense = true;
+                    this.defensePositions = this.getDenseDefensePositions([this.me.x, this.me.y]);
+                }
                 this.defensePositions.unshift(this.freed[i]);
                 this.freed.splice(i, 1);
-                this.contestedTimer = this.me.turn;
             }
         }
     }
