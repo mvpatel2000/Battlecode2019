@@ -9,7 +9,7 @@ export function Prophet() {
     this.target = this.enemyCastleLocations[this.targetCtr];
     this.step = 0;
     this.spawnPoint = this.getVisibleRobots().filter(i => i.unit < 2 && this.distSquared([i.x, i.y], [this.me.x, this.me.y]) <= 2
-                                                    && this.decrypt(i.signal) > 0)[0];
+                                                    && this.decrypt(i.signal) >= 0)[0];
     if (this.spawnPoint)
         this.target = this.decodeExactLocation(this.decrypt(this.spawnPoint.signal));
     if (this.harasser) {
