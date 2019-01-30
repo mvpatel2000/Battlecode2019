@@ -75,7 +75,7 @@ function pilgrimTurn() {
     let [x, y] = [this.me.x, this.me.y];
 
     if(!this.adjacentDestinations) { //switch mining base
-        let adjacentBases = this.getVisibleRobots().filter(i => i.unit < 2 && this.distSquared([i.x,i.y], this.mineLocation)<=2)
+        let adjacentBases = this.getVisibleRobots().filter(i => i.unit < 2 && i.team == this.me.team && this.distSquared([i.x,i.y], this.mineLocation)<=2)
         if(adjacentBases.length > 0) { //signal to original base
             this.signal(this.encrypt(1*64*64+this.encodeExactLocation(this.mineLocation)),
                                         this.distSquared([this.me.x, this.me.y], this.originalBaseLocation) );
@@ -150,7 +150,7 @@ function pilgrimTurn() {
             && this.fuel > (SPECS.UNITS[this.me.unit].FUEL_PER_MOVE * this.getSpeed())) { //must flee if optimal dodge is not stay still
             return this.move(...[escapemove[0][0] - this.me.x, escapemove[0][1] - this.me.y]);
         }
-        let base = this.getVisibleRobots().filter(i => (i.unit == SPECS.CHURCH || i.unit == SPECS.CASTLE) &&
+        let base = this.getVisibleRobots().filter(i => (i.unit == SPECS.CHURCH || i.unit == SPECS.CASTLE) && i.team == this.me.team &&
             Math.pow(i.x - this.me.x,2) + Math.pow(i.y - this.me.y,2) <= 2);
         if(base.length>0) {
             this.destination = this.mineLocation;

@@ -530,7 +530,7 @@ export const Algorithms = (function() {
                 }
                 //this.log(positions);
             }
-            return positions; //positions.filter(i => Math.abs(i[0] - startloc[0]) > 1 || Math.abs(i[1] - startloc[1]) > 1);
+            return positions.filter(i => Math.abs(i[0] - startloc[0]) > 1 || Math.abs(i[1] - startloc[1]) > 1);
         },
 
         /*
