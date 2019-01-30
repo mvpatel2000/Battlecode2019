@@ -393,7 +393,7 @@ function castleTurn() {
                 this.signal(this.encrypt(this.harassSignal), 2);
                 this.numHarassersSent += 1;
                 this.harassSignal = this.hostileSignal; // reset harass signal
-                return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
+                return this.buildUnit(SPECS.CRUSADER, choice[0], choice[1]);
             } else {
                 this.harassSignal = this.hostileSignal; // reset harass signal
                 //this.log("Resetting harass signal, choice was null...");
