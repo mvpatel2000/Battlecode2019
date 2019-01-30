@@ -16,6 +16,8 @@ export function Castle() {
     this.myEncodedLocation = this.encodeLocation(this.reflectedLocation[0], this.reflectedLocation[1]);
     this.otherCastleLocations = 0;
     this.otherCastleZoneList = [];
+    this.freed = [];
+
     this.enemyCastleZoneList = []; //only used for harassers
     this.otherCastleIDs = [];
 
