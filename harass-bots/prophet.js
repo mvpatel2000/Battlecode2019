@@ -10,8 +10,15 @@ export function Prophet() {
     this.step = 0;
     this.spawnPoint = this.getVisibleRobots().filter(i => i.unit < 2 && this.distSquared([i.x, i.y], [this.me.x, this.me.y]) <= 2
                                                     && this.decrypt(i.signal) >= 0)[0];
-    if (this.spawnPoint)
+
+    if (this.spawnPoint) {
         this.target = this.decodeExactLocation(this.decrypt(this.spawnPoint.signal));
+        if (this.decrypt(this.spawnPoint.signal) == 0x6000) {
+            let ref = this.reflection();
+            this.target = [Math.floor((this.me.x + ref[0]) / 2), Math.floor((this.me.y + ref[1]) / 2)]
+            this.scout = true;
+        }
+    }
     if (this.harasser) {
         this.turn = this.harassTurn;
     }
@@ -27,6 +34,12 @@ function prophetTurn() {
     this.step++;
     this.pushAnalysis();
 
+    if (this.scout) {
+        if (this.getVisibleRobots().filter(i => i.team != this.me.team && i.unit == SPECS.PREACHER).length > 1) {
+            this.log('screaming');
+            this.castleTalk(0xee);
+        }
+    }
     // attack code
     // if there are robots that I can attack,
     // and I have enough fuel to attack,

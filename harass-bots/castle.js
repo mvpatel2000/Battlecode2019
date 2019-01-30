@@ -140,6 +140,7 @@ function castleTurn() {
     this.checkFreed();
     let talkingCastles = this.getVisibleRobots().filter(i => i.castle_talk!=0 && i.id != this.me.id);
     this.numCastlesAlive = talkingCastles.length + 1;
+
     if (this.step == 1) {
         // this.log("Opening started.  Castle "+this.me.id+" at ("+this.me.x+","+this.me.y+") here.");
 
@@ -197,6 +198,12 @@ function castleTurn() {
     }
     else if (this.step >= 5) {
         this.castleTalk(0xaa);
+    }
+    if (this.numCastles == 1 && this.step > 30 && this.fuel >= 50 && this.karbonite >= 25 && !this.scouted) {
+        this.log('building scout');
+        this.scouted = true;
+        this.signal(this.encrypt(0x6000), 2);
+        return this.buildUnit(SPECS.PROPHET, ...this.getSpawnLocation(...this.reflection()));
     }
     if (this.step == 999) {
         let message = this.encrypt(0x5000);
