@@ -36,8 +36,22 @@ export function Unit() {
         return [this.me.x, this.me.y];
     };
 
+    this.myside = function(x) {
+        if (this.orientation()) {
+            if (this.me.x < this.map.length / 2) {
+                return x.x < this.map.length / 2;
+            } else
+                return x.x > this.map.length / 2;
+        } else {
+            if (this.me.y < this.map.length / 2) {
+                return x.y < this.map.length / 2;
+            } else
+                return x.y > this.map.length / 2;
+        }
+    }
+
     this.pushAnalysis = function() {
-        let charge = this.getVisibleRobots().filter(i => (this.decrypt(i.signal) >> 12) == 0x7);
+        let charge = this.getVisibleRobots().filter(i => this.myside(i) && (this.decrypt(i.signal) >> 12) == 0x7);
         if (charge.length > 0) {
             this.target = this.decodeExactLocation(this.decrypt(charge[0].signal) & 0xfff);
             this.log(`attacking ${this.target}`);
@@ -47,7 +61,7 @@ export function Unit() {
     };
 
     this.endgameAnalysis = function() {
-        let charge = this.getVisibleRobots().filter(i => (this.decrypt(i.signal) >> 12) == 0x5);
+        let charge = this.getVisibleRobots().filter(i => this.myside(i) && (this.decrypt(i.signal) >> 12) == 0x5);
         return charge.length > 0;
     };
 
