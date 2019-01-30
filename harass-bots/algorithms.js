@@ -805,7 +805,7 @@ export const Algorithms = (function() {
                 && !this.fuel_map[this.me.y + choice[1]][this.me.x + choice[0]])
                 return choice;
             for (let i = 1; i <= 4; i++) {
-                choice = choices[(optimalIndex + 1) % 8];
+                choice = choices[(optimalIndex + i) % 8];
                 if (!this.occupied(this.me.x + choice[0], this.me.y + choice[1])
                     && !this.karbonite_map[this.me.y + choice[1]][this.me.x + choice[0]]
                     && !this.fuel_map[this.me.y + choice[1]][this.me.x + choice[0]])
