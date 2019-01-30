@@ -779,7 +779,7 @@ export const Algorithms = (function() {
                 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1]))
                 return choice;
             for (let i = 1; i <= 4; i++) {
-                choice = choices[(optimalIndex + 1) % 8];
+                choice = choices[(optimalIndex + i) % 8];
                 if (this.me.x+choice[0]>=0 && this.me.x+choice[0]<this.map.length && this.me.y+choice[1]>=0 && this.me.y+choice[1]<this.map.length
                     && !this.occupied(this.me.x + choice[0], this.me.y + choice[1]))
                     return choice;
