@@ -72,9 +72,11 @@ export function Castle() {
     this.numCastlesAlive = 0;
     this.hasPushed = false;
 
-    this.contestedTimer = -10;
+    this.contestedTimer = -100;
     this.numEmergencies = 0;
     this.extendedDefenseTimer = 0;
+
+    this.log(this.decodeExactLocation(this.decrypt('47196')));
 }
 
 /**
