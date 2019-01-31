@@ -102,7 +102,7 @@ function pilgrimTurn() {
             }
         }
 
-        if(threats.length > 0 && this.distSquared(closestThreat, closestBase) > 100 &&
+        if(threats.length > 0 && this.distSquared(closestThreat, closestBase) > 121 &&
             (this.distSquared([this.me.x, this.me.y], this.destination) > this.distSquared(closestThreat, this.destination) ||
             this.threat(closestThreatRobot) > 0) && 
             this.karbonite >= 75 && this.fuel >= 300 && !this.builtAggroChurch) {
