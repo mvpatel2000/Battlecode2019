@@ -76,17 +76,19 @@ function pilgrimTurn() {
         }
     }
 
-    if(this.missionPilgrim && this.distSquared([this.me.x, this.me.y], this.destination)) { // aggro church
+    if(this.missionPilgrim && this.distSquared([this.me.x, this.me.y], this.destination) > 0) { // aggro church
         let threats = this.getVisibleRobots().filter(i => i.team != this.me.team);
         let bases = this.getVisibleRobots().filter(i => i.team == this.me.team && i.unit < 2);
 
         let minDist = 7939;
         let closestThreat = [-1000,-1000];
+        let closestThreatRobot = null;
         for(let k = 0; k < threats.length; k++) {
             let dist = this.distSquared([this.me.x, this.me.y], [threats[k].x, threats[k].y]);
             if(dist < minDist) {
                 minDist = dist;
                 closestThreat = [threats[k].x, threats[k].y];
+                closestThreatRobot = threats[k];
             }
         }
 
@@ -101,18 +103,12 @@ function pilgrimTurn() {
         }
 
         if(threats.length > 0 && this.distSquared(closestThreat, closestBase) > 100 &&
+            (this.distSquared([this.me.x, this.me.y], this.destination) > this.distSquared(closestThreat, this.destination) ||
+            this.threat(closestThreatRobot) > 0) && 
             this.karbonite >= 75 && this.fuel >= 300 && !this.builtAggroChurch) {
             // if you can't see any friendly castles or churches and you can see an enemy
             this.log("i am building an aggro church");
             let minDist = 7939;
-            let closestThreat = [-100,-100];
-            for(let k = 0; k < threats.length; k++) {
-                let dist = this.distSquared([this.me.x, this.me.y], [threats[k].x, threats[k].y]);
-                if(dist < minDist) {
-                    minDist = dist;
-                    closestThreat = [threats[k].x, threats[k].y];
-                }
-            }
             let choice = this.getSpawnLocation(...closestThreat);
             this.builtAggroChurch = true;
             this.signal(this.encrypt(0xdddd), 2);

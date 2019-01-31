@@ -69,8 +69,41 @@ function churchTurn() {
         return;
 
     if(this.aggroChurch) {
+        let threats = this.getVisibleRobots().filter(i => i.team != this.me.team);
 
+        if(threats.length == 0) return;
+
+        let minDist = 7939;
+        let closestThreat = [-1000,-1000];
+        for(let k = 0; k < threats.length; k++) {
+            let dist = this.distSquared([this.me.x, this.me.y], [threats[k].x, threats[k].y]);
+            if(dist < minDist) {
+                minDist = dist;
+                closestThreat = [threats[k].x, threats[k].y];
+            }
+        }
+        if(this.karbonite >= 25 && this.fuel >= 50 &&
+            this.getVisibleRobots().filter(i => i.team == this.me.team && this.distSquared([this.me.x, this.me.y], [i.x, i.y]) <= 2 && 
+                i.unit == SPECS.PROPHET).length < 4) {
+            let choice = this.getSpawnLocation(...closestThreat);
+            // this.log(choice);
+            let distCheck = this.distSquared([this.me.x + choice[0], this.me.y + choice[1]], closestThreat);
+            if(choice && distCheck >= 64) {
+                this.unitsBuilt++;
+                this.signal(this.encrypt(this.encodeExactLocation([this.me.x + choice[0], this.me.y + choice[1]])), 2);
+                return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
+            }
+            choice = this.getSpawnLocation(2*this.me.x - closestThreat[0], 2*this.me.y - closestThreat[1]);
+            // this.log(choice);
+            if(choice) {
+                this.unitsBuilt++;
+                this.signal(this.encrypt(this.encodeExactLocation([this.me.x + choice[0], this.me.y + choice[1]])), 2);
+                return this.buildUnit(SPECS.PROPHET, choice[0], choice[1]);
+            }
+        }
+        return;
     }
+
     // MINING UPDATE CODE
     this.nearbyMineCounts = this.nearbyMineCounts.map(i => i+1);
     let signalPilgrims = this.getVisibleRobots().filter(i => i.unit == 2 && this.decrypt(i.signal) >=0);

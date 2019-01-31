@@ -619,3 +619,4 @@ function castleTurn() {
     return this.pumpProphets();
 
 }
+
