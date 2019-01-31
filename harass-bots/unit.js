@@ -182,7 +182,14 @@ export function Unit() {
         if (route.length) {
             return this.move(...route[0]);
         } else {
-            this.queue.push(this.queue.shift());
+            if (this.me.unit != SPECS.PROPHET)
+                this.queue.push(this.queue.shift());
+            else {
+                let route = this.workerpath(this.queue[0]);
+                if (route.length) {
+                    return this.move(...route[0]);
+                }
+            }
         }
     }
 
