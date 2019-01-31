@@ -106,7 +106,7 @@ function pilgrimTurn() {
         if(threats.length > 0 && this.distSquared(closestThreat, closestBase) > 121 &&
             (this.distSquared([this.me.x, this.me.y], this.destination) > this.distSquared(closestThreat, this.destination) ||
             this.threat(closestThreatRobot) > 0) && 
-            this.karbonite >= 75 && this.fuel >= 300 && !this.builtAggroChurch) {
+            this.karbonite >= 85 && this.fuel >= 300 && !this.builtAggroChurch) {
             // if you can't see any friendly castles or churches and you can see an enemy
             this.log("i am building an aggro church");
             let minDist = 7939;
