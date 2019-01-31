@@ -119,6 +119,10 @@ function castleTurn() {
     if (this.step % 50 == 0) {
         this.log(`Turn: ${this.step}`);
     }
+    if (this.step == 500) {
+        this.defensePositions = this.getDenseDefensePositions([this.me.x, this.me.y]);
+        this.makeDense = true; 
+    }
     this.step++;
     // this.log("Castle "+this.me.id+" at ("+this.me.x+","+this.me.y+") here, on step "+this.step+".  Here's what I know about cluster status:");
     // this.log(this.clusterStatus);
