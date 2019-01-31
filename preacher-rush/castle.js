@@ -51,11 +51,12 @@ function castleTurn() {
         this.initial = false;
         return this.buildUnit(SPECS.PILGRIM, choice[0], choice[1]);
     } 
-    if (this.prophet < 3 && this.fuel >= 50 && this.karbonite >= 30 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
+    if (this.step > 50 && this.prophet < 3 && this.fuel >= 50 && this.karbonite >= 30 && !this.occupied(this.me.x + choice[0], this.me.y + choice[1])) {
         this.signal(this.otherCastleLocations, 2);
         this.prophet++;
         return this.buildUnit(SPECS.PREACHER, choice[0], choice[1]);
     }
+    return;
 
 
     // base spawn rate
