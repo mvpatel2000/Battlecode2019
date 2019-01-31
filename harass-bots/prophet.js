@@ -14,8 +14,8 @@ export function Prophet() {
     if (this.spawnPoint) {
         this.target = this.decodeExactLocation(this.decrypt(this.spawnPoint.signal));
         if (this.decrypt(this.spawnPoint.signal) == 0x6000) {
-            let ref = this.reflection();
-            this.target = [Math.floor((this.me.x + ref[0]) / 2), Math.floor((this.me.y + ref[1]) / 2)]
+            let ref = this.reflectPoint(this.spawnPoint.x, this.spawnPoint.y);
+            this.target = ref;//[Math.floor((this.me.x + ref[0]) / 2), Math.floor((this.me.y + ref[1]) / 2)]
             this.scout = true;
         }
     }
@@ -84,7 +84,11 @@ function prophetTurn() {
         return;
     }
     else {
-        route = this.path(this.target);
+        if (this.scout) {
+            route = this.avoidpath(this.target, [this.target], 64);
+        } else {
+            route = this.path(this.target);
+        }
     }
     if (this.moves < 50 && this.fuel > (SPECS.UNITS[this.me.unit].FUEL_PER_MOVE * this.getSpeed())) {
         if (route.length > 0) { //A* towards target

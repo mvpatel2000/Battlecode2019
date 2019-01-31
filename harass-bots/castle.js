@@ -11,6 +11,7 @@ const CLUSTER = {
 export function Castle() {
     this.turn = castleTurn;
     this.step = 0;
+    this.hardcap = 0;
 
     this.reflectedLocation = this.reflectPoint(this.me.x, this.me.y);
     this.myEncodedLocation = this.encodeLocation(this.reflectedLocation[0], this.reflectedLocation[1]);
@@ -140,7 +141,15 @@ function castleTurn() {
     this.checkFreed();
     let talkingCastles = this.getVisibleRobots().filter(i => i.castle_talk!=0 && i.id != this.me.id);
     this.numCastlesAlive = talkingCastles.length + 1;
-
+    for (let i of talkingCastles) {
+        if (this.hardcap < 4 && this.step < 100 && i.castle_talk == 0xee && this.karbonite > 25 && this.fuel > 60) {
+            this.signal(this.encrypt(0x6000), 2);
+            let targ = this.reflection();
+            targ = targ.map((a, i) => a - this.pos()[i]).map(i => -i).map((a, i) => a + this.pos()[i]);
+            this.hardcap++;
+            return this.buildUnit(SPECS.PROPHET, ...this.getSpawnLocation(...targ));
+        }
+    }
     if (this.step == 1) {
         // this.log("Opening started.  Castle "+this.me.id+" at ("+this.me.x+","+this.me.y+") here.");
 
