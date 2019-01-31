@@ -84,7 +84,7 @@ function churchTurn() {
             }
         }
         if(this.karbonite >= 25 && this.fuel >= 50 &&
-            this.getVisibleRobots().filter(i => i.team == this.me.team && this.distSquared([this.me.x, this.me.y], [i.x, i.y]) <= 20 && 
+            this.getVisibleRobots().filter(i => i.team == this.me.team && this.distSquared([this.me.x, this.me.y], [i.x, i.y]) <= 2 && 
                 i.unit == SPECS.PROPHET).length < 4) {
             let choice = this.getSpawnLocation(...closestThreat);
             // this.log(choice);
