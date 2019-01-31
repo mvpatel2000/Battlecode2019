@@ -76,7 +76,8 @@ function pilgrimTurn() {
         }
     }
 
-    if(this.missionPilgrim && this.distSquared([this.me.x, this.me.y], this.destination) > 0) { // aggro church
+    if(this.missionPilgrim && this.distSquared([this.me.x, this.me.y], this.destination) > 0 &&
+        this.distSquared([this.me.x, this.me.y], this.destination) <= 100) { // aggro church
         let threats = this.getVisibleRobots().filter(i => i.team != this.me.team);
         let bases = this.getVisibleRobots().filter(i => i.team == this.me.team && i.unit < 2);
 
