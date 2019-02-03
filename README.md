@@ -2,7 +2,7 @@
 Placed 1st in Battlecode 2019 finals.
 
 # Strategy
-[Link to strategy report](smite.pdf)
+[Link to strategy report](https://nikhilsardana.github.io/smite.pdf)
 
 # To Run
 1. install npm
