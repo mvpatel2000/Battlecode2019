@@ -1,4 +1,4 @@
-# Team Smite
+# Team smite
 Placed 1st in Battlecode 2019 finals.
 
 # Strategy
