@@ -11,4 +11,4 @@ Placed 1st in Battlecode 2019 finals.
 3. test with `./simulate final-bots sprint-bots`
 
 # Previous Years
-* Mihir and Nikhil were part of Team smite in [2018](https://github.com/mvpatel2000/battlecode-2018-smite)
+* Mihir and Nikhil were part of Team smite in [2018](https://github.com/mvpatel2000/battlecode-2018-smite).
